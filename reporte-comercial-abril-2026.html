@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte Comercial Nubceo — Abril 2026</title>
+<style>
+  /* ── RESET ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── TIPOGRAFÍA & BASE ── */
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 11pt;
+    color: #1a1a2e;
+    background: #f0f2f5;
+    padding: 24px;
+  }
+
+  /* ── CONTENEDOR ── */
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0a2463 0%, #1565c0 60%, #1976d2 100%);
+    color: white;
+    padding: 36px 44px 28px;
+    position: relative;
+  }
+  .header-logo {
+    font-size: 11pt;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 26pt;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .header-sub {
+    margin-top: 10px;
+    font-size: 10pt;
+    opacity: 0.80;
+    display: flex;
+    gap: 24px;
+  }
+  .header-sub span::before { content: '▸  '; }
+  .header-bar {
+    margin-top: 20px;
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+  }
+
+  /* ── KPIs ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border-bottom: 2px solid #e8eaf0;
+  }
+  .kpi-box {
+    padding: 22px 20px;
+    text-align: center;
+    border-right: 1px solid #e8eaf0;
+  }
+  .kpi-box:last-child { border-right: none; }
+  .kpi-num {
+    font-size: 32pt;
+    font-weight: 800;
+    color: #0a2463;
+    line-height: 1;
+  }
+  .kpi-num.green { color: #1b5e20; }
+  .kpi-label {
+    font-size: 8.5pt;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* ── SECCIONES ── */
+  .section { padding: 26px 44px; border-bottom: 1px solid #e8eaf0; }
+  .section:last-child { border-bottom: none; }
+
+  .section-title {
+    font-size: 9pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #0a2463;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, #1565c0, transparent);
+    border-radius: 2px;
+  }
+
+  /* ── TABLAS ── */
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  th {
+    background: #0a2463;
+    color: white;
+    padding: 9px 11px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  th:first-child { border-radius: 0; }
+  td {
+    padding: 8px 11px;
+    border-bottom: 1px solid #eef0f5;
+    vertical-align: top;
+    line-height: 1.4;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f7f8fc; }
+  tr:hover td { background: #eef2ff; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 8pt;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .b-green   { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+  .b-orange  { background: #fff3e0; color: #bf360c; border: 1px solid #ffcc80; }
+  .b-red     { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+  .b-blue    { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+  .b-purple  { background: #f3e5f5; color: #4a148c; border: 1px solid #ce93d8; }
+  .b-gray    { background: #f5f5f5; color: #424242; border: 1px solid #bdbdbd; }
+  .b-yellow  { background: #fffde7; color: #f57f17; border: 1px solid #fff176; }
+
+  /* ── PRIORIDADES ── */
+  .p-alta   { color: #b71c1c; font-weight: 700; }
+  .p-media  { color: #e65100; font-weight: 600; }
+  .p-baja   { color: #1b5e20; font-weight: 500; }
+
+  /* ── ALERTAS ── */
+  .alert {
+    border-left: 4px solid;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 9.5pt;
+    line-height: 1.5;
+  }
+  .alert-orange { border-color: #f57c00; background: #fff8f0; }
+  .alert-red    { border-color: #c62828; background: #fff5f5; }
+  .alert-blue   { border-color: #1565c0; background: #f0f6ff; }
+
+  /* ── RANKING BARS ── */
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar { height: 8px; border-radius: 4px; background: #1565c0; }
+  .bar-num { font-size: 9pt; color: #555; min-width: 16px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: #0a2463;
+    color: rgba(255,255,255,0.80);
+    padding: 18px 44px;
+    font-size: 8.5pt;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white; padding: 0; font-size: 9.5pt; }
+    .page { box-shadow: none; border-radius: 0; max-width: 100%; }
+    .section { padding: 18px 32px; }
+    .header { padding: 24px 32px 18px; }
+    .kpi-num { font-size: 24pt; }
+    .header h1 { font-size: 20pt; }
+    tr { page-break-inside: avoid; }
+    .section { page-break-inside: avoid; }
+    .no-break { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+
+    /* forzar colores en impresión */
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #0a2463 !important; color: white !important; }
+    .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .kpi-grid { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @page {
+    margin: 15mm 12mm;
+    size: A4;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-logo">Nubceo · Dirección Comercial</div>
+  <h1>Reporte Comercial<br>Abril 2026</h1>
+  <div class="header-sub">
+    <span>Período: 1 al 16 de Abril de 2026</span>
+    <span>Emitido: 16/04/2026</span>
+    <span>Responsable: Bautista Lanusse</span>
+  </div>
+  <div class="header-bar"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     KPIs
+══════════════════════════════════════════════ -->
+<div class="kpi-grid">
+  <div class="kpi-box">
+    <div class="kpi-num">48</div>
+    <div class="kpi-label">Reuniones realizadas</div>
+  </div>
+  <div class="kpi-box">
+    <div class="kpi-num green">2</div>
+    <div class="kpi-label">Cierres (Won)</div>
+  </div>
+  <div class="kpi-box">
+    <div class="kpi-num">9</div>
+    <div class="kpi-label">Propuestas activas</div>
+  </div>
+  <div class="kpi-box">
+    <div class="kpi-num">4</div>
+    <div class="kpi-label">Alianzas en curso</div>
+  </div>
+  <div class="kpi-box" style="background:#f0f7ff; border-left:3px solid #1565c0;">
+    <div class="kpi-num" style="color:#1565c0;">17</div>
+    <div class="kpi-label">Próximas reuniones<br><span style="font-size:8pt;color:#888;text-transform:none;letter-spacing:0">(16/04 en adelante)</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     RESUMEN EJECUTIVO
+══════════════════════════════════════════════ -->
+<div class="section no-break">
+  <div class="section-title">Resumen Ejecutivo</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Indicador</th>
+        <th>Detalle</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cierres Confirmados</strong></td>
+        <td>Mutual Rivadavia (Hernán, 15/04) &nbsp;·&nbsp; TGA (Mateo, 9/04)</td>
+        <td><span class="badge b-green">✓ CLOSED WON</span></td>
+      </tr>
+      <tr>
+        <td><strong>Más Próximo al Cierre</strong></td>
+        <td>Acodike — contrato enviado, pendiente firma de Ricardo (GM)</td>
+        <td><span class="badge b-orange">Firma Pendiente</span></td>
+      </tr>
+      <tr>
+        <td><strong>Alianza Estratégica</strong></td>
+        <td>VM Nova — NDA a firmar semana del 20/04</td>
+        <td><span class="badge b-purple">Prioritario</span></td>
+      </tr>
+      <tr>
+        <td><strong>Oportunidades de alto valor</strong></td>
+        <td>Naranja X · OSDE · Grupo Albanesi · Rapsodia/Grupo Alas · Digital House</td>
+        <td><span class="badge b-blue">En evaluación</span></td>
+      </tr>
+      <tr>
+        <td><strong>Make.com (automatización)</strong></td>
+        <td>3 escenarios detenidos desde 1/04 — pipeline de notas interrumpido</td>
+        <td><span class="badge b-red">⚠ Atención</span></td>
+      </tr>
+      <tr>
+        <td><strong>Sin actividad registrada</strong></td>
+        <td>Luciano y Pablo Illich: 0 reuniones en el período. Emiliana: 5 reuniones agendadas desde el 21/04.</td>
+        <td><span class="badge b-red">⚠ Revisar</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     RANKING EQUIPO
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Ranking del Equipo Comercial</div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Vendedor</th>
+        <th>Reuniones</th>
+        <th>Actividad</th>
+        <th>Cierres</th>
+        <th>Pipeline Destacado</th>
+        <th>Performance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1°</strong></td>
+        <td><strong>Hernán</strong></td>
+        <td><strong>15</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:100%"></div><span class="bar-num">15</span></div></td>
+        <td>1 ✅</td>
+        <td>Mutual Rivadavia · Acodike · Naranja X · Grido Franquicias · Dagma</td>
+        <td><span class="badge b-green">Excelente</span></td>
+      </tr>
+      <tr>
+        <td><strong>2°</strong></td>
+        <td><strong>Mateo</strong></td>
+        <td><strong>12</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:80%"></div><span class="bar-num">12</span></div></td>
+        <td>1 ✅</td>
+        <td>TGA · Reino Cerámicos · Rapsodia · Rodrigo Marchan · Magazzino · VM Nova</td>
+        <td><span class="badge b-green">Muy Bueno</span></td>
+      </tr>
+      <tr>
+        <td><strong>3°</strong></td>
+        <td><strong>Omar</strong></td>
+        <td><strong>11</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:73%"></div><span class="bar-num">11</span></div></td>
+        <td>—</td>
+        <td>Grupo Albanesi · WELAMAN · Tienda Inglesa · Santa Fe Servicios · Glic · Bettoni</td>
+        <td><span class="badge b-blue">Bueno</span></td>
+      </tr>
+      <tr>
+        <td><strong>4°</strong></td>
+        <td><strong>Vanessa</strong></td>
+        <td><strong>3</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:25%"></div><span class="bar-num">3</span></div></td>
+        <td>—</td>
+        <td>Grupo Supervielle · Sonder</td>
+        <td><span class="badge b-yellow">Regular</span></td>
+      </tr>
+      <tr>
+        <td><strong>5°</strong></td>
+        <td><strong>Lucía</strong></td>
+        <td><strong>4</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:27%"></div><span class="bar-num">4</span></div></td>
+        <td>—</td>
+        <td>Andesmar · OSDE · Enjoy (Baluma) · Must Consulting</td>
+        <td><span class="badge b-yellow">Regular</span></td>
+      </tr>
+      <tr>
+        <td><strong>6°</strong></td>
+        <td><strong>Federico</strong></td>
+        <td><strong>1</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:8%"></div><span class="bar-num">1</span></div></td>
+        <td>—</td>
+        <td>Prospecto retail</td>
+        <td><span class="badge b-gray">En desarrollo</span></td>
+      </tr>
+      <tr>
+        <td><strong>7°</strong></td>
+        <td><strong>Pablo Arce</strong></td>
+        <td><strong>2</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:13%"></div><span class="bar-num">2</span></div></td>
+        <td>—</td>
+        <td>Wellvet (15/04 coord. + 16/04 demo)</td>
+        <td><span class="badge b-gray">En desarrollo</span></td>
+      </tr>
+      <tr>
+        <td><strong>8°</strong></td>
+        <td><strong>Luciano</strong></td>
+        <td><strong>0</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:0%"></div><span class="bar-num">0</span></div></td>
+        <td>—</td>
+        <td>Grupo Fava (Lun 20/04)</td>
+        <td><span class="badge b-orange">Arranca Lun 20/04</span></td>
+      </tr>
+      <tr>
+        <td><strong>9°</strong></td>
+        <td><strong>Pablo Illich</strong></td>
+        <td><strong>0</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:0%"></div><span class="bar-num">0</span></div></td>
+        <td>—</td>
+        <td>—</td>
+        <td><span class="badge b-red">Sin actividad</span></td>
+      </tr>
+      <tr>
+        <td><strong>10°</strong></td>
+        <td><strong>Emiliana</strong></td>
+        <td><strong>0</strong></td>
+        <td><div class="bar-wrap"><div class="bar" style="width:0%"></div><span class="bar-num">0</span></div></td>
+        <td>—</td>
+        <td>Rapanui · Addnice · Class Express · Citykids · Equus (sem. 21/04)</td>
+        <td><span class="badge b-orange">Arranca sem. 21/04</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     HERNÁN
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Hernán — 15 Reuniones &nbsp;<span class="badge b-green" style="font-size:8pt">1 CIERRE</span></div>
+  <table>
+    <thead>
+      <tr><th>Fecha</th><th>Empresa</th><th>Puntos Clave</th><th>Etapa</th><th>Próximo Paso</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>01/04</td><td><strong>Acodike</strong></td>
+        <td>Demo técnica avanzada. Ricardo (GM) evaluando módulos de conciliación.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Avanzar propuesta</td>
+      </tr>
+      <tr>
+        <td>02/04</td><td><strong>Naranja X</strong></td>
+        <td>Interés en automatización de medios de pago. Alto volumen transaccional. Requiere integración con core bancario.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Reunión técnica con IT (23/04)</td>
+      </tr>
+      <tr>
+        <td>03/04</td><td><strong>Fac. Medicina UBA</strong></td>
+        <td>Conciliación de aranceles y pagos a proveedores. Proceso 100% manual. Presentación a Dirección Administrativa.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Esperar respuesta del área</td>
+      </tr>
+      <tr>
+        <td>04/04</td><td><strong>Mutual Rivadavia</strong></td>
+        <td>Primer contacto. Alta necesidad de automatización. Decisor presente en reunión.</td>
+        <td><span class="badge b-gray">Contacto</span></td>
+        <td>Enviar propuesta</td>
+      </tr>
+      <tr>
+        <td>07/04</td><td><strong>Acodike</strong> (seg.)</td>
+        <td>Revisión propuesta económica. Ricardo pide ajuste en modelo de licenciamiento.</td>
+        <td><span class="badge b-orange">Negociación</span></td>
+        <td>Ajustar oferta y reenviar</td>
+      </tr>
+      <tr>
+        <td>08/04</td><td><strong>Mutual Rivadavia</strong> (seg.)</td>
+        <td>Seguimiento propuesta. Interés confirmado. Evaluando internamente con el directorio.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Avanzar hacia cierre</td>
+      </tr>
+      <tr>
+        <td>09/04</td><td><strong>Naranja X</strong> (seg.)</td>
+        <td>Avance en evaluación técnica. Cronograma de implementación discutido con IT.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Definir arquitectura de integración</td>
+      </tr>
+      <tr>
+        <td>10/04</td><td><strong>Fac. Medicina UBA</strong> (seg.)</td>
+        <td>Presentación a Dirección Administrativa. Muy receptivos. Presupuesto en revisión.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Esperar respuesta del área</td>
+      </tr>
+      <tr>
+        <td>11/04</td><td><strong>Acodike</strong> (acuerdo verbal)</td>
+        <td>Acuerdo verbal confirmado. Contrato enviado a Ricardo (GM).</td>
+        <td><span class="badge b-orange">Firma pend.</span></td>
+        <td><strong>⚡ Urgente: confirmar firma</strong></td>
+      </tr>
+      <tr>
+        <td>14/04</td><td><strong>Grido Franquicias — Cotización</strong></td>
+        <td>Reunión de cotización (1pm–1:30pm) + revisión rápida (4pm–4:15pm). Red de franquicias con conciliación multi-local. gpastrana2020@gmail.com.</td>
+        <td><span class="badge b-orange">Cotización</span></td>
+        <td>Enviar propuesta formal</td>
+      </tr>
+      <tr>
+        <td>14/04</td><td><strong>Grido Franquicias</strong> (revisión)</td>
+        <td>Reunión corta de revisión de cotización. Preguntas técnicas adicionales resueltas.</td>
+        <td><span class="badge b-orange">Cotización</span></td>
+        <td>Cerrar propuesta</td>
+      </tr>
+      <tr>
+        <td>15/04</td><td><strong>Mutual Rivadavia — Reunión Técnica</strong></td>
+        <td>Reunión técnica previa al cierre. Validación de integraciones con sistemas del cliente.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Proceder con firma</td>
+      </tr>
+      <tr>
+        <td>15/04</td><td><strong>Mutual Rivadavia ✅</strong></td>
+        <td>Cierre confirmado. Contrato firmado. Onboarding a coordinar con equipo técnico.</td>
+        <td><span class="badge b-green">CLOSED WON</span></td>
+        <td><strong>Iniciar onboarding</strong></td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>Dagma</strong></td>
+        <td>Reunión de prospección. Empresa en evaluación. Notas registradas por Gemini.</td>
+        <td><span class="badge b-gray">Exploración</span></td>
+        <td>Calificar y definir próximos pasos</td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>Seguimiento pipeline</strong></td>
+        <td>Seguimiento activo de Naranja X, Acodike y Fac. Medicina UBA.</td>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td>Continuar gestión</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MATEO
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Mateo — 12 Reuniones &nbsp;<span class="badge b-green" style="font-size:8pt">1 CIERRE</span></div>
+  <table>
+    <thead>
+      <tr><th>Fecha</th><th>Empresa</th><th>Puntos Clave</th><th>Etapa</th><th>Próximo Paso</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>01/04</td><td><strong>Reino Cerámicos</strong></td>
+        <td>Empresa industrial. Conciliación bancaria manual con múltiples bancos. Alto interés.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Ajustar propuesta (pedido de cambios)</td>
+      </tr>
+      <tr>
+        <td>03/04</td><td><strong>Rapsodia / Grupo Alas</strong></td>
+        <td>Retail de indumentaria premium. Múltiples procesadoras (Neo Retail). Integración con ERP SAP requerida.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Demo técnica con IT (23/04)</td>
+      </tr>
+      <tr>
+        <td>07/04</td><td><strong>VM Nova / VM Mova</strong></td>
+        <td>Primera reunión de alianza estratégica. Se conversó sobre alcance de Nubceo y soluciones de medios de pago. NDA en revisión legal.</td>
+        <td><span class="badge b-purple">Alianza</span></td>
+        <td>Firma de NDA (22/04)</td>
+      </tr>
+      <tr>
+        <td>08/04</td><td><strong>Digital House</strong></td>
+        <td>EdTech con pagos en cuotas y múltiples medios. Proceso de conciliación complejo. Decisor de compras presente.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Seguimiento Finanzas (22/04)</td>
+      </tr>
+      <tr>
+        <td>09/04</td><td><strong>TGA ✅</strong></td>
+        <td>Cierre exitoso. Implementación de conciliación de transportes. Contrato firmado.</td>
+        <td><span class="badge b-green">CLOSED WON</span></td>
+        <td><strong>Coordinar kick-off técnico</strong></td>
+      </tr>
+      <tr>
+        <td>11/04</td><td><strong>Reino Cerámicos</strong> (seg.)</td>
+        <td>Interés confirmado. Solicitan ajuste en plan de implementación y cronograma.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Enviar propuesta ajustada</td>
+      </tr>
+      <tr>
+        <td>14/04</td><td><strong>Rodrigo Marchan</strong></td>
+        <td>Nuevo contacto. Reunión 12pm–1pm. rodrigo.marchan@gmail.com. Calificación inicial positiva.</td>
+        <td><span class="badge b-gray">Calificación</span></td>
+        <td>Agendar demo del producto</td>
+      </tr>
+      <tr>
+        <td>14/04</td><td><strong>Rapsodia / Grupo Alas</strong> (seg.)</td>
+        <td>Seguimiento post-demo. Minuta enviada a Inés Giordano y Natalia Suárez. Se conversó sobre avance de integración Neo Retail con terminales y objetivos de conciliación.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Cotización 17/04 confirmada</td>
+      </tr>
+      <tr>
+        <td>15/04</td><td><strong>Digital House</strong> (seg.)</td>
+        <td>Avance positivo. Finanzas evalúa presupuesto para Q2.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Seguimiento 22/04</td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>VM Nova / VM Mova</strong> (reunión)</td>
+        <td>Reunión de avance de alianza. Minuta enviada a veronica@vmnova.com.ar. Se conversó sobre tipo de soluciones y mercado de medios de pago.</td>
+        <td><span class="badge b-purple">Alianza</span></td>
+        <td>Firma NDA 22/04</td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>Magazzino</strong></td>
+        <td>Nuevo prospecto. Reunión 3pm–4pm. omar@magazzino.com.ar · patricia@magazzino.com.ar. Empresa gastronómica/retail.</td>
+        <td><span class="badge b-gray">Exploración</span></td>
+        <td>Calificar y proponer</td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>UCA Contabilidad</strong> (prep.)</td>
+        <td>Coordinación previa a la reunión del 17/04. Contactos: Carlos Ríos, Mónica Miednik, Fabián Cajigal.</td>
+        <td><span class="badge b-gray">Preparación</span></td>
+        <td>Reunión formal 17/04 11am</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     OMAR
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Omar — 11 Reuniones</div>
+  <table>
+    <thead>
+      <tr><th>Fecha</th><th>Empresa</th><th>Puntos Clave</th><th>Etapa</th><th>Próximo Paso</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>02/04</td><td><strong>Grupo Albanesi</strong></td>
+        <td>Grupo energético de gran escala. Múltiples empresas en el grupo. Proceso de compra corporativo y largo.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Seguimiento propuesta corporativa</td>
+      </tr>
+      <tr>
+        <td>04/04</td><td><strong>Belén de Escobar</strong></td>
+        <td>Municipio/ente público. Pagos de tasas y servicios. Proceso altamente manual.</td>
+        <td><span class="badge b-gray">Exploración</span></td>
+        <td>Evaluar viabilidad sector público</td>
+      </tr>
+      <tr>
+        <td>07/04</td><td><strong>Santa Fe Servicios</strong></td>
+        <td>Empresa de servicios regionales. Varios bancos y medios de pago. Interés genuino de la gerencia.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Seguimiento gerencia</td>
+      </tr>
+      <tr>
+        <td>08/04</td><td><strong>Grupo Albanesi</strong> (seg.)</td>
+        <td>Profundización técnica. IT evaluando integraciones con sistemas existentes.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Reunión técnica con IT</td>
+      </tr>
+      <tr>
+        <td>09/04</td><td><strong>Tienda Inglesa</strong></td>
+        <td>Gran retailer uruguayo. Reunión sobre operativa de medios de pago y conciliación. Notas registradas por Gemini el 16/04.</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Propuesta para Uruguay</td>
+      </tr>
+      <tr>
+        <td>10/04</td><td><strong>Santa Fe Servicios</strong> (seg.)</td>
+        <td>Propuesta presentada en detalle. Gerencia evalúa con directorio.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Seguimiento 21/04</td>
+      </tr>
+      <tr>
+        <td>11/04</td><td><strong>Glic</strong></td>
+        <td>Reunión de definición técnica. Conversación sobre integraciones y arquitectura de conciliación.</td>
+        <td><span class="badge b-purple">Def. técnica</span></td>
+        <td>Enviar propuesta técnica</td>
+      </tr>
+      <tr>
+        <td>14/04</td><td><strong>WELAMAN</strong></td>
+        <td>Presentación Nubceo a cliente uruguayo. welaman@welaman.com.uy. Reunión remota 3pm–4pm.</td>
+        <td><span class="badge b-gray">Demo</span></td>
+        <td>Propuesta post-demo</td>
+      </tr>
+      <tr>
+        <td>15/04</td><td><strong>Belén de Escobar</strong> (seg.)</td>
+        <td>Interés técnico confirmado. Trabas presupuestarias sector público. Ciclo largo.</td>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td>Gestión largo plazo</td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>Café con Guillermo Bettoni</strong></td>
+        <td>Reunión corta con Guillermo Bettoni (Eldorado, Uruguay) — gbettoni@eldorado.com.uy. 3:30pm–4pm. Contacto estratégico uruguayo.</td>
+        <td><span class="badge b-gray">Contacto</span></td>
+        <td>Evaluar oportunidad en Uruguay</td>
+      </tr>
+      <tr>
+        <td>16/04</td><td><strong>Tienda Inglesa</strong> (seg.)</td>
+        <td>Seguimiento operativa de medios de pago. Notas Gemini confirmadas. Retailer de gran escala.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Avanzar propuesta Uruguay</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     VANESSA / LUCÍA / FEDERICO / PABLO ARCE
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Vanessa · Lucía · Federico · Pablo Arce</div>
+  <table>
+    <thead>
+      <tr><th>Vendedor</th><th>Fecha</th><th>Empresa</th><th>Puntos Clave</th><th>Etapa</th><th>Próximo Paso</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Vanessa</strong></td><td>07/04</td><td>Grupo Supervielle</td>
+        <td>Banco. Área de innovación interesada en conciliación de medios de pago. Decisor por confirmar.</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Presentación técnica (24/04)</td>
+      </tr>
+      <tr>
+        <td><strong>Vanessa</strong></td><td>10/04</td><td>Sonder</td>
+        <td>Hospitalidad. Pagos internacionales multi-moneda. Proceso de conciliación muy complejo.</td>
+        <td><span class="badge b-gray">Exploración</span></td>
+        <td>Evaluar alcance técnico</td>
+      </tr>
+      <tr>
+        <td><strong>Vanessa</strong></td><td>15/04</td><td>Seguimiento</td>
+        <td>Llamadas de seguimiento a pipeline activo.</td>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td>Continuar gestión</td>
+      </tr>
+      <tr>
+        <td><strong>Lucía</strong></td><td>08/04</td><td>Andesmar</td>
+        <td>Transporte interprovincial. Ticketing y pagos distribuidos en terminales. Demo realizada.</td>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td>Seguimiento post-demo</td>
+      </tr>
+      <tr>
+        <td><strong>Lucía</strong></td><td>11/04</td><td>OSDE</td>
+        <td>Prepaga líder. Volumen masivo de transacciones. Proceso evaluativo largo pero alto potencial.</td>
+        <td><span class="badge b-purple">Eval. técnica</span></td>
+        <td>Avanzar evaluación (24/04)</td>
+      </tr>
+      <tr>
+        <td><strong>Lucía</strong></td><td>15/04</td><td>Enjoy (Baluma)</td>
+        <td>Reunión de propuesta económica con mberez@baluma.uy y rbaz@baluma.uy. Cadena de entretenimiento Uruguay. Notas Gemini confirmadas.</td>
+        <td><span class="badge b-orange">Propuesta económica</span></td>
+        <td>Seguimiento propuesta — próxima reunión 20/04</td>
+      </tr>
+      <tr>
+        <td><strong>Lucía</strong></td><td>16/04</td><td>Must Consulting (cliente)</td>
+        <td>Coordinación de capacitación a cliente activo Must Consulting. Onboarding en curso.</td>
+        <td><span class="badge b-green">Cliente activo</span></td>
+        <td>Capacitación formal 21/04</td>
+      </tr>
+      <tr>
+        <td><strong>Federico</strong></td><td>14/04</td><td>Prospecto (retail)</td>
+        <td>Primera reunión. Empresa de retail. Calificación inicial positiva. Sin decisor todavía.</td>
+        <td><span class="badge b-gray">Calificación</span></td>
+        <td>Agendar segunda reunión — Remoda SRL 21/04</td>
+      </tr>
+      <tr>
+        <td><strong>Pablo Arce</strong></td><td>15/04</td><td>Wellvet</td>
+        <td>Invite actualizado para demo 16/04. info@wellvet.com.ar. Empresa veterinaria con múltiples puntos de cobro.</td>
+        <td><span class="badge b-gray">Demo</span></td>
+        <td>Demo formal 16/04 9am</td>
+      </tr>
+      <tr>
+        <td><strong>Pablo Arce</strong></td><td>16/04</td><td>Wellvet</td>
+        <td>Demo Nubceo realizada. 9am–10am. info@wellvet.com.ar. Presentación completa del producto.</td>
+        <td><span class="badge b-blue">Demo realizada</span></td>
+        <td>Enviar propuesta post-demo</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PIPELINE
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Pipeline Comercial — Estado al 16/04/2026</div>
+  <table>
+    <thead>
+      <tr><th>Etapa</th><th>Empresa</th><th>Vendedor</th><th>Detalle</th><th>Urgencia</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge b-green">CLOSED WON</span></td>
+        <td><strong>Mutual Rivadavia</strong></td><td>Hernán</td>
+        <td>Cerrado 15/04. Contrato firmado. Iniciar onboarding esta semana.</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-green">CLOSED WON</span></td>
+        <td><strong>TGA</strong></td><td>Mateo</td>
+        <td>Cerrado 9/04. Kick-off técnico a coordinar con el cliente.</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-orange">Firma Pendiente</span></td>
+        <td><strong>Acodike</strong></td><td>Hernán</td>
+        <td>Acuerdo verbal confirmado. Contrato enviado. Ricardo (GM) debe firmar.</td>
+        <td class="p-alta">🔴 ALTA</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Naranja X</strong></td><td>Hernán</td>
+        <td>Propuesta técnica enviada. IT evaluando integración con core bancario.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Digital House</strong></td><td>Mateo</td>
+        <td>En evaluación por área de Finanzas. Decisor favorable.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Grupo Albanesi</strong></td><td>Omar</td>
+        <td>Propuesta corporativa enviada. Proceso de compra complejo, ciclo largo.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Santa Fe Servicios</strong></td><td>Omar</td>
+        <td>Gerencia evaluando con directorio. Seguimiento 21/04.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Reino Cerámicos</strong></td><td>Mateo</td>
+        <td>Ajuste de propuesta en curso según feedback del cliente.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Grupo Supervielle</strong></td><td>Vanessa</td>
+        <td>Propuesta técnica en elaboración. Reunión de presentación 24/04.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td><strong>Fac. Medicina UBA</strong></td><td>Hernán</td>
+        <td>Presupuesto en evaluación por Dirección Administrativa.</td>
+        <td class="p-baja">🟢 Baja</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-purple">Eval. Técnica</span></td>
+        <td><strong>Rapsodia / Grupo Alas</strong></td><td>Mateo</td>
+        <td>Demo técnica con IT programada 23/04. Integración SAP como punto clave.</td>
+        <td class="p-media">🟠 Media</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-purple">Eval. Técnica</span></td>
+        <td><strong>OSDE</strong></td><td>Lucía</td>
+        <td>Proceso evaluativo largo. Prepaga de gran escala. Alto potencial a largo plazo.</td>
+        <td class="p-baja">🟢 Baja</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td><strong>Andesmar</strong></td><td>Lucía</td>
+        <td>Demo realizada. Evaluando internamente. Sin fecha de decisión.</td>
+        <td class="p-baja">🟢 Baja</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td><strong>Belén de Escobar</strong></td><td>Omar</td>
+        <td>Sector público. Trabas presupuestarias. Ciclo muy largo esperado.</td>
+        <td class="p-baja">🟢 Baja</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td><strong>Sonder</strong></td><td>Vanessa</td>
+        <td>Complejidad técnica alta (multi-moneda). Evaluando alcance.</td>
+        <td class="p-baja">🟢 Baja</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ALIANZAS
+══════════════════════════════════════════════ -->
+<div class="section no-break">
+  <div class="section-title">Alianzas y Partnerships Estratégicos</div>
+  <table>
+    <thead>
+      <tr><th>Partner</th><th>Tipo</th><th>Estado</th><th>Responsable</th><th>Potencial</th><th>Próximo Paso</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>VM Nova</strong></td>
+        <td>Canal / Reseller</td>
+        <td><span class="badge b-orange">NDA a firmar</span></td>
+        <td>Mateo</td>
+        <td>Alto — acceso a cartera de clientes establecida</td>
+        <td><strong>Firma NDA 22/04 (prioridad)</strong></td>
+      </tr>
+      <tr>
+        <td><strong>NextValue / Grouper</strong></td>
+        <td>Integrador tecnológico</td>
+        <td><span class="badge b-green">Activa</span></td>
+        <td>Hernán</td>
+        <td>Medio-Alto — casos de uso complementarios</td>
+        <td>Profundizar casos de uso conjuntos</td>
+      </tr>
+      <tr>
+        <td><strong>SAP / SEIDOR</strong></td>
+        <td>Partner ERP</td>
+        <td><span class="badge b-blue">En evaluación</span></td>
+        <td>Equipo</td>
+        <td>Alto — acceso a clientes SAP medianos y grandes</td>
+        <td>Definir modelo de co-venta</td>
+      </tr>
+      <tr>
+        <td><strong>Alegra</strong></td>
+        <td>Partner SaaS contable</td>
+        <td><span class="badge b-blue">Conversación activa</span></td>
+        <td>Equipo</td>
+        <td>Medio — integración de producto complementaria</td>
+        <td>Explorar integración técnica</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     AGENDA HOY
+══════════════════════════════════════════════ -->
+<div class="section no-break">
+  <div class="section-title">Agenda — Viernes 17 de Abril (Hoy)</div>
+  <table>
+    <thead>
+      <tr><th>Hora</th><th>Empresa</th><th>Vendedor</th><th>Tipo</th><th>Objetivo</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>10:00–10:20</strong></td>
+        <td><strong>Grupo Alas (Cotización)</strong></td>
+        <td>Mateo</td>
+        <td><span class="badge b-orange">Cotización</span></td>
+        <td>Presentar cotización a Inés Giordano y Natalia Suárez (Rapsodia)</td>
+      </tr>
+      <tr>
+        <td><strong>11:00–11:40</strong></td>
+        <td><strong>UCA (Contabilidad)</strong></td>
+        <td>Mateo</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Reunión con Carlos Ríos, Mónica Miednik y Fabián Cajigal — área contable UCA</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     AGENDA PRÓXIMA SEMANA
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Agenda — Semana 20 al 24 de Abril</div>
+  <table>
+    <thead>
+      <tr><th>Día</th><th>Empresa</th><th>Vendedor</th><th>Tipo</th><th>Objetivo</th></tr>
+    </thead>
+    <tbody>
+      <!-- LUNES 20/04 -->
+      <tr>
+        <td><strong>Lun 20/04</strong><br><small style="color:#888">11:30hs</small></td><td>Enjoy (Baluma)</td><td>Lucía</td>
+        <td><span class="badge b-orange">Propuesta económica</span></td>
+        <td>Presentar propuesta económica a mberez@baluma.uy y rbaz@baluma.uy</td>
+      </tr>
+      <tr>
+        <td><strong>Lun 20/04</strong><br><small style="color:#888">14:00hs</small></td><td>Congreso Intendentes — SUCIVE</td><td>Omar</td>
+        <td><span class="badge b-purple">Presencial 🇺🇾</span></td>
+        <td>Piso 2 Palacio Municipal. César García (Dir. Asuntos Vehiculares) presente. Uruguay.</td>
+      </tr>
+      <tr>
+        <td><strong>Lun 20/04</strong><br><small style="color:#888">15:00hs</small></td><td>Grupo Fava</td><td>Luciano</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Primera reunión con santino.altavilla@grupofava.com.ar</td>
+      </tr>
+      <!-- MARTES 21/04 -->
+      <tr>
+        <td><strong>Mar 21/04</strong><br><small style="color:#888">11:00hs</small></td><td>Rapanui</td><td>Emiliana</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Reunión con equipo de Finanzas — finanzas@rapanui.com.ar</td>
+      </tr>
+      <tr>
+        <td><strong>Mar 21/04</strong><br><small style="color:#888">11:00hs</small></td><td>Must Consulting (Capacitación)</td><td>Lucía</td>
+        <td><span class="badge b-green">Capacitación cliente</span></td>
+        <td>Capacitación a cliente activo Must Consulting</td>
+      </tr>
+      <tr>
+        <td><strong>Mar 21/04</strong><br><small style="color:#888">12:30hs</small></td><td>Addnice</td><td>Emiliana</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Reunión con girrera@addnice.com.ar y admin7@addnice.com.ar</td>
+      </tr>
+      <tr>
+        <td><strong>Mar 21/04</strong><br><small style="color:#888">13:00hs</small></td><td>Sushi Club (Franquicias)</td><td>Mateo</td>
+        <td><span class="badge b-blue">Presencial</span></td>
+        <td>Reunión presencial — modelo de franquicias, conciliación multi-local</td>
+      </tr>
+      <tr>
+        <td><strong>Mar 21/04</strong><br><small style="color:#888">14:00hs</small></td><td>Class Express</td><td>Emiliana</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Presentación Nubceo — antonellabuffone@gmail.com / tarjetas@mogama.com.ar</td>
+      </tr>
+      <tr>
+        <td><strong>Mar 21/04</strong><br><small style="color:#888">16:00hs</small></td><td>Remoda S.R.L.</td><td>Federico</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Reunión con andrea@re.moda y andrea.campos-cervera@boller.com.py</td>
+      </tr>
+      <!-- MIÉRCOLES 22/04 -->
+      <tr>
+        <td><strong>Mié 22/04</strong></td><td>VM Nova (NDA)</td><td>Mateo</td>
+        <td><span class="badge b-purple">Alianza</span></td>
+        <td>Firma de NDA — consolidar alianza estratégica de canal</td>
+      </tr>
+      <tr>
+        <td><strong>Mié 22/04</strong><br><small style="color:#888">12:00hs</small></td><td>Citykids</td><td>Emiliana</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Reunión con marianobircz@isakito.com</td>
+      </tr>
+      <tr>
+        <td><strong>Mié 22/04</strong></td><td>Digital House</td><td>Mateo</td>
+        <td><span class="badge b-blue">Seguimiento</span></td>
+        <td>Seguimiento evaluación Finanzas — push para decisión</td>
+      </tr>
+      <tr>
+        <td><strong>Mié 22/04</strong><br><small style="color:#888">14:00hs</small></td><td>Equus</td><td>Emiliana</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Reunión con wescudero@equus.com.ar</td>
+      </tr>
+      <!-- JUEVES 23/04 -->
+      <tr>
+        <td><strong>Jue 23/04</strong><br><small style="color:#888">11:00hs</small></td><td>Loysa</td><td>Vanessa</td>
+        <td><span class="badge b-blue">Demo</span></td>
+        <td>Demo Nubceo con rafael.loyet@loysa.com.uy (Uruguay)</td>
+      </tr>
+      <tr>
+        <td><strong>Jue 23/04</strong></td><td>Naranja X</td><td>Hernán</td>
+        <td><span class="badge b-purple">Técnica</span></td>
+        <td>Reunión técnica con equipo IT — integración core bancario</td>
+      </tr>
+      <tr>
+        <td><strong>Jue 23/04</strong></td><td>Rapsodia / Grupo Alas</td><td>Mateo</td>
+        <td><span class="badge b-purple">Demo técnica</span></td>
+        <td>Demo técnica con IT — foco integración SAP</td>
+      </tr>
+      <!-- VIERNES 24/04 -->
+      <tr>
+        <td><strong>Vie 24/04</strong></td><td>OSDE</td><td>Lucía</td>
+        <td><span class="badge b-purple">Técnica</span></td>
+        <td>Avance evaluación técnica — proceso largo, mantener momentum</td>
+      </tr>
+      <tr>
+        <td><strong>Vie 24/04</strong></td><td>Grupo Albanesi</td><td>Omar</td>
+        <td><span class="badge b-blue">Seguimiento</span></td>
+        <td>Seguimiento propuesta corporativa — avanzar con IT</td>
+      </tr>
+      <tr>
+        <td><strong>Vie 24/04</strong></td><td>Grupo Supervielle</td><td>Vanessa</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Presentación propuesta técnica a área de innovación bancaria</td>
+      </tr>
+      <!-- POR CONFIRMAR -->
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Acodike</td><td>Hernán</td>
+        <td><span class="badge b-orange">Cierre</span></td>
+        <td>Confirmar firma de contrato con Ricardo (GM) — acuerdo verbal OK</td>
+      </tr>
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Santa Fe Servicios</td><td>Omar</td>
+        <td><span class="badge b-blue">Seguimiento</span></td>
+        <td>Seguimiento propuesta con gerencia y directorio</td>
+      </tr>
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Fac. Medicina UBA</td><td>Hernán</td>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td>Respuesta Dirección Administrativa sobre presupuesto</td>
+      </tr>
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Reino Cerámicos</td><td>Mateo</td>
+        <td><span class="badge b-blue">Propuesta</span></td>
+        <td>Presentar propuesta ajustada según feedback</td>
+      </tr>
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Andesmar</td><td>Lucía</td>
+        <td><span class="badge b-gray">Seguimiento</span></td>
+        <td>Seguimiento post-demo — activar decisión</td>
+      </tr>
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Onboarding TGA</td><td>Mateo + Tech</td>
+        <td><span class="badge b-green">Onboarding</span></td>
+        <td>Kick-off de implementación con cliente</td>
+      </tr>
+      <tr>
+        <td><strong>Por confirmar</strong></td><td>Onboarding Mutual Rivadavia</td><td>Hernán + Tech</td>
+        <td><span class="badge b-green">Onboarding</span></td>
+        <td>Inicio de implementación — nuevo cliente</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ACCIONES CRÍTICAS
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Acciones Críticas — Semana del 20/04</div>
+  <table>
+    <thead>
+      <tr><th>Prioridad</th><th>Acción</th><th>Responsable</th><th>Fecha Límite</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="p-alta">🔴 ALTA</td>
+        <td><strong>Confirmar firma contrato Acodike</strong> — seguimiento directo a Ricardo (GM). Acuerdo verbal ya alcanzado.</td>
+        <td>Hernán</td>
+        <td><strong>21/04</strong></td>
+      </tr>
+      <tr>
+        <td class="p-alta">🔴 ALTA</td>
+        <td><strong>Firmar NDA con VM Nova</strong> — alianza estratégica de canal con alto potencial de pipeline indirecto.</td>
+        <td>Mateo</td>
+        <td><strong>22/04</strong></td>
+      </tr>
+      <tr>
+        <td class="p-alta">🔴 ALTA</td>
+        <td><strong>Coordinar onboarding TGA y Mutual Rivadavia</strong> — son clientes nuevos, experiencia de inicio crítica.</td>
+        <td>Mateo / Hernán</td>
+        <td><strong>Esta semana</strong></td>
+      </tr>
+      <tr>
+        <td class="p-alta">🔴 ALTA</td>
+        <td><strong>Reparar Make.com</strong> — 3 escenarios caídos desde 1/04. Pipeline de minutas automáticas interrumpido.</td>
+        <td>Ops / Tech</td>
+        <td><strong>Urgente</strong></td>
+      </tr>
+      <tr>
+        <td class="p-media">🟠 MEDIA</td>
+        <td><strong>Demo técnica Naranja X con IT</strong> — alta oportunidad, integración con core bancario como punto bisagra.</td>
+        <td>Hernán</td>
+        <td>23/04</td>
+      </tr>
+      <tr>
+        <td class="p-media">🟠 MEDIA</td>
+        <td><strong>Demo técnica Rapsodia/Grupo Alas</strong> — integración SAP definirá posibilidades de avance.</td>
+        <td>Mateo</td>
+        <td>23/04</td>
+      </tr>
+      <tr>
+        <td class="p-media">🟠 MEDIA</td>
+        <td><strong>Push Digital House</strong> — Finanzas tiene el presupuesto en evaluación, buscar decisión esta semana.</td>
+        <td>Mateo</td>
+        <td>22/04</td>
+      </tr>
+      <tr>
+        <td class="p-media">🟠 MEDIA</td>
+        <td><strong>Activar a Luciano y Pablo Illich</strong> — 0 reuniones en el período. Revisar objetivos y prospección urgente.</td>
+        <td>Bautista</td>
+        <td>Esta semana</td>
+      </tr>
+      <tr>
+        <td class="p-baja">🟢 BAJA</td>
+        <td><strong>Avanzar evaluación OSDE</strong> — proceso largo, mantener contacto activo para no perder momentum.</td>
+        <td>Lucía</td>
+        <td>24/04</td>
+      </tr>
+      <tr>
+        <td class="p-baja">🟢 BAJA</td>
+        <td><strong>Propuesta técnica Grupo Supervielle</strong> — presentar solución para banca con foco en medios de pago.</td>
+        <td>Vanessa</td>
+        <td>24/04</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="alert alert-red" style="margin-top:14px">
+    <strong>⚠ Equipo sin actividad:</strong> Luciano y Pablo Illich registran <strong>0 reuniones</strong> en el período 1–16 de Abril. Se recomienda revisión urgente. Emiliana arranca con <strong>5 reuniones confirmadas</strong> la semana del 21/04 (Rapanui, Addnice, Class Express, Citykids, Equus).
+  </div>
+  <div class="alert alert-orange" style="margin-top:8px">
+    <strong>⚠ Make.com caído:</strong> 3 escenarios de automatización detenidos desde el 1/04. Las notas de Gemini llegaron directamente al inbox durante este período (gemini-notes@google.com). Restaurar flujo normal de minutas automáticas es prioritario para retomar visibilidad completa del equipo.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div>
+    <strong style="color:white">Reporte Comercial Nubceo</strong><br>
+    Período: 1 al 16 de Abril de 2026 &nbsp;|&nbsp; Preparado por: Bautista Lanusse — Dirección Comercial
+  </div>
+  <div style="text-align:right">
+    Fuentes: Google Calendar · Gemini Meeting Notes · Minutas equipo comercial<br>
+    bautista.lanusse@nubceo.com
+  </div>
+</div>
+
+</div>
+
+<!-- INSTRUCCIÓN PARA PDF -->
+<div style="text-align:center; margin-top:20px; font-size:10pt; color:#888; font-family:Arial">
+  Para exportar como PDF: <strong>Ctrl + P</strong> → Destino: <strong>Guardar como PDF</strong> → Tamaño: <strong>A4</strong> → Márgenes: <strong>Mínimo</strong>
+</div>
+
+</body>
+</html>
