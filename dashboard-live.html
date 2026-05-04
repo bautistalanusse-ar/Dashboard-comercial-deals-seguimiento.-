@@ -1948,41 +1948,38 @@ tick(); setInterval(tick,1000);
 
 
 // --- GOOGLE CALENDAR LIVE LOGIC ---
+const GOOGLE_CLIENT_ID = '153430867215-4copu721vg74iajlki5g4enroqcvcpdj.apps.googleusercontent.com';
 let tokenClient = null;
 let access_token = null;
 
 function initGAPI() {
-  // Login removed
-}
-// Login inputs removed
-
-function handleCredentialResponse(response) {
-  const jwt = response.credential;
-  const payload = JSON.parse(atob(jwt.split('.')[1]));
-  document.getElementById('userName').textContent = payload.name;
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  
-  const cid = localStorage.getItem('nubceo_client_id');
-  if(!cid) return alert("Falta el Client ID de Google");
-  
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: cid,
-    scope: 'https://www.googleapis.com/auth/calendar.readonly',
-    callback: (tokenResponse) => {
-      access_token = tokenResponse.access_token;
-      fetchCalendarData();
-    },
-  });
-  tokenClient.requestAccessToken();
-}
-
-function enterDemoMode() {
-  // Keeps existing MEETINGS array as demo
+  function setup() {
+    if(typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/calendar.readonly',
+        callback: (tokenResponse) => {
+          if(tokenResponse.error) {
+            alert('Error Google OAuth: ' + tokenResponse.error);
+            return;
+          }
+          access_token = tokenResponse.access_token;
+          document.getElementById('userName').textContent = '📡 Calendar conectado';
+          fetchCalendarData();
+        },
+      });
+    } else {
+      setTimeout(setup, 300);
+    }
+  }
+  setup();
 }
 
 function syncCalendar() {
-  if(!tokenClient) return alert('No estás logueado con Google.');
+  if(!tokenClient) {
+    alert('Google aún cargando, esperá un segundo e intentá de nuevo.');
+    return;
+  }
   tokenClient.requestAccessToken();
 }
 
