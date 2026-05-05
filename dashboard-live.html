@@ -338,8 +338,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <button class="updbtn" id="btnUpdate" onclick="actualizarDashboard()"><span class="upd-icon">🔄</span> Actualizar</button>
     <button class="dbtn" onclick="downloadReport()">⬇ Descargar reporte</button>
     <button style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.7);padding:4px 10px;cursor:pointer;font-size:8pt;" onclick="syncCalendar()">📡 Sync Calendar</button>
-    <span id="userName" style="font-size:8.5pt;margin-left:4px;font-weight:bold;"></span>
-    <button style="background:none;border:none;color:#aaa;cursor:pointer;font-size:7pt;" onclick="logout()">Salir</button>
+    <span id="userName" style="font-size:8pt;margin-left:6px;color:rgba(255,255,255,.7);"></span>
   </div>
 </div>
 
@@ -492,10 +491,10 @@ const VENDORS = {
   gonzalo:     {name:'Gonzalo C.',  color:'#00695c', email:'gc@nubceo.com'},
 };
 
-const MEETINGS = [
+let MEETINGS = [
   // ── ABRIL ──────────────────────────────────────────────
   {d:'2026-04-01',t:'11:00',dur:60,co:'SAP Paraguay',vs:['omar','gonzalo'],tp:'partner',s:'SAP - NUBCEO - Partner\'s Paraguay',cnt:['hernan.diaz@sap.com'],m:null,ctx:'Partnership con SAP para mercado Paraguay.',nx:'Definir términos co-venta.'},
-  {d:'2026-04-01',t:'11:00',dur:60,co:'Acodike',v:'lucia',tp:'seguimiento',s:'Acodike<>Nubceo',cnt:['jsayagues@acodike.com.uy'],m:null,ctx:'Deal en seguimiento activo. Lucía lidera.',nx:'Empujar cierre.'},
+  {d:'2026-04-01',t:'11:00',dur:60,co:'Acodike',v:'lucia',tp:'seguimiento',s:'Acodike<>Nubceo',cnt:['jsayagues@acodike.com.uy','sfranquez@acodike.com.uy'],m:null,ctx:'Reunión 01/04: acordaron precio $52.000 UYU/mes (cubre Cantage + tarjetas + conciliación + calendario de pagos). Dev $3.500+IVA (50% inicio / 50% al finalizar). Pago mensual inicia cuando integración Cantage esté funcional. Banco BR: investigar disponibilidad MT940. Implementación 2 meses. Contactos: jsayagues@acodike.com.uy y sfranquez@acodike.com.uy.',nx:'Llamar para confirmar inicio. Pedir 50% del dev para arrancar. Verificar MT940 con BR. Empujar firma.'},
   {d:'2026-04-01',t:'17:00',dur:60,co:'Grupo Parisien / SEIDOR',v:'omar',tp:'seguimiento',s:'SEIDOR – Estrategia de Propuesta',cnt:['jobello@seidor.com'],m:null,ctx:'Estrategia de propuesta conjunta con SEIDOR.',nx:'Cerrar propuesta técnica.'},
   {d:'2026-04-06',t:'14:00',dur:60,co:'Dinamics',v:'federico',tp:'primera',s:'Reunión Nubceo/Dinamics',cnt:['osvaldo.boggiano@icloud.com'],m:null,ctx:'Primera reunión con Dinamics.',nx:'Demo técnico.'},
   {d:'2026-04-06',t:'14:30',dur:60,co:'Verga Hnos',v:'hernan',tp:'primera',s:'Nubceo x Verga Hnos - Demo',cnt:['sr@vergahnos.com.ar'],m:null,ctx:'Demo con Verga Hnos.',nx:'Enviar propuesta.'},
@@ -579,7 +578,7 @@ const MEETINGS = [
   {d:'2026-04-29',t:'16:30',dur:60,co:'Gustavo Coronel',vs:['pablo_arce','gonzalo'],tp:'primera',s:'Gustavo - Nubceo',cnt:['gcoronel.fraudconsulting@gmail.com'],m:null,ctx:'Primera reunión con Gustavo Coronel.',nx:'Demo.'},
   {d:'2026-04-30',t:'10:00',dur:60,co:'CORDIEZ',vs:['luciano','gonzalo','hernan'],tp:'primera',s:'NUBCEO - CORDIEZ',cnt:['damian.angeletti@cyre.com.ar','mariano.nievas@cyre.com.ar'],m:'https://meet.google.com/ppn-gmgj-qmw',ctx:'Primera reunión con CORDIEZ / CYRE. Sin historial previo.',nx:'Calificar y agendar demo técnica.'},
   {d:'2026-04-30',t:'10:30',dur:60,co:'Eslopet (Xiaomi Uruguay)',vs:['pablo_illich'],tp:'primera',s:'Presentación Nubceo Eslopet',cnt:['martin.noguera@umt.com.uy'],m:'https://meet.google.com/dmd-mgas-owv',ctx:'Trato creado 27/04: ESLOPET XIAOMI URUGUAY — Trial Activo, OnBoarding Incompleto.',nx:'Activar onboarding. Trial activo → urgente convertir.'},
-  {d:'2026-04-30',t:'11:00',dur:40,co:'Glic Global — Técnica',vs:['vanessa'],tp:'seguimiento',s:'Reunión técnica Glic / Nubceo',cnt:['gonzalo@glicglobal.com','marialaura@glicglobal.com'],m:'https://meet.google.com/usp-jayd-jxm',ctx:'4ª reunión con Glic. Consultan versión Magento. Deal avanzado.',nx:'Resolver Magento → empujar cierre. Último día de mes.'},
+  {d:'2026-04-30',t:'11:00',dur:40,co:'Glic Global — Técnica',vs:['vanessa'],tp:'seguimiento',s:'Reunión técnica Glic / Nubceo',cnt:['gonzalo@glicglobal.com','marialaura@glicglobal.com'],m:'https://meet.google.com/usp-jayd-jxm',ctx:'4ª reunión técnica (30/04). Glic = e-commerce dropshipping con múltiples marketplaces (MercadoLibre AR+UY, Amazon, Fravega). Usan Magento como procesador interno. CFO "Maca" (María Laura Cano) necesita conciliar 5 bloques: marketplace↔Magento, Magento↔MercadoPago, MP↔banco, + Amazon. Decidieron priorizar MercadoLibre AR+UY primero. Contactos: Gonzalo Varalla (TI) y María Laura Cano (decisora). Pendiente Gonzalo: confirmar API Fravega + enviar doc APIs de los marketplaces.',nx:'Resolver consulta versión Magento. Confirmar doc API marketplaces de Gonzalo Varalla. Propuesta de implementación con fases (prioridad ML AR+UY primero). Empujar cierre.'},
   {d:'2026-04-30',t:'12:00',dur:15,co:'Sodimac / Falabella',vs:['mateo'],tp:'seguimiento',s:'Nubceo | Sodimac',cnt:['gromeou@falabella.com.ar','fbuldorini@sodimac.com.ar'],m:'https://meet.google.com/tqn-jhxt-sdo',ctx:'Mateo solicitó datos el 27/04. Esta reunión es para presentar la COTIZACIÓN (10 min).',nx:'Presentar cotización → respuesta en el día.'},
   {d:'2026-04-30',t:'14:00',dur:60,co:'Nodum — Partnership',vs:['pablo_illich'],tp:'partner',s:'Partnership Nodum Nubceo',cnt:['dcabral@nodum.com.uy','lsoria@nodum.com.uy'],m:'https://meet.google.com/zzv-itkn-txi',ctx:'Partnership con Nodum, fintech uruguaya. Pablo Illich y Vanessa co-lideran.',nx:'Definir términos de alianza.'},
   {d:'2026-04-30',t:'15:00',dur:60,co:'MacStation',vs:['emiliana'],tp:'primera',s:'MacStation & Nubceo',cnt:['plonginotti@macstation.com.ar'],m:'https://meet.google.com/jyt-mceu-ijr',ctx:'Retail Apple Argentina. Emiliana agendó el 28/04.',nx:'Calificar sucursales y volumen.'},
@@ -597,10 +596,10 @@ const MEETINGS = [
   {d:'2026-05-05',t:'09:15',dur:30,co:'Iván Carini (Hasar)',vs:['pablo_arce'],tp:'primera',s:'Iván Carini Hasar - Pablo',cnt:['ivan.carini@hasar.com'],m:'https://meet.google.com/nya-knkh-vpm',ctx:'Primera reunión con Iván Carini de Hasar. Pablo Arce organiza.',nx:'Calificar y demo.'},
   {d:'2026-05-05',t:'11:00',dur:60,co:'Tucci Web',vs:['emiliana'],tp:'primera',s:'Tucci & Nubceo',cnt:['gastonmaldonado@tucciweb.com'],m:'https://meet.google.com/aqw-wiao-pst',ctx:'Reunión que fue reagendada del 30/04 al 05/05. Primera reunión con Tucci Web.',nx:'Presentación + calificar volumen.'},
   {d:'2026-05-05',t:'12:15',dur:45,co:'Kretz SA',vs:['pablo_arce'],tp:'primera',s:'1er Reunion NUBCEO - KRETZ S.A.',cnt:['nicolas.bella@kretz.com.ar'],m:'https://meet.google.com/umj-kkbv-ssb',ctx:'Primera reunión con Kretz SA.',nx:'Calificar y demo.'},
-  {d:'2026-05-05',t:'14:00',dur:60,co:'Kick off Santucci',vs:['vanessa'],tp:'seguimiento',s:'Kick off Nubceo - Santucci',cnt:['santucci@santucci.com.uy','vdewaele@googlemail.com','administracion@santucci.com.uy'],m:'https://meet.google.com/fbx-bjrp-mvw',ctx:'Kick off con Santucci. Deal ganado el 30/04. Vanessa lidera onboarding.',nx:'Activar onboarding completo.'},
+  {d:'2026-05-05',t:'14:00',dur:60,co:'Kick off Santucci',vs:['vanessa'],tp:'seguimiento',s:'Kick off Nubceo - Santucci',cnt:['santucci@santucci.com.uy','vdewaele@googlemail.com','administracion@santucci.com.uy'],m:'https://meet.google.com/fbx-bjrp-mvw',ctx:'Deal GANADO 30/04 (UYU 20.778/mes). Domenico Santucci · Uruguay. Sistema: SAP + Gestana (POS) + Getnet + Mercado Pago. Objetivo: asientos contables automáticos en SAP. Reunión 13/04 acordó integración API para SAP y FTP para procesadoras. Pendiente: Domenico debía enviar volumen de transacciones mensuales con tarjeta. Contactos: santucci@santucci.com.uy + administracion@santucci.com.uy.',nx:'Confirmar método integración (API SAP + FTP procesadoras). Pedir volumen transacciones si no llegó. Definir accesos y credenciales. Timeline: 2 meses implementación + 2 meses hipercare.'},
   {d:'2026-05-05',t:'14:00',dur:60,co:'Fan de Pan',vs:['mateo'],tp:'primera',s:'Nubceo | Fan de Pan',cnt:['ianbela2001@gmail.com'],m:'https://meet.google.com/wdh-vizj-abh',ctx:'Primera reunión con Fan de Pan (cadena gastronómica).',nx:'Calificar y demo.'},
   {d:'2026-05-05',t:'15:00',dur:60,co:'Northland (Presencial)',vs:['hernan'],tp:'primera',s:'Nubceo x Northland - Reunión presencial',cnt:['leonev@northlands.edu.ar','vicenteleone717@gmail.com'],m:'https://meet.google.com/irk-joiu-bce',ctx:'Reunión presencial con Northlands. Institución educativa.',nx:'Demo y propuesta institucional.'},
-  {d:'2026-05-05',t:'15:30',dur:60,co:'Fravega',vs:['mateo'],tp:'primera',s:'Contacto Nubceo / Fravega',cnt:['lujan.furrere@fravega.com.ar','paola.fotia@fravega.com.ar','leonardo.marcote@fravega.com.ar'],m:'https://meet.google.com/hrm-bywv-nug',ctx:'Fravega reprogramó para el 5/5 a las 15:30. Gran cuenta de retail.',nx:'Demo + relevamiento.'},
+  {d:'2026-05-05',t:'15:30',dur:60,co:'Fravega',vs:['mateo'],tp:'primera',s:'Contacto Nubceo / Fravega',cnt:['lujan.furrere@fravega.com.ar','paola.fotia@fravega.com.ar','leonardo.marcote@fravega.com.ar'],m:'https://meet.google.com/hrm-bywv-nug',ctx:'Gran cuenta retail ARG. Reprogramaron para 05/05 15:30. Fravega es marketplace para clientes como Glic (dropshipping). Procesa volumen alto de transacciones con Prisma/MercadoPago. Dolores típicos: conciliación de ventas marketplace, liquidaciones de procesadoras, retenciones y comisiones. Contactos: Luján Furrere, Paola Fotia, Leonardo Marcote.',nx:'Calificar: volumen transacciones mensuales, procesadoras usadas (Prisma/MP/Naranja), sistemas POS/ERP. Preguntar sobre proceso de conciliación manual actual. Mostrar demo con caso de cadena retail similar.'},
   {d:'2026-05-05',t:'16:30',dur:60,co:'UCA',vs:['mateo'],tp:'seguimiento',s:'Nubceo | UCA',cnt:['carlos_rios@uca.edu.ar','fabian_cajigal@uca.edu.ar'],m:'https://meet.google.com/vkh-fwai-avw',ctx:'Seguimiento UCA. Cargado hoy por Mateo.',nx:'Avanzar contrato.'},
   {d:'2026-05-06',t:'09:00',dur:60,co:'Sandra El Mirasol',vs:['pablo_arce'],tp:'primera',s:'Reunion Pablo Arce (Sandra El Mirasol)',cnt:[],m:null,ctx:'Primera reunión con Sandra El Mirasol.',nx:'Calificar y demo.'},
   {d:'2026-05-06',t:'09:30',dur:60,co:'Axion Energy',vs:['luciano','gonzalo'],tp:'primera',s:'Nubceo - Axion Energy',cnt:[],m:null,ctx:'Primera reunión con Axion Energy. Luciano y Gonzalo co-lideran.',nx:'Demo y calificación.'},
@@ -629,6 +628,9 @@ const MEETINGS = [
   {d:'2026-05-04',t:'12:00',dur:60,co:'Nubceo Conciliador',vs:['gonzalo','hernan'],  tp:'primera',   s:'Nubceo conciliador',                       cnt:[],  m:null, ctx:'Gonzalo organiza con Hernán como acompañante.',nx:'Avanzar.'},
   {d:'2026-05-04',t:'13:00',dur:60,co:'Lucas Alberto Insua',vs:['gonzalo'],          tp:'primera',   s:'nubceo para tu empresa (Lucas Alberto Insua)',cnt:[],m:null, ctx:'Gonzalo organiza reunión comercial con Lucas Insua.',nx:'Calificar y asignar comercial.'},
 ];
+
+// Copia estática para preservar ctx/nx enriquecidos al hacer sync en vivo
+const STATIC_MEETINGS = JSON.parse(JSON.stringify(MEETINGS));
 
 // ═══════════════════════════════════════════════
 // DEALS GANADOS
@@ -659,7 +661,7 @@ let PRESUPUESTOS = [
   {d:'2026-04-10',v:'vanessa',     co:'Doniral',           amt:0, st:'esperando'},
   {d:'2026-04-22',v:'vanessa',     co:'Biggie',            amt:0, st:'esperando'},
   {d:'2026-04-27',v:'vanessa',     co:'ZonaTecno',         amt:0, st:'ganado'},
-  {d:'2026-04-16',v:'vanessa',     co:'Glic Global',       amt:0, st:'negociando'},
+  {d:'2026-04-16',v:'vanessa',     co:'Glic Global',       amt:0, st:'negociando', ctx:'e-commerce dropshipping UY/AR. 4 reuniones técnicas. Decisora: Maca (CFO). Bloqueante: versión Magento. Pendiente: doc APIs marketplaces de Gonzalo Varalla.'},
   {d:'2026-04-20',v:'lucia',       co:'Enjoy / Baluma',    amt:0, st:'negociando'},
   {d:'2026-04-29',v:'pablo_illich',co:'SIXT Uruguay',      amt:0, st:'negociando'},
   {d:'2026-04-30',v:'pablo_illich',co:'Eslopet / Xiaomi UY',amt:0,st:'trial activo'},
@@ -675,7 +677,7 @@ let PRESUPUESTOS = [
 const TAREAS_DIA = [
   {d:'2026-05-04',v:'luciano',  tarea:'Enviar contrato TOPPER firmado',      st:'pending',  venc:'2026-05-04', rel:'TOPPER'},
   {d:'2026-05-04',v:'pablo_illich',tarea:'Seguimiento propuesta SIXT',       st:'pending',  venc:'2026-05-04', rel:'SIXT Uruguay'},
-  {d:'2026-05-04',v:'vanessa',  tarea:'Resolver consulta Magento para Glic', st:'pending',  venc:'2026-05-04', rel:'Glic Global'},
+  {d:'2026-05-04',v:'vanessa',  tarea:'Resolver consulta versión Magento para Glic (Gonzalo Varalla). Confirmar si versión Magento es compatible con API de Connect. Gonzalo debe enviar doc APIs de los marketplaces (ML AR+UY, Amazon, Fravega).', st:'pending',  venc:'2026-05-04', rel:'Glic Global'},
   {d:'2026-05-04',v:'hernan',   tarea:'Enviar cotización Anacleto',          st:'pending',  venc:'2026-05-05', rel:'Anacleto'},
   {d:'2026-05-04',v:'mateo',    tarea:'Presentar cotización Sodimac',        st:'done',     venc:'2026-04-30', rel:'Sodimac'},
   // TODO: poblar automáticamente desde Pipedrive Activities API
@@ -920,13 +922,13 @@ function renderDiaTareas(date, filterVid){
   // Pipeline activo por vendedor (deals urgentes del día)
   const PIPE={
     hernan:     {deal:'Grido, Farmacia del Pueblo, Supermax/Hasar', apollo:'Cadenas retail y salud', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
-    lucia:      {deal:'Acodike → llamar para cierre. Enjoy/Baluma → negociar', apollo:'Empresas medianas ARG/UY', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    lucia:      {deal:'Acodike → llamar HOY para arrancar ($52k UYU/mes acordado, dev $3.5k, 50% anticipo). MT940 BR pendiente. Enjoy/Baluma → negociar', apollo:'Empresas medianas ARG/UY', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
     emiliana:   {deal:'MacStation → follow up técnico. Tucci → preparar', apollo:'Retail tech y e-commerce', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
     luciano:    {deal:'TOPPER contrato → confirmar firma. Grupo Bloom → seguimiento', apollo:'Cadenas + clubs', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
     federico:   {deal:'Dinamics, Remoda, Ferremas → enviar propuestas', apollo:'Distribución y manufactura', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
     pablo_arce: {deal:'Wellvet, Gofun/Easygoband, NCR Voyix → cotizaciones', apollo:'Vet, tech y hospitality', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
     pablo_illich:{deal:'SIXT → negociar. UMT/Eslopet → presentar propuesta', apollo:'Revisar pipeline del equipo (nuevo)', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
-    vanessa:    {deal:'Glic → resolver Magento. Doniral, Biggie → respuesta', apollo:'SaaS y mayoristas UY', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    vanessa:    {deal:'Glic → resolver Magento (5 bloques de conciliación, priorizar ML AR+UY). Doniral, Biggie → respuesta pendiente. Santucci: kick off 05/05 → confirmar API SAP + volumen transacciones', apollo:'SaaS y mayoristas UY', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
     mateo:      {deal:'Sodimac → cotización enviada. UCA → contabilidad', apollo:'Corporativos y cadenas ARG', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
   };
 
@@ -1436,9 +1438,9 @@ function renderTareas(date){
   };
 
   const prioridades = [
-    {v:'lucia',    urg:'CRÍTICO',   deal:'Acodike',               accion:'Llamar HOY para cierre. Deal en el límite del mes.',          color:'#c62828'},
+    {v:'lucia',    urg:'CRÍTICO',   deal:'Acodike',               accion:'Llamar HOY. Precio acordado $52k UYU/mes + dev $3.5k (50% anticipo). Pedir arranque. Verificar MT940 con BR.',          color:'#c62828'},
     {v:'luciano',  urg:'URGENTE',   deal:'TOPPER — Firma',        accion:'Confirmar firma esta semana. Contrato ya está listo.',         color:'#e65100'},
-    {v:'vanessa',  urg:'URGENTE',   deal:'Glic — Magento',        accion:'Resolver integración Magento con soporte técnico.',           color:'#e65100'},
+    {v:'vanessa',  urg:'URGENTE',   deal:'Glic — Magento',        accion:'Resolver versión Magento con soporte técnico. Esperar doc APIs marketplaces de Gonzalo Varalla. Propuesta en fases (ML AR+UY primero).',           color:'#e65100'},
     {v:'mateo',    urg:'ESTA SEM.', deal:'Sodimac + UCA',         accion:'Enviar cotización Sodimac. Agendar cierre UCA.',              color:'#1565c0'},
     {v:'hernan',   urg:'ESTA SEM.', deal:'Grido + Farmacia',      accion:'Propuesta final Grido. Seguimiento Farmacia del Pueblo.',     color:'#1565c0'},
     {v:'emiliana', urg:'ESTA SEM.', deal:'MacStation + Tucci',    accion:'Follow up técnico MacStation. Primer contacto Tucci.',       color:'#1565c0'},
@@ -1645,14 +1647,12 @@ function actualizarDashboard(){
   btn.classList.add('syncing');
   btn.disabled=true;
 
-  // Si hay token de Google Calendar, sincronizar primero
-  if(typeof tokenClient!=='undefined' && tokenClient){
-    syncCalendar();
-    setTimeout(()=>{ btn.classList.remove('syncing'); btn.disabled=false; }, 3000);
-    return;
-  }
+  // Sincronizar con Make.com y re-renderizar
+  syncCalendar();
+  setTimeout(()=>{ btn.classList.remove('syncing'); btn.disabled=false; }, 4000);
+  return;
 
-  // Sin Google Calendar: re-renderizar todo con datos actuales
+  // fallback re-render (datos locales)
   setTimeout(()=>{
     const d=document.getElementById('dpDia').value;
     updatePeriodBar(d);
@@ -1948,13 +1948,13 @@ function tick(){
 tick(); setInterval(tick,1000);
 
 
-// --- GOOGLE CALENDAR — Apps Script proxy (sin OAuth, sin login) ---
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz8doY_9eH1sIKhE_gtYc9kfbB8wZXBbSdxLNaNEadUmcjUel-YdecUF6zYdb2Ns_G/exec';
+// --- MAKE.COM WEBHOOK — proxy público sin OAuth ni login ---
+const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/i8sll981gud2cgnv84f6u63kuufkeoie';
 
 function classifyMeetingLive(title) {
   const t = title.toLowerCase();
   if (/partner|alianza|sap|seidor|nodum|sucive/.test(t)) return 'partner';
-  if (/cotizaci|propuesta|seguimiento|técnica|técnico|seg\.|2da|reunion tecnica/.test(t)) return 'seguimiento';
+  if (/cotizaci|propuesta|seguimiento|técnica|técnico|seg\.|2da|reunion tecnica|kick off/.test(t)) return 'seguimiento';
   return 'primera';
 }
 
@@ -1965,65 +1965,81 @@ function getVendorByEmail(email) {
   return 'otro';
 }
 
+function findStaticEnrichment(dateStr, title) {
+  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9 ]/gi,'').trim();
+  const t = norm(title);
+  if(!t) return null;
+  return STATIC_MEETINGS.find(m => {
+    if(m.d !== dateStr) return false;
+    const s = norm(m.co || m.s || '');
+    return s === t || (t.length > 5 && s.includes(t.slice(0,8))) || (s.length > 5 && t.includes(s.slice(0,8)));
+  }) || null;
+}
+
 function syncCalendar() {
   const btn = document.getElementById('btnUpdate');
   const status = document.getElementById('userName');
   if(btn) { btn.disabled = true; btn.classList.add('syncing'); }
-  status.textContent = '🔄 Sincronizando...';
+  if(status) status.textContent = '🔄 Sincronizando...';
 
-  fetch(APPS_SCRIPT_URL)
-    .then(res => res.json())
+  const SKIP = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes@nubceo.com',
+                'bautista.lanusse@nubceo.com','fernanda.acevedo@nubceo.com','al@nubceo.com','gl@nubceo.com'];
+
+  fetch(MAKE_WEBHOOK_URL)
+    .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
     .then(data => {
-      if(data.error) throw new Error(data.error);
+      const events = data.events || [];
+      if(!events.length) throw new Error('Sin eventos');
 
-      MEETINGS = data.map(ev => {
-        const st = new Date(ev.s);
-        const en = new Date(ev.e);
-        const guests = ev.g || [];
+      MEETINGS = events.map(ev => {
+        const st  = new Date(ev.start);
+        const en  = new Date(ev.end);
+        const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
 
-        // Determinar vendedor: primer nubceo que no sea agenda.virtual ni producto ni bautista
-        const SKIP = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes@nubceo.com','bautista.lanusse@nubceo.com','fernanda.acevedo@nubceo.com','al@nubceo.com','gl@nubceo.com'];
         const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP.includes(g));
         const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
-        const companions = nubceoAtts.slice(1).map(g => getVendorByEmail(g)).filter(v => v !== 'otro');
-        const extGuests = guests.filter(g => !g.endsWith('@nubceo.com'));
+        const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
+        const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
+
+        const dateStr = st.toISOString().slice(0,10);
+        const enriched = findStaticEnrichment(dateStr, ev.title || '');
 
         const base = {
-          d: st.toISOString().slice(0,10),
-          t: st.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
+          d:   dateStr,
+          t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
           dur: Math.round((en - st) / 60000),
-          tp: classifyMeetingLive(ev.t || ''),
-          co: ev.t || 'Sin título',
-          s: ev.t || 'Sin título',
+          tp:  classifyMeetingLive(ev.title || ''),
+          co:  ev.title || 'Sin título',
+          s:   ev.title || 'Sin título',
           cnt: extGuests,
-          ctx: ev.d || '',
-          nx: 'Actualizar CRM',
-          m: null
+          ctx: enriched ? enriched.ctx : (ev.desc || ''),
+          nx:  enriched ? enriched.nx  : 'Actualizar CRM',
+          m:   ev.meet  || (enriched ? enriched.m : null)
         };
-        if(companions.length) { base.vs = [mainVendor, ...companions]; }
-        else { base.v = mainVendor; }
+        if(companions.length) base.vs = [mainVendor, ...companions];
+        else base.v = mainVendor;
         return base;
       });
 
-      // Re-render
       const d = document.getElementById('dpDia').value;
       updatePeriodBar(d);
       setView(curView);
       setTab(curTab);
       const now = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-      status.textContent = '✅ Datos al ' + now;
-      document.getElementById('lastUpdate').textContent = 'Sync ' + now;
+      if(status) status.textContent = '✅ ' + now;
+      const lu = document.getElementById('lastUpdate');
+      if(lu) lu.textContent = 'Sync ' + now;
       if(btn) { btn.disabled = false; btn.classList.remove('syncing'); }
     })
     .catch(err => {
-      console.error('Sync error:', err);
-      status.textContent = '⚠ Sin sync — datos locales';
+      console.warn('Sync error (usando datos locales):', err.message);
+      if(status) status.textContent = '📋 Datos locales';
       if(btn) { btn.disabled = false; btn.classList.remove('syncing'); }
     });
 }
 
 // Auto-sync al cargar la página
-window.addEventListener('load', () => setTimeout(syncCalendar, 1000));
+window.addEventListener('load', () => setTimeout(syncCalendar, 1500));
 // Auto-refresh cada 30 minutos
 setInterval(syncCalendar, 30 * 60 * 1000);
 
