@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Comercial · Nubceo</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<style>
+:root{
+  --navy:#0d1b4b;--blue:#1a237e;--ind:#283593;--mid:#3949ab;--acc:#5c6bc0;
+  --p:#1565c0;--pbg:#e3f2fd;--pb:#90caf9;
+  --s:#e65100;--sbg:#fff3e0;--sb:#ffcc80;
+  --x:#6a1b9a;--xbg:#f3e5f5;--xb:#ce93d8;
+  --won:#2e7d32;--wonbg:#e8f5e9;
+  --sf:#f0f3fb;--card:#fff;--bdr:#e0e4f0;--txt:#1c1c2e;--muted:#666;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(--txt);font-size:9pt;}
+
+/* TOPBAR */
+.tb{background:linear-gradient(135deg,#0d1b4b 0%,#1a237e 60%,#3949ab 100%);color:#fff;display:flex;align-items:center;padding:0 32px;height:52px;gap:0;}
+.tb-logo{font-size:12pt;font-weight:900;letter-spacing:-.3px;padding-right:24px;border-right:1px solid rgba(255,255,255,.15);display:flex;align-items:center;gap:8px;}
+.tb-logo small{font-size:7pt;font-weight:400;opacity:.6;letter-spacing:.8px;}
+.tb-views{display:flex;align-items:center;gap:3px;padding:0 18px;border-right:1px solid rgba(255,255,255,.15);}
+.vbtn{background:none;border:none;color:rgba(255,255,255,.65);padding:5px 13px;border-radius:6px;font-size:8.5pt;cursor:pointer;transition:.15s;white-space:nowrap;}
+.vbtn:hover,.vbtn.on{background:rgba(255,255,255,.15);color:#fff;font-weight:700;}
+.tb-tabs{display:flex;align-items:center;gap:3px;padding:0 18px;}
+.tbtn{background:none;border:none;color:rgba(255,255,255,.55);padding:5px 11px;border-radius:5px;font-size:8pt;cursor:pointer;transition:.15s;}
+.tbtn:hover,.tbtn.on{background:rgba(255,255,255,.12);color:#fff;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.clk{font-size:10.5pt;font-weight:700;font-variant-numeric:tabular-nums;}
+.ldot{width:7px;height:7px;border-radius:50%;background:#43a047;display:inline-block;animation:pulse 1.5s infinite;margin-right:3px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+
+/* PERIOD BAR */
+.pbar{background:linear-gradient(135deg,#0d1b4b,#1a237e);color:#fff;padding:18px 32px 0;}
+.pb-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.pb-top h1{font-size:18pt;font-weight:900;letter-spacing:-.5px;}
+.period-tag{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:3px 12px;font-size:7.5pt;font-weight:700;}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;padding-bottom:18px;}
+.kp{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:9px 16px;text-align:center;min-width:88px;}
+.kp .n{font-size:18pt;font-weight:900;line-height:1;}
+.kp .l{font-size:6.5pt;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+.kp.hi{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:1fr 300px;gap:18px;padding:20px 32px;align-items:start;}
+@media(max-width:860px){.layout{grid-template-columns:1fr;}}
+
+/* DATE NAV */
+.date-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.date-nav label{font-size:8.5pt;font-weight:700;color:var(--blue);}
+input[type=date],select.msel{border:2px solid var(--mid);border-radius:8px;padding:6px 11px;font-size:9pt;font-family:inherit;color:var(--txt);background:#fff;cursor:pointer;}
+input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
+.daykpis{display:flex;gap:7px;flex-wrap:wrap;}
+.dk{background:var(--sf);border-radius:7px;padding:5px 11px;font-size:8pt;font-weight:700;color:var(--blue);}
+.dk span{font-size:11pt;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:14px;}
+.sh{display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+.sh h2{font-size:8.5pt;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;}
+.sh .ln{flex:1;height:2px;background:linear-gradient(to right,var(--mid),transparent);}
+.sc{background:var(--blue);color:#fff;border-radius:10px;padding:1px 8px;font-size:7pt;font-weight:700;}
+
+/* MEETING ROWS */
+.mr{border:1px solid var(--bdr);border-radius:9px;overflow:hidden;background:#fff;cursor:pointer;transition:box-shadow .15s;margin-bottom:7px;}
+.mr:hover{box-shadow:0 3px 12px rgba(0,0,0,.08);}
+.mr.primera{border-left:4px solid var(--p);}
+.mr.seguimiento{border-left:4px solid var(--s);}
+.mr.partner{border-left:4px solid var(--x);}
+.mr.now{border-top:2px solid #43a047;box-shadow:0 0 0 2px rgba(67,160,71,.18);}
+.mh{display:flex;align-items:center;gap:11px;padding:10px 13px;}
+.mt{font-size:10pt;font-weight:900;color:var(--blue);min-width:48px;font-variant-numeric:tabular-nums;line-height:1;}
+.mt small{font-size:6.5pt;font-weight:400;color:#bbb;display:block;}
+.mc{flex:1;}
+.mc .mn{font-size:9.5pt;font-weight:800;}
+.mc .ms{font-size:7.5pt;color:var(--muted);margin-top:1px;}
+.mr-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:16px;font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.bdg.primera{background:var(--pbg);color:var(--p);border:1px solid var(--pb);}
+.bdg.seguimiento{background:var(--sbg);color:var(--s);border:1px solid var(--sb);}
+.bdg.partner{background:var(--xbg);color:var(--x);border:1px solid var(--xb);}
+.bdg.won{background:var(--wonbg);color:var(--won);border:1px solid #a5d6a7;}
+.bdg.cancel{background:#ffebee;color:#c62828;border:1px solid #ffcdd2;}
+.bdg.resched{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2;}
+.vc{display:inline-flex;background:var(--blue);color:#fff;border-radius:16px;padding:2px 8px;font-size:7pt;font-weight:700;}
+.chev{font-size:9pt;color:#ccc;transition:transform .2s;}
+.mr.open .chev{transform:rotate(180deg);}
+.mb{display:none;padding:0 13px 13px;border-top:1px dashed var(--bdr);}
+.mr.open .mb{display:block;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
+.ib .t{font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#999;border-bottom:1px solid var(--bdr);padding-bottom:3px;margin-bottom:6px;}
+.ib ul{list-style:none;}
+.ib ul li{font-size:8pt;color:var(--muted);margin-bottom:3px;}
+.ib ul li::before{content:'→ ';color:var(--mid);font-weight:700;}
+.ctx{background:#f8f9ff;border:1px solid #e3e7ff;border-radius:7px;padding:9px 12px;margin-top:9px;font-size:8pt;color:#444;line-height:1.6;}
+.ctx .cl{font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mid);margin-bottom:3px;}
+.act{background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:1px solid #a5d6a7;border-radius:7px;padding:9px 12px;margin-top:7px;}
+.act .al{font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--won);margin-bottom:3px;}
+.act p{font-size:8.5pt;color:#2e7d32;font-weight:600;}
+.ml{display:inline-flex;align-items:center;gap:5px;background:#1a73e8;color:#fff;padding:5px 12px;border-radius:7px;font-size:8pt;font-weight:700;text-decoration:none;margin-top:9px;}
+
+/* SIN REUNIONES */
+.sr-box{background:#fff8f0;border:1px solid #ffe0b2;border-radius:9px;padding:12px 14px;margin-top:10px;}
+.sr-box .sr-title{font-size:7.5pt;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#bf360c;margin-bottom:8px;}
+.sr-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.sr-chip{background:#fff3e0;border:1px solid var(--sb);color:var(--s);border-radius:16px;padding:3px 10px;font-size:8pt;font-weight:700;}
+
+/* WEEK VIEW */
+.week-grid{display:flex;flex-direction:column;gap:14px;}
+.day-block{border:1px solid var(--bdr);border-radius:10px;overflow:hidden;background:#fff;}
+.day-block-head{background:var(--ind);color:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;}
+.day-block-head .dname{font-size:9.5pt;font-weight:800;}
+.day-block-head .ddate{font-size:8pt;opacity:.75;}
+.day-block-head .dcounts{display:flex;gap:6px;}
+.day-block-head .dc{background:rgba(255,255,255,.15);border-radius:10px;padding:1px 8px;font-size:7pt;font-weight:700;}
+.day-block-body{padding:10px 12px;}
+.day-block.today .day-block-head{background:linear-gradient(90deg,#1565c0,#3949ab);}
+.day-block.future .day-block-head{background:#607d8b;}
+.day-block.nodata .day-block-head{background:#90a4ae;}
+.empty-day{padding:12px;text-align:center;color:#bbb;font-size:8.5pt;}
+
+/* MONTH VIEW */
+.month-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.month-cell{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:8px;min-height:90px;cursor:pointer;transition:.15s;}
+.month-cell:hover{border-color:var(--mid);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.month-cell.today{border:2px solid var(--p);}
+.month-cell.selected{background:#e8eaf6;border-color:var(--mid);}
+.mc-date{font-size:10pt;font-weight:900;color:var(--blue);margin-bottom:5px;}
+.mc-count{font-size:8pt;font-weight:700;margin-bottom:4px;}
+.mc-vendors{display:flex;flex-wrap:wrap;gap:3px;}
+.mc-v{font-size:6.5pt;padding:1px 5px;border-radius:8px;font-weight:700;background:var(--pbg);color:var(--p);}
+.mc-nodata{font-size:7.5pt;color:#ccc;font-style:italic;}
+.month-header-days{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:6px;}
+.mhd{text-align:center;font-size:7.5pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;}
+
+/* RANKING */
+.rtable{width:100%;border-collapse:collapse;}
+.rtable th{font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#888;padding:5px 9px;border-bottom:2px solid var(--bdr);text-align:left;}
+.rtable td{padding:6px 9px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:#f8f9ff;}
+.rpos{font-size:9pt;font-weight:900;color:#ddd;width:22px;}
+.rpos.top{color:var(--blue);}
+.rname{font-size:9pt;font-weight:700;}
+.barwrap{display:flex;gap:2px;align-items:center;}
+.barseg{height:11px;border-radius:3px;min-width:2px;}
+.bar-p{background:var(--p);}
+.bar-s{background:var(--s);}
+.bar-x{background:var(--x);}
+.rtotal{font-size:9pt;font-weight:900;color:var(--blue);text-align:right;min-width:28px;}
+.rleg{display:flex;gap:10px;margin-top:9px;flex-wrap:wrap;}
+.rli{display:flex;align-items:center;gap:4px;font-size:7pt;color:var(--muted);}
+.rld{width:9px;height:9px;border-radius:2px;}
+
+/* SIDEBAR */
+.sdb{display:flex;flex-direction:column;gap:14px;}
+.alert{border-radius:9px;padding:11px 13px;font-size:8.5pt;line-height:1.6;display:flex;gap:8px;}
+.ai{font-size:12pt;flex-shrink:0;}
+.ao{background:var(--sbg);border-left:4px solid var(--s);color:#5d3200;}
+.ag{background:var(--wonbg);border-left:4px solid var(--won);color:#1b5e20;}
+.ab{background:var(--pbg);border-left:4px solid var(--p);color:#0d47a1;}
+.trow{background:var(--wonbg);border:1px solid #a5d6a7;border-radius:7px;padding:9px 12px;margin-bottom:7px;}
+.tname{font-size:9pt;font-weight:800;color:var(--won);}
+.tmeta{font-size:7.5pt;color:#555;margin-top:2px;}
+.tamt{font-size:11pt;font-weight:900;color:var(--won);}
+
+/* VENDOR GRID */
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.vcard{background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:11px 13px;}
+.vcard.active{border-top:3px solid var(--mid);}
+.vcard.inactive{opacity:.6;}
+.vname{font-size:9pt;font-weight:800;margin-bottom:5px;}
+.vstats{display:flex;gap:5px;flex-wrap:wrap;}
+.vs{font-size:7pt;padding:2px 7px;border-radius:10px;font-weight:700;}
+.vs.p{background:var(--pbg);color:var(--p);}
+.vs.s{background:var(--sbg);color:var(--s);}
+.vs.x{background:var(--xbg);color:var(--x);}
+.vtot{font-size:17pt;font-weight:900;color:var(--blue);float:right;line-height:1;margin-top:-2px;}
+
+/* TASKS */
+.ttable{width:100%;border-collapse:collapse;}
+.ttable thead tr{background:var(--blue);color:#fff;}
+.ttable th{padding:8px 11px;text-align:left;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.ttable td{padding:8px 11px;border-bottom:1px solid var(--bdr);color:var(--muted);vertical-align:top;font-size:8pt;}
+.ttable tr:nth-child(even) td{background:#f8f9ff;}
+.ttable td:first-child{font-weight:800;color:var(--txt);}
+
+.nodata{text-align:center;padding:32px;color:#bbb;font-size:9.5pt;}
+.nodata small{display:block;margin-top:6px;font-size:8pt;}
+.footer{background:var(--navy);color:rgba(255,255,255,.45);text-align:center;padding:12px;font-size:7.5pt;margin-top:20px;}
+
+/* QUICK PERIOD SELECTORS */
+.qbtns{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.qbtn{background:#f0f4ff;border:1px solid var(--bdr);color:var(--blue);border-radius:6px;padding:5px 10px;font-size:8pt;font-weight:700;cursor:pointer;transition:.15s;}
+.qbtn:hover,.qbtn.on{background:var(--mid);color:#fff;border-color:var(--mid);}
+
+/* DOWNLOAD BUTTON */
+.dbtn{background:linear-gradient(135deg,#43a047,#2e7d32);color:#fff;border:none;border-radius:6px;padding:5px 13px;font-size:8pt;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.dbtn:hover{filter:brightness(1.12);}
+
+/* UPDATE BUTTON */
+.updbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 11px;font-size:8pt;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+.updbtn:hover{background:rgba(255,255,255,.22);}
+.updbtn.syncing .upd-icon{display:inline-block;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#lastUpdate{font-size:7pt;color:rgba(255,255,255,.5);white-space:nowrap;}
+
+/* DEAL / WON / PRESUPUESTO BADGES */
+.bdg.won2{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
+.bdg.presup{background:#fff8e1;color:#f57f17;border:1px solid #ffe082;}
+.bdg.done{background:#e8eaf6;color:#3949ab;border:1px solid #9fa8da;}
+.bdg.pend{background:#fafafa;color:#888;border:1px solid #ddd;}
+
+/* VENDOR CHIPS EN MEETING */
+.owner-chip{display:inline-flex;align-items:center;gap:3px;border-radius:10px;padding:2px 8px;font-size:7pt;font-weight:700;}
+.comp-chip{display:inline-flex;align-items:center;gap:3px;background:#f5f5f5;color:#555;border-radius:10px;padding:2px 7px;font-size:7pt;font-weight:700;border:1px solid #ddd;}
+.chips-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+
+/* PERIOD KPI BAR */
+.period-kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.pkp{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:8px 14px;text-align:center;min-width:78px;}
+.pkp .pn{font-size:14pt;font-weight:900;color:var(--blue);}
+.pkp .pl{font-size:6.5pt;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.pkp.hiw{border-top:3px solid var(--won);}
+.pkp.hip{border-top:3px solid var(--p);}
+
+/* DAY TASKS SECTION */
+.day-tasks{background:#fff;border:1px solid var(--bdr);border-radius:11px;margin-top:14px;overflow:hidden;}
+.day-tasks-head{background:linear-gradient(90deg,var(--navy),var(--ind));color:#fff;padding:10px 14px;font-size:8.5pt;font-weight:800;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:7px;}
+.dtasks-table{width:100%;border-collapse:collapse;}
+.dtasks-table th{padding:7px 12px;text-align:left;font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;border-bottom:2px solid var(--bdr);}
+.dtasks-table td{padding:7px 12px;border-bottom:1px solid var(--bdr);font-size:8pt;color:var(--txt);vertical-align:top;}
+.dtasks-table tr:last-child td{border-bottom:none;}
+.dtasks-table tr:nth-child(even) td{background:#f8f9ff;}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+.dot-pend{background:#ffa726;}
+.dot-done{background:#43a047;}
+.dot-urgent{background:#e53935;}
+
+/* TAREAS TAB */
+.tarea-header-bar{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,var(--navy),var(--ind));color:#fff;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:8.5pt;font-weight:700;}
+.tarea-section-title{font-size:8.5pt;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;padding-left:4px;display:flex;align-items:center;gap:6px;}
+.tarea-section-title::before{content:'';display:block;width:3px;height:14px;background:var(--ind);border-radius:2px;}
+.tarea-priors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:6px;}
+.tarea-prior-card{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;position:relative;overflow:hidden;}
+.tarea-prior-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ind);}
+.tpc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.tpc-badge{font-size:6.5pt;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.4px;}
+.tpc-deal{font-size:9pt;font-weight:700;color:var(--txt);margin-bottom:5px;}
+.tpc-action{font-size:7.5pt;color:#555;line-height:1.4;}
+.tarea-rituals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px;}
+.ritual-card{background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1px solid #c5d0f7;border-radius:10px;padding:14px 16px;}
+.ritual-icon{font-size:7pt;font-weight:800;color:var(--ind);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.ritual-title{font-size:9.5pt;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.ritual-desc{font-size:7.5pt;color:#555;line-height:1.5;}
+.tarea-vendor-row td{vertical-align:top;}
+.tarea-mtg-badge{display:inline-block;font-size:6.5pt;padding:2px 6px;border-radius:3px;margin-top:3px;margin-right:3px;}
+@media(max-width:900px){.tarea-rituals-grid{grid-template-columns:1fr;}.tarea-priors-grid{grid-template-columns:1fr 1fr;}}
+
+/* RANKING EXTENDIDO */
+.rtable th,.rtable td{padding:6px 8px;}
+.rcnv{font-size:7.5pt;color:var(--muted);}
+
+/* MES VIEW — COMPLETO */
+.mes-section-title{font-size:8pt;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;margin:0 0 10px;padding:0 0 6px;border-bottom:2px solid var(--bdr);display:flex;align-items:center;gap:7px;}
+.mes-section-title::before{content:'';display:block;width:3px;height:14px;background:var(--mid);border-radius:2px;}
+.mes-vendor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;margin-bottom:4px;}
+.mes-vcard{background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;border-top:3px solid var(--mid);}
+.mes-vc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.mes-vc-total{font-size:18pt;font-weight:900;color:var(--blue);}
+.mes-vc-stats{display:flex;gap:5px;flex-wrap:wrap;font-size:7.5pt;font-weight:700;margin-bottom:4px;}
+.mes-vc-badges{display:flex;gap:4px;flex-wrap:wrap;}
+.mes-badge{font-size:7pt;font-weight:700;padding:2px 7px;border-radius:8px;}
+.mes-badge.won{background:#e8f5e9;color:#2e7d32;}
+.mes-badge.pres{background:#fff8e1;color:#f57f17;}
+.mes-badge.dur{background:#f0f4ff;color:#555;}
+.mes-table{width:100%;border-collapse:collapse;font-size:8pt;}
+.mes-table th{font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid var(--bdr);text-align:left;white-space:nowrap;}
+.mes-table td{padding:6px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.mes-table tr:hover td{background:#f9faff;}
+.mes-table tr:last-child td{border-bottom:none;}
+.mes-deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px;}
+.mes-deal-card{background:#fff;border:1px solid #a5d6a7;border-radius:9px;padding:11px 13px;border-left:4px solid var(--won);}
+.mes-days-container{display:flex;flex-direction:column;gap:4px;}
+.mes-day-block{background:#fff;border:1px solid var(--bdr);border-radius:8px;overflow:hidden;}
+.mes-day-block.mes-day-today{border-color:var(--p);border-width:2px;}
+.mes-day-head{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;user-select:none;transition:background .12s;}
+.mes-day-head:hover{background:#f5f7ff;}
+.mes-day-name{font-size:8.5pt;font-weight:800;color:var(--navy);min-width:80px;}
+.mes-day-counts{font-size:7.5pt;color:var(--muted);flex:1;}
+.mes-day-chev{font-size:8pt;color:#ccc;transition:transform .18s;}
+.mes-day-block.open .mes-day-chev{transform:rotate(180deg);}
+.mes-day-body{display:none;border-top:1px solid var(--bdr);}
+.mes-day-block.open .mes-day-body{display:block;}
+.mes-day-row{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid #f5f5f5;font-size:8pt;}
+.mes-day-row:last-child{border-bottom:none;}
+.mes-day-block.mes-day-today .mes-day-head{background:linear-gradient(90deg,#e8eeff,#f0f4ff);}
+/* Quick nav buttons */
+.qbtn-day{background:#fff;border:1px solid var(--bdr);color:var(--blue);border-radius:6px;padding:4px 10px;font-size:8pt;font-weight:700;cursor:pointer;transition:.12s;}
+.qbtn-day:hover{background:var(--mid);color:#fff;border-color:var(--mid);}
+
+@media print{
+  .tb,.pbar{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .mb{display:block!important;}
+  .chev{display:none;}
+  .ml{display:none;}
+}
+
+/* LOGIN SCREEN REMOVED */
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-logo">📊 Nubceo <small>Dashboard Comercial</small></div>
+  <div class="tb-views">
+    <button class="vbtn on" id="vDia" onclick="setView('dia')">📅 Día</button>
+    <button class="vbtn" id="vSemana" onclick="setView('semana')">📆 Semana</button>
+    <button class="vbtn" id="vMes" onclick="setView('mes')">🗓 Mes</button>
+  </div>
+  <div class="tb-tabs">
+    <button class="tbtn on" id="tAgenda" onclick="setTab('agenda')">Agenda</button>
+    <button class="tbtn" id="tRanking" onclick="setTab('ranking')">Ranking</button>
+    <button class="tbtn" id="tVend" onclick="setTab('vendedores')">Vendedores</button>
+    <button class="tbtn" id="tTar" onclick="setTab('tareas')">Tareas</button>
+  </div>
+  <div class="tb-right">
+    <span><span class="ldot"></span><span id="clk" class="clk">--:--</span></span>
+    <span id="lastUpdate"></span>
+    <button class="updbtn" id="btnUpdate" onclick="actualizarDashboard()"><span class="upd-icon">🔄</span> Actualizar</button>
+    <button class="dbtn" onclick="downloadReport()">⬇ Descargar reporte</button>
+    <button style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.7);padding:4px 10px;cursor:pointer;font-size:8pt;" onclick="syncCalendar()">📡 Sync Calendar</button>
+    <span id="userName" style="font-size:8pt;margin-left:6px;color:rgba(255,255,255,.7);"></span>
+  </div>
+</div>
+
+<!-- PERIOD BAR -->
+<div class="pbar">
+  <div class="pb-top">
+    <h1 id="periodTitle">Cargando…</h1>
+    <span class="period-tag" id="periodTag"></span>
+  </div>
+  <div class="kpis" id="kpisEl"></div>
+</div>
+
+<div class="layout">
+  <div>
+    <!-- AGENDA TAB -->
+    <div id="tab-agenda">
+
+      <!-- DAY VIEW -->
+      <div id="view-dia">
+        <div class="date-nav" style="flex-wrap:wrap;gap:8px;">
+          <div class="qbtns">
+            <button class="qbtn-day" onclick="dayJump(-1)">◀ Ayer</button>
+            <button class="qbtn-day" onclick="dayJump(0)">Hoy</button>
+            <button class="qbtn-day" onclick="dayJump(1)">Mañana ▶</button>
+          </div>
+          <label style="font-size:8.5pt;font-weight:700;color:var(--blue);">📅</label>
+          <input type="date" id="dpDia" value="2026-05-04">
+          <select class="msel" id="vendorFilterDia">
+            <option value="todos">Todos los Vendedores</option>
+          </select>
+          <button id="btnCopyAgenda" style="background:var(--p);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:8pt;font-weight:700;cursor:pointer;">📋 Copiar</button>
+          <div class="daykpis" id="diaKpis" style="margin-left:auto;"></div>
+        </div>
+        <div id="diaCont"></div>
+      </div>
+
+      <!-- WEEK VIEW -->
+      <div id="view-semana" style="display:none">
+        <div class="date-nav" style="flex-wrap:wrap;gap:8px;">
+          <div class="qbtns">
+            <button class="qbtn" onclick="semJump(-7)">◀ Ant.</button>
+            <button class="qbtn" onclick="semJump(0)">Actual</button>
+            <button class="qbtn" onclick="semJump(7)">Sig. ▶</button>
+          </div>
+          <label style="margin-left:8px;">📆 Cualquier día:</label>
+          <input type="date" id="dpSem" value="2026-05-04">
+          <select class="msel" id="vendorFilterSem" style="margin-left:6px;">
+            <option value="todos">Todos los Vendedores</option>
+          </select>
+          <span style="font-size:8pt;color:var(--muted);margin-left:auto;" id="semLabel"></span>
+        </div>
+        <div id="semKpis" class="period-kpis"></div>
+        <div id="semCont"></div>
+      </div>
+
+      <!-- MONTH VIEW -->
+      <div id="view-mes" style="display:none">
+        <div class="date-nav" style="flex-wrap:wrap;gap:8px;">
+          <div class="qbtns">
+            <button class="qbtn" onclick="mesJump(-1)">◀ Ant.</button>
+            <button class="qbtn" onclick="mesJump(0)">Actual</button>
+            <button class="qbtn" onclick="mesJump(1)">Sig. ▶</button>
+          </div>
+          <label style="margin-left:8px;">🗓 Mes:</label>
+          <select class="msel" id="mesSel">
+            <option value="2026-04">Abril 2026</option>
+            <option value="2026-05" selected>Mayo 2026</option>
+          </select>
+        </div>
+        <div id="mesKpis" class="period-kpis"></div>
+        <div id="mesCont"></div>
+      </div>
+
+    </div>
+
+    <!-- RANKING TAB -->
+    <div id="tab-ranking" style="display:none">
+      <div class="date-nav" style="margin-bottom:10px;">
+          <label>🗓 Ver mes:</label>
+          <select class="msel" id="rankingMesSel">
+            <option value="2026-04">Abril 2026</option>
+            <option value="2026-05" selected>Mayo 2026</option>
+          </select>
+      </div>
+      <div class="card">
+        <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
+        <div style="overflow-x:auto">
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones finalizadas / Tiempo</th><th>Tratos ganados</th><th>Presup. enviados</th><th>Conversión</th><th style="text-align:right">Total mtgs</th></tr></thead><tbody id="rtbody"></tbody></table>
+        </div>
+        <div class="rleg" style="margin-top:10px;">
+          <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
+          <div class="rli"><div class="rld" style="background:var(--s)"></div> Seguimientos</div>
+          <div class="rli"><div class="rld" style="background:var(--x)"></div> Partnerships</div>
+          <div class="rli"><div class="rld" style="background:var(--won)"></div> Tratos ganados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VENDEDORES TAB -->
+    <div id="tab-vendedores" style="display:none">
+      <div class="card"><div class="sh"><h2>Scorecards por Vendedor</h2><div class="ln"></div></div><div class="vgrid" id="vgrid"></div></div>
+    </div>
+
+    <!-- TAREAS TAB -->
+    <div id="tab-tareas" style="display:none">
+      <div id="tareasContent"></div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sdb">
+    <div class="alert ao"><div class="ai">🔥</div><div><strong>Semana del 04/05:</strong> Foco en cierre de deals arrastrados de Abril.</div></div>
+
+    <div class="card" id="tratosGanadosCard" style="display:none">
+      <div class="sh"><h2>Tratos Ganados - Mayo</h2><div class="ln"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="sh"><h2>Nuevos Tratos (Mayo)</h2><div class="ln"></div></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="border:1px solid var(--bdr);border-radius:7px;padding:8px 11px;font-size:8pt;"><strong>Vipercar</strong><br><span style="color:#888;font-size:7.5pt;">Presencial - Vanessa</span></div>
+        <div style="border:1px solid var(--bdr);border-radius:7px;padding:8px 11px;font-size:8pt;"><strong>Gofun / Easygoband</strong><br><span style="color:#888;font-size:7.5pt;">Cash Flow - Pablo A.</span></div>
+        <div style="border:1px solid var(--bdr);border-radius:7px;padding:8px 11px;font-size:8pt;"><strong>Centro Rossi</strong><br><span style="color:#888;font-size:7.5pt;">Contacto inicial - Mateo</span></div>
+      </div>
+    </div>
+
+    <div class="alert ab"><div class="ai">🔄</div><div><strong>Actualizar datos:</strong> Pedile a Claude <em>"Dame la agenda del [fecha]"</em> o <em>"Actualizame la semana del [lunes]"</em>.</div></div>
+  </div>
+</div>
+
+<div class="footer">Dashboard Comercial Nubceo · Fuentes: Google Calendar + Gmail · Solo reuniones con agenda.virtual@nubceo.com · Actualizado 30/04/2026</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATOS
+// ═══════════════════════════════════════════════
+const VENDORS = {
+  hernan:      {name:'Hernán',      color:'#1565c0', email:'hernan.perez@nubceo.com'},
+  mateo:       {name:'Mateo',       color:'#6a1b9a', email:'mateo.lissarrague@nubceo.com'},
+  omar:        {name:'Omar',        color:'#e65100', email:'omar.batalla@nubceo.com', active:false},
+  vanessa:     {name:'Vanessa',     color:'#00695c', email:'vanessa.aguilar@nubceo.com'},
+  lucia:       {name:'Lucía',       color:'#c62828', email:'lucia.pignata@nubceo.com'},
+  emiliana:    {name:'Emiliana',    color:'#2e7d32', email:'emiliana.gomezgiza@nubceo.com'},
+  luciano:     {name:'Luciano',     color:'#0277bd', email:'luciano.rodriguez@nubceo.com'},
+  federico:    {name:'Federico',    color:'#558b2f', email:'federico.sabe@nubceo.com'},
+  pablo_arce:  {name:'Pablo Arce',  color:'#6d4c41', email:'pablo.arce@nubceo.com'},
+  pablo_illich:{name:'Pablo Illich',color:'#4527a0', email:'pablo.illich@nubceo.com'},
+  bautista:    {name:'Bautista',    color:'#b71c1c', email:'bautista.lanusse@nubceo.com'},
+  gonzalo:     {name:'Gonzalo C.',  color:'#00695c', email:'gc@nubceo.com'},
+};
+
+let MEETINGS = [
+  // ── ABRIL ──────────────────────────────────────────────
+  {d:'2026-04-01',t:'11:00',dur:60,co:'SAP Paraguay',vs:['omar','gonzalo'],tp:'partner',s:'SAP - NUBCEO - Partner\'s Paraguay',cnt:['hernan.diaz@sap.com'],m:null,ctx:'Partnership con SAP para mercado Paraguay.',nx:'Definir términos co-venta.'},
+  {d:'2026-04-01',t:'11:00',dur:60,co:'Acodike',v:'lucia',tp:'seguimiento',s:'Acodike<>Nubceo',cnt:['jsayagues@acodike.com.uy','sfranquez@acodike.com.uy'],m:null,ctx:'Reunión 01/04: acordaron precio $52.000 UYU/mes (cubre Cantage + tarjetas + conciliación + calendario de pagos). Dev $3.500+IVA (50% inicio / 50% al finalizar). Pago mensual inicia cuando integración Cantage esté funcional. Banco BR: investigar disponibilidad MT940. Implementación 2 meses. Contactos: jsayagues@acodike.com.uy y sfranquez@acodike.com.uy.',nx:'Llamar para confirmar inicio. Pedir 50% del dev para arrancar. Verificar MT940 con BR. Empujar firma.'},
+  {d:'2026-04-01',t:'17:00',dur:60,co:'Grupo Parisien / SEIDOR',v:'omar',tp:'seguimiento',s:'SEIDOR – Estrategia de Propuesta',cnt:['jobello@seidor.com'],m:null,ctx:'Estrategia de propuesta conjunta con SEIDOR.',nx:'Cerrar propuesta técnica.'},
+  {d:'2026-04-06',t:'14:00',dur:60,co:'Dinamics',v:'federico',tp:'primera',s:'Reunión Nubceo/Dinamics',cnt:['osvaldo.boggiano@icloud.com'],m:null,ctx:'Primera reunión con Dinamics.',nx:'Demo técnico.'},
+  {d:'2026-04-06',t:'14:30',dur:60,co:'Verga Hnos',v:'hernan',tp:'primera',s:'Nubceo x Verga Hnos - Demo',cnt:['sr@vergahnos.com.ar'],m:null,ctx:'Demo con Verga Hnos.',nx:'Enviar propuesta.'},
+  {d:'2026-04-07',t:'16:00',dur:60,co:'NextValue',v:'omar',tp:'primera',s:'NUBCEO - NextValue (primeros pasos)',cnt:['marioinfante@nextvalue.net'],m:null,ctx:'Primera reunión con NextValue.',nx:'Calificar y avanzar.'},
+  {d:'2026-04-07',t:'17:00',dur:60,co:'Demo Prospecto',v:'hernan',tp:'primera',s:'Nubceo Demo',cnt:['moisesjorgeluis@gmail.com'],m:null,ctx:'Demo con prospecto.',nx:'Propuesta si califica.'},
+  {d:'2026-04-08',t:'09:30',dur:60,co:'Plateanet',v:'hernan',tp:'seguimiento',s:'Plateanet - Consultas equipo',cnt:['lforlano@plateanet.com'],m:null,ctx:'Consultas técnicas de Plateanet.',nx:'Resolver dudas.'},
+  {d:'2026-04-08',t:'14:30',dur:60,co:'Tienda Balvi',v:'hernan',tp:'primera',s:'Nubceo x Tienda Balvi - Demo',cnt:['terrileg@gmail.com'],m:null,ctx:'Demo con Tienda Balvi.',nx:'Enviar cotización.'},
+  {d:'2026-04-08',t:'16:00',dur:60,co:'Must Consulting',v:'lucia',tp:'primera',s:'Primer Encuentro Must Consulting',cnt:['federicocomasborras@gmail.com'],m:null,ctx:'Primer encuentro con Must Consulting.',nx:'Avanzar a capacitación.'},
+  {d:'2026-04-09',t:'10:00',dur:60,co:'Glic Global',v:'vanessa',tp:'seguimiento',s:'Reunión técnica Glic / Nubceo',cnt:['marialaura@glicglobal.com'],m:null,ctx:'1ª reunión técnica con Glic.',nx:'Avanzar definición técnica.'},
+  {d:'2026-04-09',t:'11:00',dur:60,co:'Grido',v:'hernan',tp:'primera',s:'Nubceo x Grido',cnt:['gpastrana2020@gmail.com'],m:null,ctx:'Primera reunión con Grido Franquicias.',nx:'Calificar volumen sucursales.'},
+  {d:'2026-04-09',t:'11:00',dur:60,co:'Intendencia Florida',v:'omar',tp:'primera',s:'Intendencia de FLORIDA (Presencial)',cnt:['williammartinez@florida.gub.uy'],m:null,ctx:'Reunión presencial con Intendencia de Florida, Uruguay.',nx:'Avanzar propuesta gobierno.'},
+  {d:'2026-04-09',t:'11:00',dur:60,co:'Reino Ceramicos',v:'mateo',tp:'primera',s:'Nubceo | Reino Ceramicos',cnt:['abigail@reinoceramicos.com.ar'],m:null,ctx:'Primera reunión con Reino Cerámicos.',nx:'Demo + propuesta.'},
+  {d:'2026-04-09',t:'14:00',dur:60,co:'Valentino',v:'hernan',tp:'primera',s:'Nubceo x Valentino',cnt:['jmrenda@gruporenda.com.ar'],m:null,ctx:'Primera reunión con Valentino / Grupo Renda.',nx:'Demo y calificación.'},
+  {d:'2026-04-09',t:'15:30',dur:60,co:'UCA',v:'mateo',tp:'primera',s:'UCA - Presencial',cnt:['carlos_rios@uca.edu.ar'],m:null,ctx:'Reunión presencial con UCA, inicio del proceso.',nx:'Avanzar con contabilidad.'},
+  {d:'2026-04-09',t:'16:00',dur:60,co:'SEIDOR Uruguay',v:'omar',tp:'seguimiento',s:'Conector API NUBCEO/SEIDOR Uruguay',cnt:['jobello@seidor.com'],m:null,ctx:'Reunión técnica de conector API.',nx:'Definir integración.'},
+  {d:'2026-04-10',t:'09:30',dur:60,co:'Farmacia del Pueblo',v:'hernan',tp:'primera',s:'Nubceo x Farmacia del Pueblo - Demo',cnt:['contador@farmaciasdelpueblo.com.ar'],m:null,ctx:'Demo con Farmacia del Pueblo.',nx:'Enviar propuesta.'},
+  {d:'2026-04-10',t:'11:00',dur:60,co:'Doniral',v:'vanessa',tp:'seguimiento',s:'Propuesta Nubceo / Doniral',cnt:['cobranzas@doniral.com.uy'],m:null,ctx:'Presentación de propuesta a Doniral.',nx:'Respuesta del cliente.'},
+  {d:'2026-04-10',t:'16:00',dur:60,co:'Epicentro',v:'vanessa',tp:'primera',s:'Nubceo - Epicentro (primera)',cnt:['agustinalbanell@epicentro.com.uy'],m:null,ctx:'Primera aproximación con Epicentro.',nx:'Avanzar a propuesta.'},
+  {d:'2026-04-14',t:'08:00',dur:60,co:'Estancia El Duende',v:'hernan',tp:'primera',s:'Nubceo x Estancia El Duende - Demo',cnt:['rafael.gye@gmail.com'],m:null,ctx:'Demo con Estancia El Duende.',nx:'Propuesta.'},
+  {d:'2026-04-14',t:'12:00',dur:60,co:'Rodrigo Marchan',v:'mateo',tp:'primera',s:'Nubceo | Rodrigo Marchan',cnt:['rodrigo.marchan@gmail.com'],m:null,ctx:'Primera reunión con prospecto.',nx:'Calificar.'},
+  {d:'2026-04-14',t:'15:00',dur:60,co:'WELAMAN',v:'omar',tp:'primera',s:'Presentación NUBCEO - WELAMAN',cnt:['welaman@welaman.com.uy'],m:null,ctx:'Presentación a WELAMAN Uruguay.',nx:'Demo.'},
+  {d:'2026-04-14',t:'15:30',dur:60,co:'Tienda Balbi',v:'hernan',tp:'seguimiento',s:'Nubceo x Tienda Balbi - Cotización',cnt:['terrileg@gmail.com'],m:null,ctx:'Presentación cotización a Tienda Balbi.',nx:'Cierre o negociación.'},
+  {d:'2026-04-14',t:'16:00',dur:60,co:'Grido Franquicias',v:'hernan',tp:'seguimiento',s:'Nubceo x Grido Franquicias - Cotización',cnt:['gpastrana2020@gmail.com'],m:null,ctx:'Cotización a Grido.',nx:'Negociar y cerrar.'},
+  {d:'2026-04-14',t:'16:00',dur:60,co:'Grupo Alas / Rapsodia',v:'mateo',tp:'primera',s:'Nubceo | Grupo Alas',cnt:['ines.giordano@rapsodia.com.ar'],m:null,ctx:'Primera reunión con Grupo Alas.',nx:'Demo técnico.'},
+  {d:'2026-04-15',t:'14:00',dur:60,co:'Farmacia del Pueblo',v:'hernan',tp:'seguimiento',s:'Nubceo x Farmacia del Pueblo (seg)',cnt:['contador@farmaciasdelpueblo.com.ar'],m:null,ctx:'Seguimiento con Farmacia del Pueblo.',nx:'Cotización.'},
+  {d:'2026-04-15',t:'15:00',dur:60,co:'Mutual Rivadavia',v:'hernan',tp:'seguimiento',s:'Nubceo x Mutual Rivadavia - Téc.',cnt:['martincarrerapedrotti@gmail.com'],m:null,ctx:'Reunión técnica con Mutual Rivadavia.',nx:'Definir integración.'},
+  {d:'2026-04-16',t:'09:00',dur:60,co:'Wellvet',v:'pablo_arce',tp:'primera',s:'Demo Nubceo - Wellvet',cnt:['info@wellvet.com.ar'],m:null,ctx:'Primera demo con Wellvet.',nx:'Propuesta.'},
+  {d:'2026-04-16',t:'10:00',dur:60,co:'Glic Global',v:'vanessa',tp:'seguimiento',s:'Nubceo & Glic - Definición técnica',cnt:['marialaura@glicglobal.com'],m:null,ctx:'2ª reunión técnica Glic.',nx:'Propuesta técnica.'},
+  {d:'2026-04-16',t:'11:30',dur:60,co:'VM Nova',v:'mateo',tp:'primera',s:'NUBCEO - VM NOVA',cnt:['veronica@vmnova.com.ar'],m:null,ctx:'Primera reunión con VM Nova.',nx:'Demo.'},
+  {d:'2026-04-16',t:'15:00',dur:60,co:'Magazzino',v:'mateo',tp:'primera',s:'Nubceo | Magazzino',cnt:['omar@magazzino.com.ar'],m:null,ctx:'Primera reunión con Magazzino.',nx:'Propuesta.'},
+  {d:'2026-04-16',t:'15:30',dur:60,co:'Eldorado / Bettoni',v:'omar',tp:'primera',s:'Café con Guillermo Bettoni - NUBCEO',cnt:['gbettoni@eldorado.com.uy'],m:null,ctx:'Primera aproximación tipo café con Guillermo Bettoni.',nx:'Demo.'},
+  {d:'2026-04-16',t:'17:00',dur:60,co:'Dagma',v:'mateo',tp:'primera',s:'Nubceo | Dagma',cnt:['dreynoso@dagma.com.ar'],m:null,ctx:'Primera reunión con Dagma.',nx:'Demo + propuesta.'},
+  {d:'2026-04-17',t:'10:00',dur:60,co:'Grupo Alas',v:'mateo',tp:'seguimiento',s:'Nubceo | Grupo Alas (Cotización)',cnt:['ines.giordano@rapsodia.com.ar'],m:null,ctx:'Cotización a Grupo Alas.',nx:'Cierre.'},
+  {d:'2026-04-17',t:'11:00',dur:60,co:'UCA',v:'mateo',tp:'seguimiento',s:'Nubceo | UCA (Contabilidad)',cnt:['carlos_rios@uca.edu.ar'],m:null,ctx:'Reunión contabilidad UCA para avanzar el deal.',nx:'Marco de plataformas.'},
+  {d:'2026-04-20',t:'11:30',dur:60,co:'Enjoy / Baluma',v:'lucia',tp:'seguimiento',s:'Propuesta económica Enjoy',cnt:['mberez@baluma.uy'],m:null,ctx:'Presentación propuesta a Enjoy.',nx:'Negociar y cerrar.'},
+  {d:'2026-04-20',t:'14:00',dur:60,co:'Congreso Intendentes / SUCIVE',v:'omar',tp:'partner',s:'Congreso de Intendentes NUBCEO y SUCIVE',cnt:['mrubio@ci.gub.uy'],m:null,ctx:'Congreso presencial con intendentes uruguayos y SUCIVE.',nx:'Definir acuerdo gubernamental.'},
+  {d:'2026-04-20',t:'16:00',dur:60,co:'Hasar x Supermax',v:'hernan',tp:'primera',s:'Nubceo x Hasar x Supermax',cnt:['florencia.polli@hasar.com'],m:null,ctx:'Primera reunión conjunta Hasar y Supermax.',nx:'Avanzar integración.'},
+  {d:'2026-04-21',t:'11:00',dur:60,co:'Must Consulting',v:'lucia',tp:'seguimiento',s:'Capacitación Must Consulting',cnt:['federicocomasborras@gmail.com'],m:null,ctx:'Capacitación del cliente Must.',nx:'Onboarding completo.'},
+  {d:'2026-04-21',t:'11:00',dur:60,co:'Club Atlético Talleres',vs:['luciano','gonzalo'],tp:'primera',s:'Nubceo - Club Atlético Talleres',cnt:['m.calvimonte@clubtalleres.com.ar'],m:null,ctx:'Primera reunión con Talleres.',nx:'Demo y propuesta.'},
+  {d:'2026-04-21',t:'14:30',dur:60,co:'Oversoft',vs:['luciano','gonzalo'],tp:'primera',s:'Reunion Oversoft',cnt:['romina.diaz@oversoft.net'],m:null,ctx:'Primera reunión con Oversoft.',nx:'Calificar.'},
+  {d:'2026-04-21',t:'15:00',dur:60,co:'Rapanui',v:'emiliana',tp:'primera',s:'Rapanui & Nubceo',cnt:['finanzas@rapanui.com.ar'],m:null,ctx:'Primera reunión con Rapanui.',nx:'Propuesta.'},
+  {d:'2026-04-21',t:'13:00',dur:60,co:'Fabric Sushi',v:'mateo',tp:'primera',s:'Reunion Fabric Sushi Presencial',cnt:[],m:'https://meet.google.com/ziu-pfqm-dfs',ctx:'Primera reunión presencial con Fabric Sushi. Mateo organiza.',nx:'Propuesta.'},
+  {d:'2026-04-21',t:'16:00',dur:60,co:'Remoda SRL',v:'federico',tp:'primera',s:'Reunion Remoda S.R.L/Nubceo',cnt:['andrea@re.moda'],m:null,ctx:'Primera reunión con Remoda.',nx:'Demo.'},
+  {d:'2026-04-22',t:'09:00',dur:60,co:'Biggie',v:'vanessa',tp:'seguimiento',s:'Propuesta Nubceo / Biggie',cnt:['enrique.cardenas@biggie.com.py'],m:null,ctx:'Presentación propuesta a Biggie (Paraguay).',nx:'Respuesta del cliente.'},
+  {d:'2026-04-22',t:'10:00',dur:60,co:'Tienda Inglesa',v:'omar',tp:'seguimiento',s:'Medios de pagos - Tienda Inglesa',cnt:['fcuenca@tiendainglesa.com.uy'],m:null,ctx:'Reunión operativa con Tienda Inglesa.',nx:'Definir marco técnico.'},
+  {d:'2026-04-22',t:'11:00',dur:60,co:'Santucci',v:'vanessa',tp:'seguimiento',s:'Propuesta Nubceo / Santucci',cnt:['santucci@santucci.com.uy'],m:null,ctx:'Presentación propuesta a Santucci.',nx:'Negociar.'},
+  {d:'2026-04-22',t:'14:00',dur:60,co:'Equus',vs:['emiliana','mateo'],tp:'primera',s:'Equus & Nubceo',cnt:['wescudero@equus.com.ar'],m:'https://meet.google.com/guv-ebju-tcc',ctx:'Primera reunión con Equus. Emiliana organiza, Mateo como acompañante.',nx:'Propuesta.'},
+  {d:'2026-04-22',t:'14:15',dur:60,co:'Enter Group',vs:['luciano','gonzalo'],tp:'primera',s:'NUBCEO - ENTER GROUP',cnt:['joaquin.solla@entergroup.ar'],m:null,ctx:'Primera reunión con Enter Group.',nx:'Demo.'},
+  {d:'2026-04-22',t:'14:30',dur:60,co:'HOMINI Studio',v:'omar',tp:'primera',s:'Presentación NUBCEO - HOMINI Studio',cnt:['marcelo@hoministudio.com'],m:null,ctx:'Presentación inicial a HOMINI Studio.',nx:'Propuesta.'},
+  {d:'2026-04-22',t:'15:30',dur:60,co:'Grupo Fava',vs:['luciano','gonzalo'],tp:'primera',s:'Nubceo - Grupo Fava',cnt:['santino.altavilla@grupofava.com.ar'],m:null,ctx:'Primera reunión con Grupo Fava.',nx:'Demo + calificación.'},
+  {d:'2026-04-23',t:'09:30',dur:60,co:'Grupo Bloom',vs:['luciano','gonzalo'],tp:'primera',s:'Nubceo - Grupo Bloom',cnt:['wgeorge@e-bloom.com.ar'],m:null,ctx:'Primera reunión con Grupo Bloom.',nx:'Demo.'},
+  {d:'2026-04-23',t:'10:00',dur:60,co:'Juan Chiban',v:'mateo',tp:'primera',s:'Nubceo | Juan Chiban',cnt:['jchiban@gmail.com','benjachiban@gmail.com'],m:'https://meet.google.com/iis-igwy-yih',ctx:'Primera reunión con Juan Chiban (y Benjamin Chiban).',nx:'Calificar.'},
+  {d:'2026-04-23',t:'11:00',dur:60,co:'El Club de la Milanesa',v:'mateo',tp:'primera',s:'Nubceo | El Club De La Milanesa',cnt:['nstratico@elclubdelamilanesa.com'],m:null,ctx:'Primera reunión cadena gastronómica.',nx:'Propuesta.'},
+  {d:'2026-04-23',t:'11:00',dur:60,co:'Loysa',v:'vanessa',tp:'primera',s:'Demo Nubceo / Loysa',cnt:['rafael.loyet@loysa.com.uy'],m:null,ctx:'Demo con Loysa, Uruguay.',nx:'Enviar propuesta.'},
+  {d:'2026-04-23',t:'14:00',dur:60,co:'HOMINI Studio',v:'omar',tp:'seguimiento',s:'Presentación propuesta HOMINI Studio',cnt:['marcelo@hoministudio.com'],m:null,ctx:'Presentación propuesta a HOMINI.',nx:'Cierre.'},
+  {d:'2026-04-23',t:'16:00',dur:60,co:'Simplex',v:'hernan',tp:'primera',s:'Nubceo x Simplex - Demo',cnt:['alejandro@simplex.la'],m:null,ctx:'Demo con Simplex.',nx:'Propuesta.'},
+  {d:'2026-04-23',t:'16:00',dur:60,co:'CASMU',vs:['vanessa','gonzalo'],tp:'primera',s:'Control de medios de pago / CASMU',cnt:['jfgrasso@gmail.com','ca98183@casmu.com'],m:null,ctx:'Primera reunión con CASMU (mutual de salud UY).',nx:'Propuesta.'},
+  {d:'2026-04-23',t:'17:00',dur:60,co:'Aoniken',v:'mateo',tp:'primera',s:'Nubceo | Aoniken',cnt:['marcelo@grupoaoniken.com.ar'],m:null,ctx:'Primera reunión con Grupo Aoniken.',nx:'Demo.'},
+  {d:'2026-04-24',t:'10:30',dur:60,co:'Car One UY',v:'pablo_illich',tp:'primera',s:'Nubceo - Car One UY',cnt:['vmoran@carone.com.uy'],m:null,ctx:'Primera reunión Pablo Illich con Car One Uruguay.',nx:'Demo.'},
+  {d:'2026-04-24',t:'14:30',dur:60,co:'Ayres IT',v:'mateo',tp:'primera',s:'Nubceo | Ayres It',cnt:['mdelmazo@ayresit.com.ar'],m:null,ctx:'Primera reunión con Ayres IT.',nx:'Propuesta.'},
+  {d:'2026-04-24',t:'16:00',dur:60,co:'Grupo SEMM',v:'lucia',tp:'primera',s:'Grupo Semm<>Nubceo',cnt:['santiago.fleitas@cosem.com.uy','gabriela.rivero@semm.com.uy'],m:null,ctx:'Primera reunión con Grupo SEMM (salud UY). Gran cuenta.',nx:'Demo institucional.'},
+  {d:'2026-04-27',t:'08:00',dur:60,co:'Ferremas',v:'federico',tp:'primera',s:'Reunion Ferremas Comercial S.A',cnt:['gloriagisselle@hotmail.com'],m:null,ctx:'Primera reunión con Ferremas.',nx:'Demo.'},
+  {d:'2026-04-27',t:'10:00',dur:60,co:'AUSA',vs:['mateo'],tp:'primera',s:'Nubceo | AUSA',cnt:['pdiaz@ausa.com.ar'],m:null,ctx:'Primera reunión con AUSA.',nx:'Demo.'},
+  {d:'2026-04-27',t:'14:30',dur:60,co:'TOPPER',vs:['luciano'],tp:'seguimiento',s:'CONTRATO - TOPPER',cnt:['derlis.torres@topper.com'],m:null,ctx:'Reunión de contrato con TOPPER. Deal en cierre.',nx:'Firmar contrato.'},
+  {d:'2026-04-27',t:'15:00',dur:60,co:'Class Express',vs:['emiliana'],tp:'primera',s:'Class express & Nubceo',cnt:['antonellabuffone@gmail.com'],m:null,ctx:'Primera reunión con Class Express.',nx:'Propuesta.'},
+  {d:'2026-04-27',t:'15:00',dur:60,co:'OpenFarma',vs:['federico'],tp:'primera',s:'Reunion OpenFarma - Nubceo',cnt:['bmansoli@openfarma.com.ar'],m:null,ctx:'Primera reunión con OpenFarma.',nx:'Demo.'},
+  {d:'2026-04-27',t:'15:00',dur:60,co:'Digital House',vs:['mateo'],tp:'primera',s:'Reunión Digital House',cnt:['lucas.berges@digitalhouse.com'],m:null,ctx:'Primera reunión con Digital House.',nx:'Propuesta.'},
+  {d:'2026-04-27',t:'15:00',dur:60,co:'Multiscope',vs:['federico'],tp:'primera',s:'Nubceo - Multiscope',cnt:['diazezequiel@multiscope.com.ar'],m:null,ctx:'Primera reunión con Multiscope.',nx:'Demo.'},
+  {d:'2026-04-27',t:'16:30',dur:60,co:'Citykids',vs:['emiliana'],tp:'primera',s:'Citykids & Nubceo',cnt:['marianobircz@isakito.com'],m:null,ctx:'Primera reunión con Citykids.',nx:'Propuesta.'},
+  {d:'2026-04-27',t:'16:30',dur:60,co:'ZonaTecno',vs:['vanessa'],tp:'primera',s:'ZonaTecno / Camilo Ayala',cnt:['camilo.ayala@zonatecno.com.uy'],m:null,ctx:'Primera reunión con ZonaTecno Uruguay.',nx:'Propuesta enviada 27/04.'},
+  {d:'2026-04-28',t:'10:00',dur:60,co:'Epicentro',vs:['vanessa'],tp:'seguimiento',s:'Control medios de pago / Epicentro',cnt:['agustinalbanell@epicentro.com.uy'],m:null,ctx:'2do encuentro con Epicentro. Son mayoristas — calificar bien el fit.',nx:'Evaluar si califica.'},
+  {d:'2026-04-28',t:'10:00',dur:60,co:'Reunión Mateo',vs:['mateo'],tp:'primera',s:'Reunión con Mateo (bejurasas)',cnt:['bejurasas@gmail.com'],m:null,ctx:'Primera reunión con prospecto.',nx:'Calificar.'},
+  {d:'2026-04-28',t:'11:00',dur:60,co:'Grupo IDIX',vs:['federico','gonzalo'],tp:'primera',s:'Reunion Grupo IDIX - Nubceo',cnt:['rzaldo@tsgroup.com.ar'],m:null,ctx:'Primera reunión con Grupo IDIX.',nx:'Demo.'},
+  {d:'2026-04-28',t:'11:00',dur:60,co:'Supermax / Hasar',vs:['hernan'],tp:'seguimiento',s:'Nubceo x Supermax - Integración Hasar',cnt:['jadaime@supermaxsa.com.ar'],m:null,ctx:'Reunión técnica integración Hasar.',nx:'Avanzar integración.'},
+  {d:'2026-04-28',t:'14:00',dur:60,co:'Anacleto',vs:['hernan'],tp:'primera',s:'Nubceo x Anacleto - Demo',cnt:['fernanda.alcaraz@grupoanacleto.com'],m:null,ctx:'Demo con Grupo Anacleto.',nx:'Propuesta.'},
+  {d:'2026-04-28',t:'14:00',dur:60,co:'Pablo Carnuccio',vs:['pablo_arce'],tp:'primera',s:'Reunion Pablo Arce (Pablo Carnuccio)',cnt:['pablocarnuccio@gmail.com'],m:null,ctx:'Primera reunión con Pablo Carnuccio.',nx:'Calificar.'},
+  {d:'2026-04-28',t:'15:00',dur:60,co:'GBS Group',vs:['mateo'],tp:'primera',s:'Nubceo | GBS Group',cnt:['lorena@gbsgroup.com.ar','tomas@gbsgroup.com.ar'],m:null,ctx:'Primera reunión con GBS Group.',nx:'Demo.'},
+  {d:'2026-04-29',t:'10:00',dur:60,co:'Grupo del Plata',vs:['hernan'],tp:'primera',s:'Nubceo x Grupo del Plata - Demo',cnt:['gbamba@gdpsalud.com.ar'],m:null,ctx:'Demo con Grupo del Plata Salud.',nx:'Propuesta.'},
+  {d:'2026-04-29',t:'10:30',dur:60,co:'SIXT Uruguay',vs:['pablo_illich'],tp:'seguimiento',s:'Presentación Propuesta SIXT',cnt:['facundo.lopez@sixt.com.uy'],m:null,ctx:'Presentación propuesta a SIXT. Deal avanzado.',nx:'Negociar y cerrar.'},
+  {d:'2026-04-29',t:'15:00',dur:60,co:'Sofia Magali Magnarelli',vs:['pablo_arce'],tp:'primera',s:'Reunion Pablo Arce (Sofia Magnarelli)',cnt:['mariapupaa@gmail.com'],m:null,ctx:'Primera reunión de Pablo Arce.',nx:'Calificar.'},
+  {d:'2026-04-29',t:'16:30',dur:60,co:'Gustavo Coronel',vs:['pablo_arce','gonzalo'],tp:'primera',s:'Gustavo - Nubceo',cnt:['gcoronel.fraudconsulting@gmail.com'],m:null,ctx:'Primera reunión con Gustavo Coronel.',nx:'Demo.'},
+  {d:'2026-04-30',t:'10:00',dur:60,co:'CORDIEZ',vs:['luciano','gonzalo','hernan'],tp:'primera',s:'NUBCEO - CORDIEZ',cnt:['damian.angeletti@cyre.com.ar','mariano.nievas@cyre.com.ar'],m:'https://meet.google.com/ppn-gmgj-qmw',ctx:'Primera reunión con CORDIEZ / CYRE. Sin historial previo.',nx:'Calificar y agendar demo técnica.'},
+  {d:'2026-04-30',t:'10:30',dur:60,co:'Eslopet (Xiaomi Uruguay)',vs:['pablo_illich'],tp:'primera',s:'Presentación Nubceo Eslopet',cnt:['martin.noguera@umt.com.uy'],m:'https://meet.google.com/dmd-mgas-owv',ctx:'Trato creado 27/04: ESLOPET XIAOMI URUGUAY — Trial Activo, OnBoarding Incompleto.',nx:'Activar onboarding. Trial activo → urgente convertir.'},
+  {d:'2026-04-30',t:'11:00',dur:40,co:'Glic Global — Técnica',vs:['vanessa'],tp:'seguimiento',s:'Reunión técnica Glic / Nubceo',cnt:['gonzalo@glicglobal.com','marialaura@glicglobal.com'],m:'https://meet.google.com/usp-jayd-jxm',ctx:'4ª reunión técnica (30/04). Glic = e-commerce dropshipping con múltiples marketplaces (MercadoLibre AR+UY, Amazon, Fravega). Usan Magento como procesador interno. CFO "Maca" (María Laura Cano) necesita conciliar 5 bloques: marketplace↔Magento, Magento↔MercadoPago, MP↔banco, + Amazon. Decidieron priorizar MercadoLibre AR+UY primero. Contactos: Gonzalo Varalla (TI) y María Laura Cano (decisora). Pendiente Gonzalo: confirmar API Fravega + enviar doc APIs de los marketplaces.',nx:'Resolver consulta versión Magento. Confirmar doc API marketplaces de Gonzalo Varalla. Propuesta de implementación con fases (prioridad ML AR+UY primero). Empujar cierre.'},
+  {d:'2026-04-30',t:'12:00',dur:15,co:'Sodimac / Falabella',vs:['mateo'],tp:'seguimiento',s:'Nubceo | Sodimac',cnt:['gromeou@falabella.com.ar','fbuldorini@sodimac.com.ar'],m:'https://meet.google.com/tqn-jhxt-sdo',ctx:'Mateo solicitó datos el 27/04. Esta reunión es para presentar la COTIZACIÓN (10 min).',nx:'Presentar cotización → respuesta en el día.'},
+  {d:'2026-04-30',t:'14:00',dur:60,co:'Nodum — Partnership',vs:['pablo_illich'],tp:'partner',s:'Partnership Nodum Nubceo',cnt:['dcabral@nodum.com.uy','lsoria@nodum.com.uy'],m:'https://meet.google.com/zzv-itkn-txi',ctx:'Partnership con Nodum, fintech uruguaya. Pablo Illich y Vanessa co-lideran.',nx:'Definir términos de alianza.'},
+  {d:'2026-04-30',t:'15:00',dur:60,co:'MacStation',vs:['emiliana'],tp:'primera',s:'MacStation & Nubceo',cnt:['plonginotti@macstation.com.ar'],m:'https://meet.google.com/jyt-mceu-ijr',ctx:'Retail Apple Argentina. Emiliana agendó el 28/04.',nx:'Calificar sucursales y volumen.'},
+  {d:'2026-04-30',t:'16:00',dur:60,co:'Hope',vs:['mateo'],tp:'primera',s:'Nubceo | Hope',cnt:['cristianvidal0315@gmail.com'],m:'https://meet.google.com/aqp-xmxh-etm',ctx:'Agendada ayer por Mateo. Contacto por Gmail personal.',nx:'Calificar. Si no aplica, priorizar Sodimac.'},
+
+  // ── MAYO ──────────────────────────────────────────────
+  {d:'2026-05-04',t:'09:10',dur:60,co:'1ra Reunión (Pablo Arce)',vs:['pablo_arce'],tp:'primera',s:'1ra Reunion',cnt:['cuellamateo@gmail.com','jorgecespes90@gmail.com'],m:null,ctx:'Primera reunión con prospecto.',nx:'Calificar y demo.'},
+  {d:'2026-05-04',t:'10:00',dur:60,co:'Vipercar (Presencial UY)',vs:['vanessa'],tp:'primera',s:'Nubceo / Vipercar - Control medios de pago',cnt:['rumpierrez@vipercar.com.uy'],m:null,ctx:'Reunión presencial en Montevideo. Vipercar automóviles solicitó reunión para control de tarjetas.',nx:'Calificar y presentar producto in-situ.'},
+  {d:'2026-05-04',t:'10:00',dur:60,co:'SIXT Uruguay',vs:['pablo_illich'],tp:'seguimiento',s:'Avance propuesta SIXT',cnt:['facundo.lopez@sixt.com.uy','vmoran@carone.com.uy'],m:'https://meet.google.com/ppt-chav-akr',st:'cancelled',ctx:'Continuación de la propuesta SIXT del 29/04. Facundo confirmó asistencia.',nx:'Negociar condiciones y avanzar a cierre.'},
+  {d:'2026-05-04',t:'12:00',dur:60,co:'Club Atlético Talleres',vs:['luciano'],tp:'seguimiento',s:'PROPUESTA NUBCEO - CAT',cnt:['m.calvimonte@clubtalleres.com.ar','m.garcia@clubtalleres.com.ar'],m:'https://meet.google.com/ijw-yjov-pap',st:'rescheduled',ctx:'Seguimiento de la reunión del 21/04. Luciano presenta propuesta al Club Atlético Talleres.',nx:'Presentar propuesta → conseguir aprobación.'},
+  {d:'2026-05-04',t:'14:00',dur:60,co:'Gofun / Easygoband',vs:['pablo_arce'],tp:'primera',s:'Reunion Pablo Arce (Gofun.easygoband.com)',cnt:['daniel.olivera@easygoband.com'],m:'https://meet.google.com/bxg-xogo-bpy',ctx:'Primera reunión. Temas: Cash Flow, conciliación de cupones, costo operativo, contracargos.',nx:'Calificar necesidad y volumen. Demo si aplica.'},
+  {d:'2026-05-04',t:'15:00',dur:60,co:'El Dorado (UY)',vs:['omar'],tp:'seguimiento',s:'Relevamiento necesidad EL DORADO - NUBCEO',cnt:['scondon@eldorado.com.uy','gbattaggia@eldorado.com.uy'],m:'https://meet.google.com/pui-oukp-jcz',ctx:'Seguimiento de la reunión café con Bettoni del 16/04. Vanessa también participa.',nx:'Relevar necesidad específica → propuesta.'},
+  {d:'2026-05-04',t:'15:00',dur:60,co:'Centro Rossi',vs:['mateo'],tp:'primera',s:'Nubceo | Centro Rossi',cnt:['fpulella@cdrossi.com','ecamino@cdrossi.com'],m:'https://meet.google.com/yop-azhy-nws',ctx:'Primera reunión con Centro Rossi.',nx:'Demo y calificación.'},
+  {d:'2026-05-04',t:'15:00',dur:60,co:'Bedson SA',vs:['pablo_arce'],tp:'primera',s:'Nubceo - Bedson',cnt:['carina.caba@bedson.com'],m:'https://meet.google.com/wkc-cyqs-saj',ctx:'Primera reunión con Bedson.',nx:'Demo.'},
+  {d:'2026-05-05',t:'09:15',dur:30,co:'Iván Carini (Hasar)',vs:['pablo_arce'],tp:'primera',s:'Iván Carini Hasar - Pablo',cnt:['ivan.carini@hasar.com'],m:'https://meet.google.com/nya-knkh-vpm',ctx:'Primera reunión con Iván Carini de Hasar. Pablo Arce organiza.',nx:'Calificar y demo.'},
+  {d:'2026-05-05',t:'11:00',dur:60,co:'Tucci Web',vs:['emiliana'],tp:'primera',s:'Tucci & Nubceo',cnt:['gastonmaldonado@tucciweb.com'],m:'https://meet.google.com/aqw-wiao-pst',ctx:'Reunión que fue reagendada del 30/04 al 05/05. Primera reunión con Tucci Web.',nx:'Presentación + calificar volumen.'},
+  {d:'2026-05-05',t:'12:15',dur:45,co:'Kretz SA',vs:['pablo_arce'],tp:'primera',s:'1er Reunion NUBCEO - KRETZ S.A.',cnt:['nicolas.bella@kretz.com.ar'],m:'https://meet.google.com/umj-kkbv-ssb',ctx:'Primera reunión con Kretz SA.',nx:'Calificar y demo.'},
+  {d:'2026-05-05',t:'14:00',dur:60,co:'Kick off Santucci',vs:['vanessa'],tp:'seguimiento',s:'Kick off Nubceo - Santucci',cnt:['santucci@santucci.com.uy','vdewaele@googlemail.com','administracion@santucci.com.uy'],m:'https://meet.google.com/fbx-bjrp-mvw',ctx:'Deal GANADO 30/04 (UYU 20.778/mes). Domenico Santucci · Uruguay. Sistema: SAP + Gestana (POS) + Getnet + Mercado Pago. Objetivo: asientos contables automáticos en SAP. Reunión 13/04 acordó integración API para SAP y FTP para procesadoras. Pendiente: Domenico debía enviar volumen de transacciones mensuales con tarjeta. Contactos: santucci@santucci.com.uy + administracion@santucci.com.uy.',nx:'Confirmar método integración (API SAP + FTP procesadoras). Pedir volumen transacciones si no llegó. Definir accesos y credenciales. Timeline: 2 meses implementación + 2 meses hipercare.'},
+  {d:'2026-05-05',t:'14:00',dur:60,co:'Fan de Pan',vs:['mateo'],tp:'primera',s:'Nubceo | Fan de Pan',cnt:['ianbela2001@gmail.com'],m:'https://meet.google.com/wdh-vizj-abh',ctx:'Primera reunión con Fan de Pan (cadena gastronómica).',nx:'Calificar y demo.'},
+  {d:'2026-05-05',t:'15:00',dur:60,co:'Northland (Presencial)',vs:['hernan'],tp:'primera',s:'Nubceo x Northland - Reunión presencial',cnt:['leonev@northlands.edu.ar','vicenteleone717@gmail.com'],m:'https://meet.google.com/irk-joiu-bce',ctx:'Reunión presencial con Northlands. Institución educativa.',nx:'Demo y propuesta institucional.'},
+  {d:'2026-05-05',t:'15:30',dur:60,co:'Fravega',vs:['mateo'],tp:'primera',s:'Contacto Nubceo / Fravega',cnt:['lujan.furrere@fravega.com.ar','paola.fotia@fravega.com.ar','leonardo.marcote@fravega.com.ar'],m:'https://meet.google.com/hrm-bywv-nug',ctx:'Gran cuenta retail ARG. Reprogramaron para 05/05 15:30. Fravega es marketplace para clientes como Glic (dropshipping). Procesa volumen alto de transacciones con Prisma/MercadoPago. Dolores típicos: conciliación de ventas marketplace, liquidaciones de procesadoras, retenciones y comisiones. Contactos: Luján Furrere, Paola Fotia, Leonardo Marcote.',nx:'Calificar: volumen transacciones mensuales, procesadoras usadas (Prisma/MP/Naranja), sistemas POS/ERP. Preguntar sobre proceso de conciliación manual actual. Mostrar demo con caso de cadena retail similar.'},
+  {d:'2026-05-05',t:'16:30',dur:60,co:'UCA',vs:['mateo'],tp:'seguimiento',s:'Nubceo | UCA',cnt:['carlos_rios@uca.edu.ar','fabian_cajigal@uca.edu.ar'],m:'https://meet.google.com/vkh-fwai-avw',ctx:'Seguimiento UCA. Cargado hoy por Mateo.',nx:'Avanzar contrato.'},
+  {d:'2026-05-06',t:'09:00',dur:60,co:'Sandra El Mirasol',vs:['pablo_arce'],tp:'primera',s:'Reunion Pablo Arce (Sandra El Mirasol)',cnt:[],m:null,ctx:'Primera reunión con Sandra El Mirasol.',nx:'Calificar y demo.'},
+  {d:'2026-05-06',t:'09:30',dur:60,co:'Axion Energy',vs:['luciano','gonzalo'],tp:'primera',s:'Nubceo - Axion Energy',cnt:[],m:null,ctx:'Primera reunión con Axion Energy. Luciano y Gonzalo co-lideran.',nx:'Demo y calificación.'},
+  {d:'2026-05-06',t:'10:00',dur:60,co:'MacStation',vs:['emiliana'],tp:'seguimiento',s:'MacStation & Nubceo (seguimiento)',cnt:['plonginotti@macstation.com.ar'],m:null,ctx:'Seguimiento de la primera reunión del 30/04 con MacStation.',nx:'Avanzar propuesta.'},
+  {d:'2026-05-06',t:'10:30',dur:60,co:'Cristofano',vs:['pablo_illich'],tp:'primera',s:'Presentación Nubceo Cristofano',cnt:['marcos@rcristofano.com'],m:'https://meet.google.com/zwx-wjxi-ftt',ctx:'Primera reunión con Cristofano. Pablo Illich organiza.',nx:'Presentación completa y calificación.'},
+  {d:'2026-05-06',t:'11:00',dur:45,co:'Bolivia / Divina',vs:['hernan'],tp:'primera',s:'Nubceo x Bolivia - Demo',cnt:['salfano@bolivia-divina.com'],m:'https://meet.google.com/yuw-oefx-czm',ctx:'Demo con Bolivia Divina.',nx:'Propuesta.'},
+  {d:'2026-05-06',t:'11:00',dur:60,co:'NCR Voyix (Presencial)',vs:['pablo_arce'],tp:'primera',s:'Reunion NCR Voyix',cnt:[],m:'https://meet.google.com/wrj-spqk-sfs',ctx:'Reunión presencial en oficinas Nubceo (Libertad 1041, Piso 4). NCR Voyix.',nx:'Demo y propuesta.'},
+  {d:'2026-05-06',t:'15:00',dur:60,co:'UMT / Eslopet',vs:['pablo_illich'],tp:'seguimiento',s:'Propuesta Comercial - UMT',cnt:['martin.noguera@umt.com.uy'],m:'https://meet.google.com/qke-ekmu-vcg',ctx:'Seguimiento del 30/04 con Martín Noguera. Esperando volumen de transacciones para afinar propuesta.',nx:'Presentar propuesta + negociar.'},
+  {d:'2026-05-07',t:'15:00',dur:60,co:'Fiancar',vs:['pablo_illich'],tp:'primera',s:'Presentación Nubceo - Fiancar',cnt:['c.farriols@grupofiancar.com'],m:'https://meet.google.com/kwr-kpju-vav',ctx:'Primera reunión con Fiancar (Grupo Fiancar).',nx:'Presentación completa y calificación.'},
+  {d:'2026-05-13',t:'10:00',dur:60,co:'Shop Gallery',vs:['mateo'],tp:'primera',s:'Nubceo | Shop Gallery Conciliador',cnt:[],m:null,ctx:'Primera reunión con Shop Gallery.',nx:'Demo y calificación.'},
+  {d:'2026-05-13',t:'11:00',dur:60,co:'Club Atlético Olimpia',vs:['vanessa'],tp:'primera',s:'Nubceo / Club Atlético Olimpia',cnt:[],m:null,ctx:'Primera reunión con Club Atlético Olimpia (UY).',nx:'Demo y propuesta.'},
+  {d:'2026-05-13',t:'14:00',dur:60,co:'Huinid Hoteles / Calden Oil',vs:['mateo'],tp:'primera',s:'Nubceo | Huinid Hoteles - Calden Oil',cnt:[],m:null,ctx:'Primera reunión con Huinid Hoteles y Calden Oil.',nx:'Calificar y demo.'},
+  {d:'2026-05-14',t:'10:00',dur:60,co:'Fontes',vs:['pablo_illich'],tp:'primera',s:'Presentación Nubceo - Fontes',cnt:[],m:null,ctx:'Primera reunión con Fontes. Pablo Illich organiza.',nx:'Presentación completa y calificación.'},
+  {d:'2026-05-20',t:'10:00',dur:60,co:'River Plate (Presencial)',vs:['emiliana'],tp:'primera',s:'Nubceo x River Plate - Reunión presencial',cnt:[],m:null,ctx:'Reunión presencial con River Plate. Emiliana organiza.',nx:'Demo institucional + propuesta.'},
+
+  // ── REUNIONES DE BAUTISTA (agenda.virtual presente, sin comercial asignado) ─────
+  {d:'2026-04-08',t:'12:00',dur:60,co:'Alegra',           vs:['bautista'],           tp:'primera',   s:'Nubceo - Alegra',                         cnt:[],  m:null, ctx:'Bautista organiza reunión comercial con Alegra. Sin comercial acompañante.',nx:'Demo + derivar a comercial.'},
+  {d:'2026-04-21',t:'10:00',dur:60,co:'Traza (Pablo Galmés)',vs:['bautista'],        tp:'primera',   s:'Nubceo - Traza (Pablo Galmés)',            cnt:[],  m:null, ctx:'Bautista organiza reunión con Pablo Galmés de Traza.',nx:'Calificar y asignar comercial.'},
+  {d:'2026-04-23',t:'15:30',dur:60,co:'Benoit Marpeau',   vs:['bautista'],           tp:'primera',   s:'Benoit Marpeau and Bautista Lanusse',      cnt:[],  m:null, ctx:'Reunión comercial Bautista con Benoit Marpeau.',nx:'Avanzar.'},
+  {d:'2026-04-27',t:'15:30',dur:60,co:'Fernando Fernandez',vs:['bautista'],          tp:'primera',   s:'Fernando Fernandez and Bautista Lanusse',  cnt:[],  m:null, ctx:'Reunión comercial Bautista con Fernando Fernandez.',nx:'Avanzar.'},
+  {d:'2026-04-28',t:'12:00',dur:60,co:'Emerger',          vs:['bautista'],           tp:'primera',   s:'Demo Nubceo - Emerger',                    cnt:[],  m:null, ctx:'Bautista organiza demo con Emerger.',nx:'Propuesta.'},
+  {d:'2026-04-28',t:'15:30',dur:60,co:'Felix Albornoz',   vs:['bautista'],           tp:'primera',   s:'Felix Albornoz and Bautista Lanusse',      cnt:[],  m:null, ctx:'Reunión comercial Bautista con Felix Albornoz.',nx:'Avanzar.'},
+
+  // ── REUNIONES DE GONZALO (gc@nubceo.com — agenda.virtual presente) ───────────
+  {d:'2026-04-10',t:'16:00',dur:60,co:'Prospect (Gonzalo)',vs:['gonzalo','vanessa'], tp:'primera',   s:'Nubceo (Gonzalo + Vanessa)',               cnt:[],  m:null, ctx:'Gonzalo organiza reunión comercial. Vanessa acompañante.',nx:'Avanzar con Vanessa.'},
+  {d:'2026-05-04',t:'12:00',dur:60,co:'Nubceo Conciliador',vs:['gonzalo','hernan'],  tp:'primera',   s:'Nubceo conciliador',                       cnt:[],  m:null, ctx:'Gonzalo organiza con Hernán como acompañante.',nx:'Avanzar.'},
+  {d:'2026-05-04',t:'13:00',dur:60,co:'Lucas Alberto Insua',vs:['gonzalo'],          tp:'primera',   s:'nubceo para tu empresa (Lucas Alberto Insua)',cnt:[],m:null, ctx:'Gonzalo organiza reunión comercial con Lucas Insua.',nx:'Calificar y asignar comercial.'},
+];
+
+// Copia estática para preservar ctx/nx enriquecidos al hacer sync en vivo
+const STATIC_MEETINGS = JSON.parse(JSON.stringify(MEETINGS));
+
+// ═══════════════════════════════════════════════
+// DEALS GANADOS
+// ─ Cada deal: v=vendedor, co=empresa, amt=monto, d=fecha, mtg=reunión relacionada (co)
+// ─ TODO: alimentar desde Pipedrive API cuando esté disponible
+// ═══════════════════════════════════════════════
+let DEALS = [
+  // ── ABRIL 2026 — fuente: emails "Trato Ganado" de clientes@nubceo.com ──
+  {d:'2026-04-08',v:'mateo',   co:'Pizza a la Pala',        amt:1424000, mtg:'Pizza a la Pala',        n:'Trato 115286 ganado. Trials Activos ARG · Marco Plataformas.'},
+  {d:'2026-04-16',v:'hernan',  co:'Mutual Rivadavia',       amt:800000,  mtg:'Mutual Rivadavia',       n:'Trato 115456 ganado. Trials Activos ARG · Marco Plataformas.'},
+  {d:'2026-04-23',v:'luciano', co:'Grupo Bloom',            amt:2400000, mtg:'Grupo Bloom',            n:'Trato 115658 ganado. Trials Activos ARG · Marco Plataformas.'},
+  {d:'2026-04-29',v:'mateo',   co:'UCA',                    amt:2000000, mtg:'UCA',                    n:'Trato 115791 ganado. Trials Activos ARG · Marco Plataformas.'},
+  {d:'2026-04-30',v:'hernan',  co:'Valentino',              amt:700000,  mtg:'Valentino',              n:'Trato 115858 ganado. Trials Activos ARG · Marco Plataformas.'},
+  {d:'2026-04-30',v:'vanessa', co:'Santucci / Amo Cocinar', amt:0,       mtg:'Santucci',               n:'Trato 105964 ganado. UYU 20.778. Trials Activos UY · OnBoarding.'},
+  {d:'2026-04-30',v:'mateo',   co:'Fabric Franquicia',      amt:1900000, mtg:'Fabric Franquicia',      n:'Trato 115860 ganado. Trials Activos ARG · Marco Plataformas.'},
+  // TODO: montos en UYU pendientes de conversión a ARS para sumar al total del mes
+];
+
+// ═══════════════════════════════════════════════
+// PRESUPUESTOS ENVIADOS
+// ─ Cada presup: v=vendedor, co=empresa, d=fecha, amt=monto, st=estado
+// ─ TODO: alimentar desde Gmail "Propuesta" threads cuando esté disponible
+// ═══════════════════════════════════════════════
+let PRESUPUESTOS = [
+  // ── ABRIL 2026 ──────────────────────────────────────────
+  {d:'2026-04-14',v:'hernan',      co:'Grido Franquicias', amt:0, st:'negociando'},
+  {d:'2026-04-15',v:'hernan',      co:'Farmacia del Pueblo',amt:0,st:'esperando'},
+  {d:'2026-04-10',v:'vanessa',     co:'Doniral',           amt:0, st:'esperando'},
+  {d:'2026-04-22',v:'vanessa',     co:'Biggie',            amt:0, st:'esperando'},
+  {d:'2026-04-27',v:'vanessa',     co:'ZonaTecno',         amt:0, st:'ganado'},
+  {d:'2026-04-16',v:'vanessa',     co:'Glic Global',       amt:0, st:'negociando', ctx:'e-commerce dropshipping UY/AR. 4 reuniones técnicas. Decisora: Maca (CFO). Bloqueante: versión Magento. Pendiente: doc APIs marketplaces de Gonzalo Varalla.'},
+  {d:'2026-04-20',v:'lucia',       co:'Enjoy / Baluma',    amt:0, st:'negociando'},
+  {d:'2026-04-29',v:'pablo_illich',co:'SIXT Uruguay',      amt:0, st:'negociando'},
+  {d:'2026-04-30',v:'pablo_illich',co:'Eslopet / Xiaomi UY',amt:0,st:'trial activo'},
+  {d:'2026-04-28',v:'hernan',      co:'Anacleto',          amt:0, st:'esperando'},
+  {d:'2026-04-28',v:'hernan',      co:'Supermax/Hasar',    amt:0, st:'negociando'},
+  // TODO: completar montos desde Pipedrive/Gmail ($6M meta individual)
+];
+
+// ═══════════════════════════════════════════════
+// TAREAS DEL DÍA
+// ─ TODO: alimentar desde Pipedrive tasks / Google Calendar tasks
+// ═══════════════════════════════════════════════
+const TAREAS_DIA = [
+  {d:'2026-05-04',v:'luciano',  tarea:'Enviar contrato TOPPER firmado',      st:'pending',  venc:'2026-05-04', rel:'TOPPER'},
+  {d:'2026-05-04',v:'pablo_illich',tarea:'Seguimiento propuesta SIXT',       st:'pending',  venc:'2026-05-04', rel:'SIXT Uruguay'},
+  {d:'2026-05-04',v:'vanessa',  tarea:'Resolver consulta versión Magento para Glic (Gonzalo Varalla). Confirmar si versión Magento es compatible con API de Connect. Gonzalo debe enviar doc APIs de los marketplaces (ML AR+UY, Amazon, Fravega).', st:'pending',  venc:'2026-05-04', rel:'Glic Global'},
+  {d:'2026-05-04',v:'hernan',   tarea:'Enviar cotización Anacleto',          st:'pending',  venc:'2026-05-05', rel:'Anacleto'},
+  {d:'2026-05-04',v:'mateo',    tarea:'Presentar cotización Sodimac',        st:'done',     venc:'2026-04-30', rel:'Sodimac'},
+  // TODO: poblar automáticamente desde Pipedrive Activities API
+];
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const VN = id => (VENDORS[id]||{name:id}).name;
+const VC = id => (VENDORS[id]||{color:'#555'}).color;
+
+// Normaliza v/vs → devuelve el vendedor principal (algunos meetings usan `v`, otros `vs`)
+function getMainVendor(m){ return m.v || (m.vs && m.vs[0]) || 'otro'; }
+// Devuelve todos los vendedores del meeting como array
+function getAllVendors(m){
+  if(m.vs && m.vs.length) return m.vs;
+  if(m.v) return [m.v];
+  return [];
+}
+// Verifica si un vendedor participa en el meeting
+function vendorInMeeting(m, vid){
+  return getAllVendors(m).includes(vid);
+}
+
+function getMeetingsByDate(d){ return MEETINGS.filter(m=>m.d===d).sort((a,b)=>a.t.localeCompare(b.t)); }
+function getMeetingsByMonth(ym){ return MEETINGS.filter(m=>m.d.startsWith(ym)); }
+function getMeetingsByWeek(anyDate){
+  const d=new Date(anyDate+'T12:00:00');
+  const day=d.getDay();
+  const mon=new Date(d); mon.setDate(d.getDate()-(day===0?6:day-1));
+  const dates=[];
+  for(let i=0;i<7;i++){const dd=new Date(mon);dd.setDate(mon.getDate()+i);dates.push(dd.toISOString().slice(0,10));}
+  return dates;
+}
+
+function getDealsByVendor(vid, ym){
+  return DEALS.filter(d=> d.v===vid && (!ym || d.d.startsWith(ym)));
+}
+function getPresupByVendor(vid, ym){
+  return PRESUPUESTOS.filter(p=> p.v===vid && (!ym || p.d.startsWith(ym)));
+}
+function getDealForMeeting(co){
+  return DEALS.find(d=> d.mtg && d.mtg.toLowerCase().includes(co.toLowerCase()));
+}
+function getPresupForMeeting(co){
+  return PRESUPUESTOS.find(p=> p.co && p.co.toLowerCase().includes(co.toLowerCase()));
+}
+
+function fmtMonto(amt){
+  if(!amt) return '—';
+  return '$' + amt.toLocaleString('es-AR');
+}
+
+function todayAR(){
+  const now=new Date();
+  return new Date(now.toLocaleString('en-US',{timeZone:'America/Argentina/Buenos_Aires'})).toISOString().slice(0,10);
+}
+function isActiveNow(m){
+  const today=todayAR();
+  if(m.d!==today) return false;
+  const now=new Date();
+  const ar=new Date(now.toLocaleString('en-US',{timeZone:'America/Argentina/Buenos_Aires'}));
+  const [hh,mm]=m.t.split(':').map(Number);
+  const cur=ar.getHours()*60+ar.getMinutes();
+  return cur>=hh*60+mm && cur<hh*60+mm+m.dur;
+}
+function isMeetingDone(m){
+  const today=todayAR();
+  if(m.d < today) return true;
+  if(m.d === today){
+    const ar=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Argentina/Buenos_Aires'}));
+    const [hh,mm]=m.t.split(':').map(Number);
+    return ar.getHours()*60+ar.getMinutes() > hh*60+mm+m.dur;
+  }
+  return false;
+}
+
+function fmtDate(d){
+  const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const dt=new Date(d+'T12:00:00');
+  return `${days[dt.getDay()]} ${dt.getDate()} ${months[dt.getMonth()]}`;
+}
+function fmtDayName(d){
+  const days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  return days[new Date(d+'T12:00:00').getDay()];
+}
+function fmtDur(min){
+  if(min<60) return min+'′';
+  return Math.floor(min/60)+'h'+(min%60?` ${min%60}′`:'');
+}
+
+function noMeetingsVendors(date){
+  const active=new Set(getMeetingsByDate(date).flatMap(m=>getAllVendors(m)));
+  return Object.keys(VENDORS).filter(v=>!active.has(v) && VENDORS[v].active !== false);
+}
+
+function badgeHTML(tp, st){
+  let b = '';
+  if(tp==='primera')    b = '<span class="bdg primera">✦ 1ra reunión</span>';
+  else if(tp==='seguimiento') b = '<span class="bdg seguimiento">↩ Seguimiento</span>';
+  else if(tp==='partner')    b = '<span class="bdg partner">🤝 Partnership</span>';
+  
+  if(st==='cancelled') return b + ' <span class="bdg cancel">❌ CANCELADA</span>';
+  if(st==='rescheduled') return b + ' <span class="bdg resched">🔄 REPROGRAMADA</span>';
+  return b;
+}
+function chipHTML(id){
+  return `<span class="vc" style="background:${VC(id)}">${VN(id)}</span>`;
+}
+function chipHTMLAll(m){
+  return getAllVendors(m).map(id=>chipHTML(id)).join(' ');
+}
+
+// ═══════════════════════════════════════════════
+// MEETING CARD HTML
+// ═══════════════════════════════════════════════
+let mtgIdx=0;
+function meetingHTML(m,idx){
+  const active=isActiveNow(m);
+  const done=isMeetingDone(m);
+  const st = m.st || 'active';
+  const isCancelled = st === 'cancelled';
+  const vendors = getAllVendors(m);
+  const owner = vendors[0] || 'otro';
+  const companions = vendors.slice(1);
+
+  // Deal / presupuesto indicators
+  const deal = getDealForMeeting(m.co);
+  const presup = getPresupForMeeting(m.co);
+
+  const dealBadge = deal ? `<span class="bdg won2">🏆 Deal ganado</span>` : '';
+  const presupBadge = presup ? `<span class="bdg presup">📄 Presup. enviado</span>` : '';
+  const doneBadge = done && !isCancelled ? `<span class="bdg done">✓ Finalizada</span>` : '';
+
+  // Vendor chips row
+  const ownerChip = `<span class="owner-chip" style="background:${VC(owner)}18;color:${VC(owner)};border:1px solid ${VC(owner)}44">${VN(owner)}</span>`;
+  const compChips = companions.map(c=>`<span class="comp-chip">+ ${VN(c)}</span>`).join('');
+
+  return `<div class="mr ${m.tp}${active?' now':''}${isCancelled?' cancelled':''}" id="mr${idx}" onclick="tog(${idx})" style="${isCancelled?'opacity:0.6;border-left-color:#ccc;':''}${done&&!active&&!isCancelled?'opacity:0.82;':''}">
+    <div class="mh">
+      <div class="mt">${m.t}<small>${fmtDur(m.dur)}</small></div>
+      <div class="mc">
+        <div class="mn" style="${isCancelled?'text-decoration:line-through;color:#999':''}">
+          ${m.co}${active?' <span style="font-size:7pt;color:#43a047;font-weight:700;">● EN CURSO</span>':''}
+        </div>
+        <div class="chips-row">${ownerChip}${compChips}</div>
+      </div>
+      <div class="mr-right" style="flex-wrap:wrap;justify-content:flex-end;gap:3px;">
+        ${badgeHTML(m.tp, st)}
+        ${doneBadge}${dealBadge}${presupBadge}
+      </div>
+      <div class="chev">▾</div>
+    </div>
+    <div class="mb">
+      <div class="mgrid">
+        <div class="ib">
+          <div class="t">Propietario & acompañantes</div>
+          <ul>
+            <li>📋 Propietario: <strong>${VN(owner)}</strong></li>
+            ${companions.length ? `<li>👥 Acompaña: ${companions.map(c=>VN(c)).join(', ')}</li>` : ''}
+            <li>Estado: ${done?'<span style="color:#3949ab">✓ Finalizada</span>':active?'<span style="color:#43a047">● En curso</span>':isCancelled?'<span style="color:#c62828">✗ Cancelada</span>':'<span style="color:#f57f17">⏳ Pendiente</span>'}</li>
+          </ul>
+        </div>
+        <div class="ib">
+          <div class="t">Contactos</div>
+          <ul>${(m.cnt||[]).map(c=>`<li>${c}</li>`).join('')||'<li>—</li>'}</ul>
+        </div>
+      </div>
+      ${(deal||presup)?`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;">
+        ${deal?`<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:7px;padding:7px 12px;font-size:8pt;flex:1;min-width:140px;">
+          <div style="font-weight:700;color:#2e7d32;margin-bottom:3px;">🏆 Deal Ganado</div>
+          <div style="color:#555">${deal.n}</div>${deal.amt?`<div style="font-size:10pt;font-weight:900;color:#2e7d32;margin-top:3px;">${fmtMonto(deal.amt)}</div>`:''}
+        </div>`:''}
+        ${presup?`<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:7px 12px;font-size:8pt;flex:1;min-width:140px;">
+          <div style="font-weight:700;color:#f57f17;margin-bottom:3px;">📄 Presupuesto ${presup.st}</div>
+          <div style="color:#555">${presup.co}</div>${presup.amt?`<div style="font-size:10pt;font-weight:900;color:#f57f17;margin-top:3px;">${fmtMonto(presup.amt)}</div>`:''}
+        </div>`:''}
+      </div>`:''}
+      <div class="ctx"><div class="cl">📋 Contexto</div>${m.ctx||'—'}</div>
+      <div class="act"><div class="al">✅ Próximo paso</div><p>${m.nx||'—'}</p></div>
+      ${m.m?`<a href="${m.m}" target="_blank" class="ml">📹 Unirse a Google Meet</a>`:''}
+    </div>
+  </div>`;
+}
+function tog(i){document.getElementById('mr'+i).classList.toggle('open');}
+
+// ═══════════════════════════════════════════════
+// SIN REUNIONES BOX
+// ═══════════════════════════════════════════════
+function sinReunionesHTML(date, label){
+  const vendors=noMeetingsVendors(date);
+  if(!vendors.length) return '<div style="font-size:8pt;color:#43a047;padding:8px 0">✅ Todos los vendedores tienen reuniones este día.</div>';
+  return `<div class="sr-box">
+    <div class="sr-title">⚠ ${label||'Sin reuniones'}</div>
+    <div class="sr-chips">${vendors.map(v=>`<span class="sr-chip">${VN(v)}</span>`).join('')}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// VIEW: DÍA
+// ═══════════════════════════════════════════════
+function renderDia(date){
+  let meetings=getMeetingsByDate(date);
+  const vf = document.getElementById('vendorFilterDia');
+  const filterVid = vf ? vf.value : 'todos';
+  if(filterVid !== 'todos') meetings = meetings.filter(m => getAllVendors(m).includes(filterVid));
+
+  const kpis=document.getElementById('diaKpis');
+  const validMs = meetings.filter(m => m.st !== 'cancelled');
+  const doneMs = validMs.filter(m=>isMeetingDone(m)).length;
+  const p=validMs.filter(m=>m.tp==='primera').length;
+  const s=validMs.filter(m=>m.tp==='seguimiento').length;
+  const x=validMs.filter(m=>m.tp==='partner').length;
+  const totalDur = validMs.reduce((acc,m)=>acc+m.dur,0);
+  kpis.innerHTML=`
+    <div class="dk"><span style="color:var(--p)">${p}</span> 1ras</div>
+    <div class="dk"><span style="color:var(--s)">${s}</span> seg.</div>
+    ${x?`<div class="dk"><span style="color:var(--x)">${x}</span> partner</div>`:''}
+    <div class="dk"><span>${validMs.length}</span> total</div>
+    <div class="dk"><span style="color:#3949ab">${doneMs}</span> finalizadas</div>
+    <div class="dk"><span style="color:#888">${fmtDur(totalDur)}</span> tiempo</div>`;
+
+  const cont=document.getElementById('diaCont');
+  mtgIdx=0;
+  if(!meetings.length){
+    const today=todayAR();
+    const isFuture=date>today;
+    cont.innerHTML=`<div class="nodata">
+      ${isFuture?'📅 Día futuro — no hay datos cargados aún.':'📭 No hay reuniones comerciales registradas para esta fecha.'}
+      <small>Pedile a Claude: <em>"Dame la agenda del ${fmtDate(date)}"</em></small>
+    </div>
+    ${sinReunionesHTML(date,'Sin reuniones — todos')}`;
+    return;
+  }
+  cont.innerHTML = meetings.map((m,i)=>meetingHTML(m,mtgIdx++)).join('') +
+    sinReunionesHTML(date,'Vendedores sin reuniones este día') +
+    renderDiaTareas(date, filterVid);
+}
+
+function renderDiaTareas(date, filterVid){
+  // Pipeline activo por vendedor (deals urgentes del día)
+  const PIPE={
+    hernan:     {deal:'Grido, Farmacia del Pueblo, Supermax/Hasar', apollo:'Cadenas retail y salud', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    lucia:      {deal:'Acodike → llamar HOY para arrancar ($52k UYU/mes acordado, dev $3.5k, 50% anticipo). MT940 BR pendiente. Enjoy/Baluma → negociar', apollo:'Empresas medianas ARG/UY', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    emiliana:   {deal:'MacStation → follow up técnico. Tucci → preparar', apollo:'Retail tech y e-commerce', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    luciano:    {deal:'TOPPER contrato → confirmar firma. Grupo Bloom → seguimiento', apollo:'Cadenas + clubs', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    federico:   {deal:'Dinamics, Remoda, Ferremas → enviar propuestas', apollo:'Distribución y manufactura', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    pablo_arce: {deal:'Wellvet, Gofun/Easygoband, NCR Voyix → cotizaciones', apollo:'Vet, tech y hospitality', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    pablo_illich:{deal:'SIXT → negociar. UMT/Eslopet → presentar propuesta', apollo:'Revisar pipeline del equipo (nuevo)', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    vanessa:    {deal:'Glic → resolver Magento (5 bloques de conciliación, priorizar ML AR+UY). Doniral, Biggie → respuesta pendiente. Santucci: kick off 05/05 → confirmar API SAP + volumen transacciones', apollo:'SaaS y mayoristas UY', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+    mateo:      {deal:'Sodimac → cotización enviada. UCA → contabilidad', apollo:'Corporativos y cadenas ARG', nuevaReu:'1 reunion nueva agendada (obligatoria)'},
+  };
+
+  // Todos los vendedores activos (sin Juan B, sin inactivos)
+  const todosVendedores = Object.keys(VENDORS).filter(v => v !== 'juanb' && VENDORS[v].active !== false);
+  const vendsFiltrados = filterVid==='todos' ? todosVendedores : todosVendedores.filter(v=>v===filterVid);
+  const conMtg = new Set(getMeetingsByDate(date).filter(m=>m.st!=='cancelled').flatMap(m=>getAllVendors(m)));
+  const sinMtg = new Set(vendsFiltrados.filter(v=>!conMtg.has(v)));
+
+  // Tareas específicas del día
+  const tareasDelDia = TAREAS_DIA.filter(t => t.d === date && (filterVid==='todos' || t.v===filterVid));
+
+  // ─── Sección 1: Tareas específicas (deals urgentes) ───────────────
+  let html = '';
+
+  if(tareasDelDia.length){
+    let rows='';
+    tareasDelDia.forEach(t=>{
+      const isDone=t.st==='done';
+      rows+=`<tr>
+        <td><span class="vc" style="background:${VC(t.v)}">${VN(t.v)}</span></td>
+        <td><span class="status-dot ${isDone?'dot-done':t.st==='urgente'?'dot-urgent':'dot-pend'}"></span> ${t.tarea}</td>
+        <td>${t.rel||'—'}</td>
+        <td>${t.venc||'—'}</td>
+        <td>${isDone?'<span style="color:#43a047;font-weight:700;">✓ Hecho</span>':'<span style="color:#f57f17;font-weight:700;">⏳ Pendiente</span>'}</td>
+      </tr>`;
+    });
+    html+=`<div style="margin-bottom:4px;font-size:8pt;font-weight:800;color:var(--blue);padding:10px 14px 2px;">🎯 Tareas específicas del día</div>
+    <table class="dtasks-table"><thead><tr><th>Vendedor</th><th>Tarea</th><th>Deal / Cliente</th><th>Vence</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  // ─── Sección 2: Tabla completa de prospección diaria (TODOS) ──────
+  let prospRows='';
+  vendsFiltrados.forEach(id=>{
+    const p=PIPE[id]||{deal:'Revisar Pipedrive',apollo:'Prospectar',nuevaReu:'1 reunion nueva agendada (obligatoria)'};
+    const tieneMtg=conMtg.has(id);
+    prospRows+=`<tr style="${tieneMtg?'':'background:#fff8f0;'}">
+      <td>
+        <span class="vc" style="background:${VC(id)}">${VN(id)}</span>
+        ${tieneMtg?'<span style="font-size:7pt;color:#43a047;margin-left:4px;">● con reuniones</span>':'<span style="font-size:7pt;color:#f57f17;margin-left:4px;">⚠ sin reuniones</span>'}
+      </td>
+      <td style="font-size:8pt;">
+        <strong>① Apollo:</strong> 30 min en secuencias · ${p.apollo}<br>
+        <span style="color:#888;font-size:7.5pt;">Priorizar contactos con actividad reciente</span>
+      </td>
+      <td style="font-size:8pt;">${p.deal}</td>
+      <td style="font-size:8pt;color:var(--p);font-weight:700;">
+        📅 Agendar <strong>1 reunión nueva</strong><br>
+        <span style="color:#888;font-weight:400;font-size:7.5pt;">LinkedIn + mail frío · No llamada en frío</span>
+      </td>
+    </tr>`;
+  });
+
+  html+=`<div style="margin-bottom:4px;font-size:8pt;font-weight:800;color:var(--blue);padding:10px 14px 2px;">📊 Prospección diaria — Equipo completo</div>
+  <table class="dtasks-table">
+    <thead><tr><th>Vendedor</th><th>① Apollo (30 min)</th><th>② Pipeline activo</th><th>③ 1 Reunión nueva (obligatoria)</th></tr></thead>
+    <tbody>${prospRows}</tbody>
+  </table>`;
+
+  return `<div class="day-tasks">
+    <div class="day-tasks-head">📋 Tareas del día — ${fmtDate(date)}</div>
+    ${html}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// VIEW: SEMANA
+// ═══════════════════════════════════════════════
+function renderSemana(anyDate){
+  const dates=getMeetingsByWeek(anyDate);
+  const label=document.getElementById('semLabel');
+  const today=todayAR();
+  label.textContent=`Semana del ${fmtDate(dates[0])} al ${fmtDate(dates[6])}`;
+
+  const cont=document.getElementById('semCont');
+  const kpisEl=document.getElementById('semKpis');
+  mtgIdx=0;
+
+  const vf = document.getElementById('vendorFilterSem');
+  const filterVid = vf ? vf.value : 'todos';
+
+  // KPIs de la semana completa
+  const workDays=dates.slice(0,5);
+  let allSemMtgs = workDays.flatMap(d=>getMeetingsByDate(d));
+  if(filterVid!=='todos') allSemMtgs = allSemMtgs.filter(m=>getAllVendors(m).includes(filterVid));
+  const semValid = allSemMtgs.filter(m=>m.st!=='cancelled');
+  const semDone = semValid.filter(m=>isMeetingDone(m));
+  const semPend = semValid.filter(m=>!isMeetingDone(m));
+  const semDur = semValid.reduce((a,m)=>a+m.dur,0);
+  const ym = anyDate.slice(0,7);
+  const semDeals = DEALS.filter(d=>workDays.includes(d.d)&&(filterVid==='todos'||d.v===filterVid));
+  const semPresup = PRESUPUESTOS.filter(p=>workDays.includes(p.d)&&(filterVid==='todos'||p.v===filterVid));
+  const semMonto = semDeals.reduce((a,d)=>a+(d.amt||0),0);
+
+  kpisEl.innerHTML=`
+    <div class="pkp hip"><div class="pn">${semValid.length}</div><div class="pl">Reuniones</div></div>
+    <div class="pkp"><div class="pn" style="color:#3949ab">${semDone.length}</div><div class="pl">Finalizadas</div></div>
+    <div class="pkp"><div class="pn" style="color:#f57f17">${semPend.length}</div><div class="pl">Pendientes</div></div>
+    <div class="pkp"><div class="pn" style="color:#888">${fmtDur(semDur)}</div><div class="pl">Tiempo total</div></div>
+    <div class="pkp hiw"><div class="pn" style="color:var(--won)">${semDeals.length}</div><div class="pl">Tratos ganados</div></div>
+    <div class="pkp"><div class="pn" style="color:#f57f17">${semPresup.length}</div><div class="pl">Presup. enviados</div></div>
+    ${semMonto?`<div class="pkp hiw"><div class="pn" style="color:var(--won);font-size:10pt">${fmtMonto(semMonto)}</div><div class="pl">Monto ganado</div></div>`:''}`;
+
+  cont.innerHTML=workDays.map(date=>{
+    let meetings=getMeetingsByDate(date);
+    if(filterVid !== 'todos') meetings = meetings.filter(m => getAllVendors(m).includes(filterVid));
+
+    const validMs = meetings.filter(m => m.st !== 'cancelled');
+    const p=validMs.filter(m=>m.tp==='primera').length;
+    const s=validMs.filter(m=>m.tp==='seguimiento').length;
+    const x=validMs.filter(m=>m.tp==='partner').length;
+    const doneCount=validMs.filter(m=>isMeetingDone(m)).length;
+    const isToday=date===today;
+    const isFuture=date>today;
+    const hasMeetings=meetings.length>0;
+
+    let cls='day-block';
+    if(isToday) cls+=' today';
+    else if(!hasMeetings && isFuture) cls+=' future';
+
+    let body='';
+    if(!hasMeetings){
+      body=`<div class="empty-day">${isFuture?'📅 Sin datos':'📭 Sin reuniones'}</div>`;
+    } else {
+      body=meetings.map(m=>meetingHTML(m,mtgIdx++)).join('');
+    }
+    body+=sinReunionesHTML(date,'Sin reuniones');
+
+    return `<div class="${cls}">
+      <div class="day-block-head">
+        <div>
+          <div class="dname">${fmtDayName(date)}${isToday?' <span style="font-size:7pt;background:rgba(255,255,255,.2);border-radius:8px;padding:1px 7px;">HOY</span>':''}</div>
+          <div class="ddate">${fmtDate(date)}</div>
+        </div>
+        <div class="dcounts">
+          ${p?`<span class="dc" style="background:rgba(21,101,192,.3)">${p} 1ras</span>`:''}
+          ${s?`<span class="dc" style="background:rgba(230,81,0,.3)">${s} seg.</span>`:''}
+          ${x?`<span class="dc" style="background:rgba(106,27,154,.3)">${x} partner</span>`:''}
+          ${doneCount?`<span class="dc" style="background:rgba(57,73,171,.3)">${doneCount} finalizadas</span>`:''}
+          ${!hasMeetings?'<span class="dc">Sin datos</span>':''}
+        </div>
+      </div>
+      <div class="day-block-body">${body}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// VIEW: MES
+// ═══════════════════════════════════════════════
+function renderMes(ym){
+  const [y,m]=ym.split('-').map(Number);
+  const daysInMonth=new Date(y,m,0).getDate();
+  const today=todayAR();
+  const cont=document.getElementById('mesCont');
+  const kpisEl=document.getElementById('mesKpis');
+  const MONTHS={'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
+  const mLabel=MONTHS[ym]||ym;
+
+  const mesMtgs = getMeetingsByMonth(ym).filter(m=>m.st!=='cancelled');
+  const mesDone = mesMtgs.filter(m=>isMeetingDone(m));
+  const mesPend = mesMtgs.filter(m=>!isMeetingDone(m));
+  const mesDur = mesMtgs.reduce((a,m)=>a+m.dur,0);
+  const mesDeals = DEALS.filter(d=>d.d.startsWith(ym));
+  const mesPresup = PRESUPUESTOS.filter(p=>p.d.startsWith(ym));
+  const vendActivos = new Set(mesMtgs.flatMap(m=>getAllVendors(m))).size;
+  const mesPrimeras = mesMtgs.filter(m=>m.tp==='primera').length;
+
+  if(kpisEl) kpisEl.innerHTML=`
+    <div class="pkp hip"><div class="pn">${mesMtgs.length}</div><div class="pl">Reuniones</div></div>
+    <div class="pkp"><div class="pn">${mesPrimeras}</div><div class="pl">1ras reuniones</div></div>
+    <div class="pkp"><div class="pn" style="color:#3949ab">${mesDone.length}</div><div class="pl">Finalizadas</div></div>
+    <div class="pkp"><div class="pn" style="color:#f57f17">${mesPend.length}</div><div class="pl">Pendientes</div></div>
+    <div class="pkp"><div class="pn" style="color:#888;font-size:11pt">${fmtDur(mesDur)}</div><div class="pl">Tiempo total</div></div>
+    <div class="pkp hiw"><div class="pn" style="color:var(--won)">${mesDeals.length}</div><div class="pl">Tratos ganados</div></div>
+    <div class="pkp"><div class="pn" style="color:#f57f17">${mesPresup.length}</div><div class="pl">Presup. enviados</div></div>
+    <div class="pkp"><div class="pn">${vendActivos}</div><div class="pl">Vendedores activos</div></div>`;
+
+  // ── Métricas por vendedor ──────────────────────────────
+  const vendorStats = {};
+  Object.keys(VENDORS).forEach(id=>{vendorStats[id]={primeras:0,seg:0,partner:0,done:0,dur:0};});
+  mesMtgs.forEach(m=>{
+    getAllVendors(m).forEach(vid=>{
+      if(!vendorStats[vid]) vendorStats[vid]={primeras:0,seg:0,partner:0,done:0,dur:0};
+      if(m.tp==='primera') vendorStats[vid].primeras++;
+      else if(m.tp==='seguimiento') vendorStats[vid].seg++;
+      else if(m.tp==='partner') vendorStats[vid].partner++;
+      vendorStats[vid].dur+=m.dur;
+      if(isMeetingDone(m)) vendorStats[vid].done++;
+    });
+  });
+  const activeVendors = Object.entries(vendorStats)
+    .map(([id,s])=>({id,...s,total:s.primeras+s.seg+s.partner}))
+    .filter(v=>v.total>0 && VENDORS[v.id]?.active !== false).sort((a,b)=>b.total-a.total);
+
+  const vendorCardsHTML = activeVendors.map(v=>{
+    const deals=getDealsByVendor(v.id,ym);
+    const presup=getPresupByVendor(v.id,ym);
+    const conv=v.total>0?(deals.length/v.total*100).toFixed(0)+'%':'—';
+    return `<div class="mes-vcard">
+      <div class="mes-vc-top">
+        <span class="vc" style="background:${VC(v.id)}">${VN(v.id)}</span>
+        <span class="mes-vc-total">${v.total}</span>
+      </div>
+      <div class="mes-vc-stats">
+        <span style="color:var(--p)">${v.primeras} 1ras</span>·
+        <span style="color:var(--s)">${v.seg} seg.</span>·
+        <span style="color:#3949ab">${v.done} ✓</span>
+      </div>
+      <div class="mes-vc-badges">
+        ${deals.length?`<span class="mes-badge won">🏆 ${deals.length}</span>`:''}
+        ${presup.length?`<span class="mes-badge pres">📄 ${presup.length}</span>`:''}
+        <span class="mes-badge dur">${fmtDur(v.dur)}</span>
+        <span class="mes-badge" style="background:#f0f4ff;color:#3949ab">conv. ${conv}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── Tabla completa de reuniones ────────────────────────
+  const sortedMtgs = [...mesMtgs].sort((a,b)=>a.d.localeCompare(b.d)||a.t.localeCompare(b.t));
+  const meetingsRows = sortedMtgs.map(m=>{
+    const mainV=getMainVendor(m);
+    const comps=getAllVendors(m).filter(v=>v!==mainV);
+    const deal=getDealForMeeting(m.co);
+    const st=isMeetingDone(m)?'<span class="bdg done" style="font-size:6.5pt;">✓ FIN</span>':
+              m.st==='cancelled'?'<span class="bdg cancel" style="font-size:6.5pt;">CANCEL</span>':
+              m.st==='rescheduled'?'<span class="bdg resched" style="font-size:6.5pt;">REAG.</span>':
+              '<span class="bdg pend" style="font-size:6.5pt;">PEND.</span>';
+    return `<tr>
+      <td style="white-space:nowrap">${m.d.slice(8,10)}/${m.d.slice(5,7)}</td>
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${m.t}</td>
+      <td style="font-weight:700">${m.co}</td>
+      <td><span class="vc" style="background:${VC(mainV)};font-size:6.5pt">${VN(mainV)}</span></td>
+      <td>${comps.map(v=>`<span style="background:${VC(v)}20;color:${VC(v)};border-radius:8px;padding:1px 6px;font-size:6.5pt;font-weight:700;">${VN(v)}</span>`).join(' ')}</td>
+      <td><span class="bdg ${m.tp}" style="font-size:6.5pt">${m.tp==='primera'?'1RA':m.tp==='seguimiento'?'SEG':'PAR'}</span></td>
+      <td style="color:#888;white-space:nowrap">${m.dur}min</td>
+      <td>${st}</td>
+      <td>${deal?'<span class="bdg won2" style="font-size:6.5pt;">🏆</span>':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Tratos ganados ─────────────────────────────────────
+  const dealsHTML = mesDeals.length ? mesDeals.map(d=>`
+    <div class="mes-deal-card">
+      <span class="bdg won2" style="font-size:7pt;">🏆 GANADO</span>
+      <div style="font-weight:800;font-size:9.5pt;margin-top:5px">${d.co}</div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap">
+        <span class="vc" style="background:${VC(d.v)};font-size:6.5pt">${VN(d.v)}</span>
+        ${d.amt?`<span style="color:var(--won);font-weight:700">${fmtMonto(d.amt)}</span>`:''}
+        <span style="color:#888;font-size:7.5pt">${d.d.slice(8,10)}/${d.d.slice(5,7)}</span>
+      </div>
+    </div>`).join('') : '<div style="color:#ccc;font-size:8.5pt;padding:8px 0">Sin tratos ganados en este mes.</div>';
+
+  // ── Presupuestos ───────────────────────────────────────
+  const presupHTML = mesPresup.length ? `<div style="overflow-x:auto"><table class="mes-table">
+    <thead><tr><th>Fecha</th><th>Cliente</th><th>Vendedor</th><th>Monto</th><th>Estado</th></tr></thead>
+    <tbody>${mesPresup.map(p=>`<tr>
+      <td>${p.d.slice(8,10)}/${p.d.slice(5,7)}</td>
+      <td style="font-weight:700">${p.co}</td>
+      <td><span class="vc" style="background:${VC(p.v)};font-size:6.5pt">${VN(p.v)}</span></td>
+      <td style="color:#f57f17;font-weight:700">${p.amt?fmtMonto(p.amt):'—'}</td>
+      <td><span class="bdg presup" style="font-size:6.5pt;">${p.st||'Enviado'}</span></td>
+    </tr>`).join('')}</tbody></table></div>` : '<div style="color:#ccc;font-size:8.5pt;padding:8px 0">Sin presupuestos en este mes.</div>';
+
+  // ── Detalle por día (acordeón) ─────────────────────────
+  const DAY_NAMES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let cells=[];
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${ym}-${String(d).padStart(2,'0')}`;
+    const dt=new Date(ds+'T12:00:00');
+    if(dt.getDay()===0||dt.getDay()===6) continue;
+    cells.push(ds);
+  }
+  const perDayHTML = cells.map(date=>{
+    const dayMtgs=getMeetingsByDate(date).filter(m=>m.st!=='cancelled');
+    const dt=new Date(date+'T12:00:00');
+    const isToday=date===today;
+    const isFuture=date>today;
+    if(!dayMtgs.length && isFuture) return `<div class="mes-day-block">
+      <div class="mes-day-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="mes-day-name">${DAY_NAMES[dt.getDay()]} ${parseInt(date.slice(8))}</span>
+        <span class="mes-day-counts" style="color:#ccc">Sin datos</span>
+        <span class="mes-day-chev">▼</span>
+      </div>
+      <div class="mes-day-body"><div style="padding:10px 12px;color:#ccc;font-size:8pt;font-style:italic">Día futuro sin datos cargados.</div></div>
+    </div>`;
+    const p=dayMtgs.filter(m=>m.tp==='primera').length;
+    const s=dayMtgs.filter(m=>m.tp==='seguimiento').length;
+    return `<div class="mes-day-block${isToday?' mes-day-today open':''}">
+      <div class="mes-day-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="mes-day-name">${DAY_NAMES[dt.getDay()]} ${parseInt(date.slice(8))}</span>
+        <span class="mes-day-counts">${dayMtgs.length} reuniones${p?' · <span style="color:var(--p)">'+p+' 1ras</span>':''}${s?' · <span style="color:var(--s)">'+s+' seg.</span>':''}</span>
+        <button onclick="event.stopPropagation();goToDay('${date}')" style="background:none;border:1px solid var(--bdr);border-radius:4px;padding:2px 8px;font-size:7pt;cursor:pointer;color:var(--p);margin-right:6px">ver día ↗</button>
+        <span class="mes-day-chev">▼</span>
+      </div>
+      <div class="mes-day-body">
+        ${dayMtgs.sort((a,b)=>a.t.localeCompare(b.t)).map(m=>{
+          const mainV=getMainVendor(m);
+          const comps=getAllVendors(m).filter(v=>v!==mainV);
+          return `<div class="mes-day-row">
+            <span style="font-weight:700;color:#555;min-width:40px;font-size:8.5pt">${m.t}</span>
+            <span class="bdg ${m.tp}" style="font-size:6pt;flex-shrink:0">${m.tp==='primera'?'1RA':'SEG'}</span>
+            <span style="flex:1;font-weight:700;font-size:8.5pt">${m.co}</span>
+            <span class="vc" style="background:${VC(mainV)};font-size:6.5pt;flex-shrink:0">${VN(mainV)}</span>
+            ${comps.map(v=>`<span style="background:${VC(v)}20;color:${VC(v)};border-radius:8px;padding:1px 5px;font-size:6pt;font-weight:700;flex-shrink:0">${VN(v)}</span>`).join('')}
+            <span style="font-size:7pt;color:#aaa;flex-shrink:0">${m.dur}min</span>
+            ${isMeetingDone(m)?'<span class="bdg done" style="font-size:6pt;flex-shrink:0">✓</span>':''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML=`
+    <div class="mes-section-title">Métricas por Comercial</div>
+    <div class="mes-vendor-grid">${vendorCardsHTML||'<div style="color:#ccc;font-size:8.5pt">Sin datos para este mes.</div>'}</div>
+
+    <div class="mes-section-title" style="margin-top:20px">Tratos Ganados — ${mLabel}</div>
+    <div class="mes-deals-grid">${dealsHTML}</div>
+
+    <div class="mes-section-title" style="margin-top:20px">Presupuestos Enviados</div>
+    ${presupHTML}
+
+    <div class="mes-section-title" style="margin-top:20px">Todas las Reuniones del Mes (${mesMtgs.length})</div>
+    <div style="overflow-x:auto">
+      <table class="mes-table">
+        <thead><tr><th>Fecha</th><th>Hora</th><th>Reunión</th><th>Propietario</th><th>Participantes</th><th>Tipo</th><th>Dur.</th><th>Estado</th><th>Deal</th></tr></thead>
+        <tbody>${meetingsRows}</tbody>
+      </table>
+    </div>
+
+    <div class="mes-section-title" style="margin-top:20px">Detalle por Día</div>
+    <div class="mes-days-container">${perDayHTML}</div>`;
+}
+
+function goToDay(date){
+  document.getElementById('dpDia').value=date;
+  curTab='agenda';
+  ['agenda','ranking','vendedores','tareas'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x==='agenda'?'':'none';
+    const btn=document.getElementById('t'+x.charAt(0).toUpperCase()+x.slice(1));
+    if(btn) btn.classList.toggle('on',x==='agenda');
+  });
+  setView('dia');
+  updatePeriodBar(date);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════
+// RANKING
+// ═══════════════════════════════════════════════
+function renderRanking(ym){
+  const meetings=getMeetingsByMonth(ym).filter(m => m.st !== 'cancelled');
+  const stats={};
+  Object.keys(VENDORS).forEach(id=>{stats[id]={primeras:0,seg:0,partner:0,dur:0,done:0};});
+  meetings.forEach(m=>{
+    // Conta para todos los vendedores del meeting (owner + acompañantes)
+    getAllVendors(m).forEach(vid=>{
+      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,dur:0,done:0};
+      if(m.tp==='primera') stats[vid].primeras++;
+      else if(m.tp==='seguimiento') stats[vid].seg++;
+      else if(m.tp==='partner') stats[vid].partner++;
+      stats[vid].dur += m.dur;
+      if(isMeetingDone(m)) stats[vid].done++;
+    });
+  });
+
+  const sorted=Object.entries(stats).map(([id,s])=>{
+    const total=s.primeras+s.seg+s.partner;
+    const deals=getDealsByVendor(id,ym);
+    const presup=getPresupByVendor(id,ym);
+    const monto=deals.reduce((a,d)=>a+(d.amt||0),0);
+    const conv=total>0?(deals.length/total*100).toFixed(0)+'%':'—';
+    return {id,name:VN(id),...s,total,deals:deals.length,presup:presup.length,monto,conv};
+  }).sort((a,b)=>{
+    // Orden: tratos ganados → presup → reuniones → monto
+    if(b.deals!==a.deals) return b.deals-a.deals;
+    if(b.presup!==a.presup) return b.presup-a.presup;
+    return b.total-a.total;
+  }).filter(v=>v.total>0 && VENDORS[v.id]?.active !== false);
+
+  const maxT=sorted[0]?.total||1;
+  const sc=(n)=>Math.max(n/maxT*110,2);
+  const MONTHS={'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
+  const mLabel=MONTHS[ym]||ym;
+
+  document.getElementById('rankingPeriod').textContent=`${mLabel} — ${meetings.length} reuniones`;
+  document.getElementById('rtbody').innerHTML=sorted.map((v,i)=>`
+    <tr style="cursor:pointer" onclick="const el=document.getElementById('rankDet_${v.id}'); el.style.display=el.style.display==='none'?'table-row':'none';">
+      <td class="rpos ${i<3?'top':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+      <td class="rname" style="font-size:9pt;">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${VC(v.id)};margin-right:5px;"></span>
+        ${v.name} <span style="font-size:7pt;color:#bbb">▼</span>
+      </td>
+      <td>
+        <div class="barwrap">
+          ${v.primeras?`<div class="barseg bar-p" style="width:${sc(v.primeras)}px" title="${v.primeras} primeras"></div>`:''}
+          ${v.seg?`<div class="barseg bar-s" style="width:${sc(v.seg)}px" title="${v.seg} seg."></div>`:''}
+          ${v.partner?`<div class="barseg bar-x" style="width:${sc(v.partner)}px" title="${v.partner} partner"></div>`:''}
+        </div>
+        <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓ fin.</strong> · ${fmtDur(v.dur)}</div>
+      </td>
+      <td><span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span></td>
+      <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
+      <td class="rcnv">${v.conv}</td>
+      <td class="rtotal">${v.total}</td>
+    </tr>
+    <tr id="rankDet_${v.id}" style="display:none;background:#fafafc;">
+      <td colspan="7" style="padding:12px;border-bottom:1px solid #eee;">
+        <div style="font-weight:700;margin-bottom:6px;color:var(--p);">Detalle — ${v.name} (${mLabel}):</div>
+        <div style="max-height:200px;overflow-y:auto;font-size:8.5pt;">
+          ${meetings.filter(m=>getAllVendors(m).includes(v.id)).sort((a,b)=>a.d.localeCompare(b.d)).map(m=>{
+            const isOwner=getMainVendor(m)===v.id;
+            const deal=getDealForMeeting(m.co);
+            return `<div style="padding:5px 0;border-bottom:1px dashed #e0e0e0;display:flex;gap:10px;align-items:center;">
+              <span style="min-width:36px;font-weight:700;color:#555">${m.d.slice(8,10)}/${m.d.slice(5,7)}</span>
+              <span style="flex:1;font-weight:600">${m.co}</span>
+              <span style="color:#777;font-size:7.5pt;">${m.tp==='primera'?'1ra':m.tp==='seguimiento'?'Seg.':'Partner'}</span>
+              <span style="font-size:7pt;color:${isOwner?'var(--p)':'#888'}">${isOwner?'Propietario':'Acompañante'}</span>
+              ${deal?'<span class="bdg won2" style="font-size:6.5pt;">🏆</span>':''}
+              ${isMeetingDone(m)?'<span class="bdg done" style="font-size:6.5pt;">✓</span>':''}
+            </div>`;
+          }).join('')}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// VENDORS
+// ═══════════════════════════════════════════════
+function renderVendors(ym){
+  const meetings=getMeetingsByMonth(ym).filter(m=>m.st!=='cancelled');
+  const stats={};
+  Object.keys(VENDORS).forEach(id=>{stats[id]={primeras:0,seg:0,partner:0,done:0,dur:0};});
+  meetings.forEach(m=>{
+    getAllVendors(m).forEach(vid=>{
+      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,done:0,dur:0};
+      if(m.tp==='primera') stats[vid].primeras++;
+      else if(m.tp==='seguimiento') stats[vid].seg++;
+      else if(m.tp==='partner') stats[vid].partner++;
+      stats[vid].dur+=m.dur;
+      if(isMeetingDone(m)) stats[vid].done++;
+    });
+  });
+
+  const sorted=Object.keys(stats).map(id=>{
+    const s=stats[id];
+    const total=s.primeras+s.seg+s.partner;
+    const deals=getDealsByVendor(id,ym);
+    const presup=getPresupByVendor(id,ym);
+    return {id,name:VN(id),...s,total,deals:deals.length,presup:presup.length};
+  }).sort((a,b)=>b.total-a.total);
+  document.getElementById('vgrid').innerHTML=sorted.map(v=>`
+    <div class="vcard ${v.total>0?'active':'inactive'}">
+      <div class="vtot">${v.total}</div>
+      <div class="vname" style="font-size:9pt;font-weight:800;margin-bottom:4px;">${v.name}</div>
+      <div class="vstats">
+        <span class="vs p">${v.primeras} 1ras</span>
+        ${v.seg?`<span class="vs s">${v.seg} seg.</span>`:''}
+        ${v.partner?`<span class="vs x">${v.partner} partner</span>`:''}
+        ${v.done?`<span class="vs" style="background:#e8eaf6;color:#3949ab">${v.done} ✓</span>`:''}
+      </div>
+      <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;">
+        ${v.deals?`<span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 7px;font-size:7pt;font-weight:700;">🏆 ${v.deals} ganados</span>`:''}
+        ${v.presup?`<span style="background:#fff8e1;color:#f57f17;border-radius:8px;padding:2px 7px;font-size:7pt;font-weight:700;">📄 ${v.presup} presup.</span>`:''}
+        <span style="background:#f0f4ff;color:#555;border-radius:8px;padding:2px 7px;font-size:7pt;">${fmtDur(v.dur)}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// TAREAS
+// ═══════════════════════════════════════════════
+function renderTareas(date){
+  const cont = document.getElementById('tareasContent');
+  if(!cont) return;
+
+  const weekDates = getMeetingsByWeek(date);
+  const workDates = weekDates.slice(0,5);
+  const weekLabel = `${fmtDate(workDates[0])} – ${fmtDate(workDates[4])}`;
+
+  const vendorIds = Object.keys(VENDORS).filter(v => !['juanb','bautista','gonzalo'].includes(v));
+
+  const conMtgHoy = new Set(
+    getMeetingsByDate(date).filter(m=>m.st!=='cancelled').flatMap(m=>getAllVendors(m))
+  );
+  const semMtgCount = {};
+  vendorIds.forEach(v => { semMtgCount[v] = 0; });
+  workDates.forEach(d => {
+    getMeetingsByDate(d).filter(m=>m.st!=='cancelled').forEach(m => {
+      getAllVendors(m).forEach(v => { if(semMtgCount[v] !== undefined) semMtgCount[v]++; });
+    });
+  });
+
+  const PIPE = {
+    hernan:      {urgente:'Farmacia del Pueblo · Grido · Supermax/Hasar', accion:'Propuesta final a Grido esta semana. Seguimiento Farmacia del Pueblo.'},
+    mateo:       {urgente:'Sodimac (cotización pendiente) · UCA (contabilidad)', accion:'Enviar cotización Sodimac. Confirmar avance UCA.'},
+    omar:        {urgente:'Tienda Inglesa (UY) · HOMINI Studio', accion:'Cerrar Tienda Inglesa. Reunión estrategia SAP/SEIDOR.'},
+    vanessa:     {urgente:'Glic → resolver Magento · Doniral · Biggie', accion:'Resolver integración Magento con soporte técnico esta semana.'},
+    lucia:       {urgente:'Acodike → CIERRE URGENTE · Enjoy / Baluma', accion:'Llamar a Acodike HOY. Deal en el límite del mes.'},
+    emiliana:    {urgente:'MacStation (follow up técnico) · Tucci', accion:'Confirmar avance técnico MacStation. Primer contacto Tucci.'},
+    luciano:     {urgente:'TOPPER → confirmar firma · Club Atlético Talleres · CORDIEZ', accion:'Confirmar firma TOPPER esta semana — urgente. Seguimiento Talleres.'},
+    federico:    {urgente:'Dinamics · Remoda · Ferremas', accion:'Armar y enviar propuestas para los 3 deals esta semana.'},
+    pablo_arce:  {urgente:'Wellvet · Gofun/Easygoband · NCR Voyix', accion:'Enviar cotizaciones y confirmar interés en los 3 prospects.'},
+    pablo_illich:{urgente:'SIXT · UMT/Eslopet (aprendizaje)', accion:'Revisar pipeline del equipo con Bautista. Actualizar CRM.'},
+  };
+
+  const prioridades = [
+    {v:'lucia',    urg:'CRÍTICO',   deal:'Acodike',               accion:'Llamar HOY. Precio acordado $52k UYU/mes + dev $3.5k (50% anticipo). Pedir arranque. Verificar MT940 con BR.',          color:'#c62828'},
+    {v:'luciano',  urg:'URGENTE',   deal:'TOPPER — Firma',        accion:'Confirmar firma esta semana. Contrato ya está listo.',         color:'#e65100'},
+    {v:'vanessa',  urg:'URGENTE',   deal:'Glic — Magento',        accion:'Resolver versión Magento con soporte técnico. Esperar doc APIs marketplaces de Gonzalo Varalla. Propuesta en fases (ML AR+UY primero).',           color:'#e65100'},
+    {v:'mateo',    urg:'ESTA SEM.', deal:'Sodimac + UCA',         accion:'Enviar cotización Sodimac. Agendar cierre UCA.',              color:'#1565c0'},
+    {v:'hernan',   urg:'ESTA SEM.', deal:'Grido + Farmacia',      accion:'Propuesta final Grido. Seguimiento Farmacia del Pueblo.',     color:'#1565c0'},
+    {v:'emiliana', urg:'ESTA SEM.', deal:'MacStation + Tucci',    accion:'Follow up técnico MacStation. Primer contacto Tucci.',       color:'#1565c0'},
+  ];
+
+  const priorHTML = prioridades.map(p=>`
+    <div class="tarea-prior-card">
+      <div class="tpc-header">
+        <span class="vc" style="background:${VC(p.v)}">${VN(p.v)}</span>
+        <span class="tpc-badge" style="background:${p.color}18;color:${p.color};border-color:${p.color}40">${p.urg}</span>
+      </div>
+      <div class="tpc-deal">${p.deal}</div>
+      <div class="tpc-action">${p.accion}</div>
+    </div>`).join('');
+
+  const ritualesHTML = `
+    <div class="ritual-card">
+      <div class="ritual-icon">① Apollo — 30 min</div>
+      <div class="ritual-title">Secuencias activas</div>
+      <div class="ritual-desc">Revisar respuestas recibidas · Avanzar contactos activos · Agregar 3 prospectos nuevos a secuencias cada día</div>
+    </div>
+    <div class="ritual-card">
+      <div class="ritual-icon">② CRM — Pipedrive</div>
+      <div class="ritual-title">Actualizar antes de las 20h</div>
+      <div class="ritual-desc">Registrar cada reunión del día · Mover etapas · Anotar próximos pasos y fechas de seguimiento</div>
+    </div>
+    <div class="ritual-card">
+      <div class="ritual-icon">③ Nueva reunión — obligatoria</div>
+      <div class="ritual-title">1 primera reunión nueva por día</div>
+      <div class="ritual-desc">Agendar con prospecto nuevo vía LinkedIn o mail frío · No llamada en frío · Sin restricción de industria</div>
+    </div>`;
+
+  const vendorRows = vendorIds.map(id => {
+    const p = PIPE[id] || {urgente:'Revisar Pipedrive', accion:'Actualizar CRM y retomar contactos.'};
+    const tieneMtgHoy = conMtgHoy.has(id);
+    const semCount = semMtgCount[id] || 0;
+    return `<tr class="tarea-vendor-row">
+      <td>
+        <span class="vc" style="background:${VC(id)}">${VN(id)}</span>
+        <div style="margin-top:5px;display:flex;gap:3px;flex-wrap:wrap;">
+          <span class="tarea-mtg-badge" style="${tieneMtgHoy?'background:#e8f5e9;color:#2e7d32;':'background:#fff8e1;color:#e65100;'}">${tieneMtgHoy?'● reunión hoy':'○ libre hoy'}</span>
+          <span class="tarea-mtg-badge" style="background:#e3f2fd;color:#1565c0;">${semCount} mtg esta semana</span>
+        </div>
+      </td>
+      <td style="font-size:8pt;color:#c62828;font-weight:600;">${p.urgente}</td>
+      <td style="font-size:8pt;">${p.accion}</td>
+    </tr>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <div class="tarea-header-bar">
+      <span>Semana: ${weekLabel}</span>
+      <span style="opacity:.7;font-weight:400;">Día seleccionado: ${fmtDate(date)}</span>
+    </div>
+
+    <div class="tarea-section-title">Prioridades de la Semana</div>
+    <div class="tarea-priors-grid">${priorHTML}</div>
+
+    <div class="tarea-section-title" style="margin-top:20px;">Rituales Diarios — Para Todo el Equipo</div>
+    <div class="tarea-rituals-grid">${ritualesHTML}</div>
+
+    <div class="tarea-section-title" style="margin-top:20px;">Pipeline Individual — Acciones Esta Semana</div>
+    <div style="overflow-x:auto">
+      <table class="dtasks-table">
+        <thead><tr><th>Vendedor</th><th>Deals urgentes</th><th>Acción concreta</th></tr></thead>
+        <tbody>${vendorRows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// PERIOD BAR
+// ═══════════════════════════════════════════════
+function updatePeriodBar(date){
+  const ym=date.slice(0,7);
+  
+  // Populate vendor selects if they are empty
+  const vdia = document.getElementById('vendorFilterDia');
+  const vsem = document.getElementById('vendorFilterSem');
+  if(vdia && vdia.options.length <= 1) {
+    const opts = Object.keys(VENDORS).map(v => `<option value="${v}">${VENDORS[v].name}</option>`).join('');
+    vdia.innerHTML += opts;
+    vsem.innerHTML += opts;
+  }
+
+  const ms=getMeetingsByMonth(ym);
+  const validMs = ms.filter(m => m.st !== 'cancelled');
+  const p=validMs.filter(m=>m.tp==='primera').length;
+  const s=validMs.filter(m=>m.tp==='seguimiento').length;
+  const x=validMs.filter(m=>m.tp==='partner').length;
+  const vendors=new Set(validMs.flatMap(m=>getAllVendors(m))).size;
+  const months={'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
+  document.getElementById('periodTitle').textContent=months[ym]||ym;
+  document.getElementById('periodTag').textContent=`${validMs.length} reuniones válidas en el mes`;
+  document.getElementById('kpisEl').innerHTML=`
+    <div class="kp hi"><div class="n">${validMs.length}</div><div class="l">Reuniones</div></div>
+    <div class="kp"><div class="n">${p}</div><div class="l">1ras reuniones</div></div>
+    <div class="kp"><div class="n">${s}</div><div class="l">Seguimientos</div></div>
+    <div class="kp"><div class="n">${x}</div><div class="l">Partnerships</div></div>
+    <div class="kp hi"><div class="n">${vendors}</div><div class="l">Vendedores activos</div></div>`;
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+let curView='dia', curTab='agenda';
+const TAB_BTN_IDS={agenda:'tAgenda',ranking:'tRanking',vendedores:'tVend',tareas:'tTar'};
+
+function setView(v){
+  curView=v;
+  // Always switch to Agenda tab — views live inside tab-agenda
+  if(curTab !== 'agenda'){
+    curTab = 'agenda';
+    const tabs=['agenda','ranking','vendedores','tareas'];
+    tabs.forEach(x=>{
+      document.getElementById('tab-'+x).style.display = x==='agenda' ? '' : 'none';
+      const btn = document.getElementById(TAB_BTN_IDS[x]);
+      if(btn) btn.classList.toggle('on', x==='agenda');
+    });
+  }
+  ['dia','semana','mes'].forEach(x=>{
+    document.getElementById('view-'+x).style.display = x===v ? '' : 'none';
+    document.getElementById('v'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('on', x===v);
+  });
+  if(v==='dia') renderDia(document.getElementById('dpDia').value);
+  if(v==='semana') renderSemana(document.getElementById('dpSem').value);
+  if(v==='mes') renderMes(document.getElementById('mesSel').value);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function dayJump(delta){
+  const dp=document.getElementById('dpDia');
+  if(delta===0){
+    dp.value=todayAR();
+  } else {
+    const d=new Date(dp.value+'T12:00:00');
+    d.setDate(d.getDate()+delta);
+    dp.value=d.toISOString().slice(0,10);
+  }
+  updatePeriodBar(dp.value);
+  renderDia(dp.value);
+}
+
+function setTab(t){
+  curTab=t;
+  const tabs=['agenda','ranking','vendedores','tareas'];
+  tabs.forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x===t?'':'none';
+    const btn=document.getElementById(TAB_BTN_IDS[x]);
+    if(btn) btn.classList.toggle('on',x===t);
+  });
+  const ym=document.getElementById('dpDia').value.slice(0,7);
+  if(t==='ranking') {
+    const selYm = document.getElementById('rankingMesSel').value;
+    renderRanking(selYm);
+  }
+  if(t==='vendedores') renderVendors(ym);
+  if(t==='tareas') renderTareas(document.getElementById('dpDia').value);
+}
+
+// ═══════════════════════════════════════════════
+// NAVEGACIÓN DE PERÍODOS
+// ═══════════════════════════════════════════════
+function semJump(deltaDays){
+  const dp=document.getElementById('dpSem');
+  if(deltaDays===0){
+    dp.value=todayAR();
+  } else {
+    const d=new Date(dp.value+'T12:00:00');
+    d.setDate(d.getDate()+deltaDays);
+    dp.value=d.toISOString().slice(0,10);
+  }
+  renderSemana(dp.value);
+}
+
+function mesJump(delta){
+  const sel=document.getElementById('mesSel');
+  const [y,m]=sel.value.split('-').map(Number);
+  const nd=new Date(y, m-1+delta, 1);
+  const nval=`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}`;
+  // Add option if not present
+  let opt=[...sel.options].find(o=>o.value===nval);
+  if(!opt){
+    opt=document.createElement('option');
+    opt.value=nval;
+    const mnames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    opt.text=`${mnames[nd.getMonth()]} ${nd.getFullYear()}`;
+    // insert sorted
+    const opts=[...sel.options].map(o=>o.value);
+    if(nval < opts[0]) sel.insertBefore(opt, sel.options[0]);
+    else sel.appendChild(opt);
+  }
+  sel.value=nval;
+  if(delta===0) sel.value = todayAR().slice(0,7);
+  renderMes(sel.value);
+  renderVendors(sel.value);
+}
+
+// ═══════════════════════════════════════════════
+// ACTUALIZAR DASHBOARD
+// ═══════════════════════════════════════════════
+function actualizarDashboard(){
+  const btn=document.getElementById('btnUpdate');
+  btn.classList.add('syncing');
+  btn.disabled=true;
+
+  // Sincronizar con Make.com y re-renderizar
+  syncCalendar();
+  setTimeout(()=>{ btn.classList.remove('syncing'); btn.disabled=false; }, 4000);
+  return;
+
+  // fallback re-render (datos locales)
+  setTimeout(()=>{
+    const d=document.getElementById('dpDia').value;
+    updatePeriodBar(d);
+    if(curView==='dia') renderDia(d);
+    if(curView==='semana') renderSemana(document.getElementById('dpSem').value);
+    if(curView==='mes') renderMes(document.getElementById('mesSel').value);
+    if(curTab==='ranking') renderRanking(document.getElementById('rankingMesSel').value);
+    if(curTab==='vendedores') renderVendors(d.slice(0,7));
+    if(curTab==='tareas') renderTareas(d);
+    btn.classList.remove('syncing');
+    btn.disabled=false;
+    const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('lastUpdate').textContent=`Actualizado ${now}`;
+  }, 600);
+}
+
+// ═══════════════════════════════════════════════
+// REPORTE HTML IMPRIMIBLE
+// ═══════════════════════════════════════════════
+function downloadReport(){
+  const view=curView;
+  let titulo='', subtitle='', bodyHTML='';
+  const hoy=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // ─── helpers de reporte ──────────────────────
+  function rpBadge(tp){
+    if(tp==='primera') return '<span style="background:#e3f2fd;color:#1565c0;border-radius:4px;padding:1px 6px;font-size:7.5pt;font-weight:700;">1ra reunión</span>';
+    if(tp==='seguimiento') return '<span style="background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 6px;font-size:7.5pt;font-weight:700;">Seguimiento</span>';
+    return '<span style="background:#f3e5f5;color:#6a1b9a;border-radius:4px;padding:1px 6px;font-size:7.5pt;font-weight:700;">Partnership</span>';
+  }
+  function rpStatus(m){
+    if(m.st==='cancelled') return '<span style="color:#c62828;">✗ Cancelada</span>';
+    if(isMeetingDone(m)) return '<span style="color:#3949ab;">✓ Finalizada</span>';
+    if(isActiveNow(m)) return '<span style="color:#43a047;font-weight:700;">● En curso</span>';
+    return '<span style="color:#f57f17;">⏳ Pendiente</span>';
+  }
+  function rpMtgTable(meetings){
+    if(!meetings.length) return '<p style="color:#aaa;padding:12px;font-size:8.5pt;">Sin reuniones registradas.</p>';
+    return `<table style="width:100%;border-collapse:collapse;font-size:8.5pt;margin-top:8px;">
+      <thead><tr style="background:#0d1b4b;color:#fff;">
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Hora</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Duración</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Empresa</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Propietario</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Acompañante</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Tipo</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Estado</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Deal/Presup.</th>
+        <th style="padding:7px 10px;text-align:left;font-size:7.5pt;">Contexto / Próximo paso</th>
+      </tr></thead>
+      <tbody>${meetings.map((m,i)=>{
+        const vs=getAllVendors(m);
+        const deal=getDealForMeeting(m.co);
+        const presup=getPresupForMeeting(m.co);
+        return `<tr style="background:${i%2===0?'#fff':'#f8f9ff'};">
+          <td style="padding:7px 10px;font-weight:700;">${m.t}</td>
+          <td style="padding:7px 10px;">${fmtDur(m.dur)}</td>
+          <td style="padding:7px 10px;font-weight:700;">${m.co}</td>
+          <td style="padding:7px 10px;">${VN(vs[0]||'otro')}</td>
+          <td style="padding:7px 10px;color:#888;">${vs.slice(1).map(VN).join(', ')||'—'}</td>
+          <td style="padding:7px 10px;">${rpBadge(m.tp)}</td>
+          <td style="padding:7px 10px;">${rpStatus(m)}</td>
+          <td style="padding:7px 10px;">${deal?'🏆 Ganado':presup?'📄 '+presup.st:'—'}</td>
+          <td style="padding:7px 10px;color:#444;font-size:8pt;">${(m.ctx||'').replace(/<[^>]+>/g,'').slice(0,80)}${m.nx?'<br><strong>→ '+m.nx+'</strong>':''}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+  function rpKpi(n,label,color){
+    return `<div style="background:${color||'rgba(255,255,255,.12)'};border-radius:9px;padding:12px 18px;text-align:center;min-width:80px;">
+      <div style="font-size:20pt;font-weight:900;line-height:1;">${n}</div>
+      <div style="font-size:7pt;opacity:.75;text-transform:uppercase;letter-spacing:.8px;margin-top:3px;">${label}</div>
+    </div>`;
+  }
+  function rpRankingTable(ym){
+    const mtgs=getMeetingsByMonth(ym).filter(m=>m.st!=='cancelled');
+    const vstats={};
+    Object.keys(VENDORS).forEach(id=>{vstats[id]={p:0,s:0,x:0,dur:0,done:0};});
+    mtgs.forEach(m=>{getAllVendors(m).forEach(vid=>{
+      if(!vstats[vid]) vstats[vid]={p:0,s:0,x:0,dur:0,done:0};
+      if(m.tp==='primera') vstats[vid].p++; else if(m.tp==='seguimiento') vstats[vid].s++; else vstats[vid].x++;
+      vstats[vid].dur+=m.dur; if(isMeetingDone(m)) vstats[vid].done++;
+    });});
+    const sorted=Object.entries(vstats).map(([id,s])=>{
+      const tot=s.p+s.s+s.x;
+      const deals=getDealsByVendor(id,ym).length;
+      const presup=getPresupByVendor(id,ym).length;
+      const conv=tot>0?Math.round(deals/tot*100)+'%':'—';
+      return {id,tot,...s,deals,presup,conv};
+    }).filter(v=>v.tot>0).sort((a,b)=>b.deals-a.deals||b.presup-a.presup||b.tot-a.tot);
+    const medals=['🥇','🥈','🥉'];
+    return `<table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+      <thead><tr style="background:#0d1b4b;color:#fff;">
+        <th style="padding:8px 10px;">#</th><th style="padding:8px 10px;text-align:left;">Vendedor</th>
+        <th style="padding:8px 10px;">Total mtgs</th><th style="padding:8px 10px;">1ras</th><th style="padding:8px 10px;">Seg.</th>
+        <th style="padding:8px 10px;">Finalizadas</th><th style="padding:8px 10px;">Tiempo</th>
+        <th style="padding:8px 10px;">🏆 Ganados</th><th style="padding:8px 10px;">📄 Presup.</th><th style="padding:8px 10px;">Conversión</th>
+      </tr></thead>
+      <tbody>${sorted.map((v,i)=>`<tr style="background:${i%2===0?'#fff':'#f8f9ff'};">
+        <td style="padding:8px 10px;text-align:center;font-size:11pt;">${medals[i]||i+1}</td>
+        <td style="padding:8px 10px;font-weight:700;">
+          <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${VC(v.id)};margin-right:5px;"></span>${VN(v.id)}
+        </td>
+        <td style="padding:8px 10px;text-align:center;font-weight:900;color:#1a237e;">${v.tot}</td>
+        <td style="padding:8px 10px;text-align:center;color:#1565c0;">${v.p}</td>
+        <td style="padding:8px 10px;text-align:center;color:#e65100;">${v.s}</td>
+        <td style="padding:8px 10px;text-align:center;color:#3949ab;">${v.done}</td>
+        <td style="padding:8px 10px;text-align:center;color:#666;">${fmtDur(v.dur)}</td>
+        <td style="padding:8px 10px;text-align:center;font-weight:700;color:#2e7d32;">${v.deals||'—'}</td>
+        <td style="padding:8px 10px;text-align:center;font-weight:700;color:#f57f17;">${v.presup||'—'}</td>
+        <td style="padding:8px 10px;text-align:center;color:#555;">${v.conv}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+  function rpDealsTable(ym){
+    const deals=DEALS.filter(d=>!ym||d.d.startsWith(ym));
+    const presups=PRESUPUESTOS.filter(p=>!ym||p.d.startsWith(ym));
+    let html='';
+    if(deals.length){
+      html+=`<h3 style="color:#2e7d32;font-size:9pt;margin:16px 0 6px;">🏆 Tratos Ganados</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+        <thead><tr style="background:#2e7d32;color:#fff;"><th style="padding:7px 10px;text-align:left;">Fecha</th><th style="padding:7px 10px;text-align:left;">Vendedor</th><th style="padding:7px 10px;text-align:left;">Empresa</th><th style="padding:7px 10px;text-align:left;">Nota</th></tr></thead>
+        <tbody>${deals.map((d,i)=>`<tr style="background:${i%2===0?'#fff':'#f1f8e9'};"><td style="padding:7px 10px;">${d.d.slice(8,10)}/${d.d.slice(5,7)}</td><td style="padding:7px 10px;font-weight:700;">${VN(d.v)}</td><td style="padding:7px 10px;">${d.co}</td><td style="padding:7px 10px;color:#555;">${d.n||'—'}</td></tr>`).join('')}</tbody>
+      </table>`;
+    }
+    if(presups.length){
+      html+=`<h3 style="color:#f57f17;font-size:9pt;margin:16px 0 6px;">📄 Presupuestos en Pipeline</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+        <thead><tr style="background:#e65100;color:#fff;"><th style="padding:7px 10px;text-align:left;">Fecha</th><th style="padding:7px 10px;text-align:left;">Vendedor</th><th style="padding:7px 10px;text-align:left;">Empresa</th><th style="padding:7px 10px;text-align:left;">Estado</th></tr></thead>
+        <tbody>${presups.map((p,i)=>`<tr style="background:${i%2===0?'#fff':'#fff8e1'};"><td style="padding:7px 10px;">${p.d.slice(8,10)}/${p.d.slice(5,7)}</td><td style="padding:7px 10px;font-weight:700;">${VN(p.v)}</td><td style="padding:7px 10px;">${p.co}</td><td style="padding:7px 10px;">${p.st}</td></tr>`).join('')}</tbody>
+      </table>`;
+    }
+    return html;
+  }
+  function rpSection(t,content){
+    return `<div style="margin-bottom:22px;">
+      <h2 style="font-size:10pt;font-weight:800;color:#0d1b4b;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #1a237e;padding-bottom:4px;margin-bottom:10px;">${t}</h2>
+      ${content}
+    </div>`;
+  }
+
+  // ─── Armar contenido según vista ────────────
+  if(view==='dia'){
+    const d=document.getElementById('dpDia').value;
+    const ms=getMeetingsByDate(d).filter(m=>m.st!=='cancelled');
+    const validMs=ms;
+    titulo=`Reporte Diario — ${fmtDate(d)}`;
+    subtitle=`Generado el ${hoy} · Dashboard Comercial Nubceo`;
+    // KPIs
+    const p=ms.filter(m=>m.tp==='primera').length;
+    const s=ms.filter(m=>m.tp==='seguimiento').length;
+    const x=ms.filter(m=>m.tp==='partner').length;
+    const done=ms.filter(m=>isMeetingDone(m)).length;
+    const dur=ms.reduce((a,m)=>a+m.dur,0);
+    const kpis=`<div style="display:flex;gap:10px;flex-wrap:wrap;background:linear-gradient(135deg,#0d1b4b,#1a237e);padding:18px 24px;border-radius:11px;color:#fff;margin-bottom:20px;">
+      ${rpKpi(ms.length,'Reuniones')}${rpKpi(p,'1ras')}${rpKpi(s,'Seg.')}${rpKpi(done,'Finalizadas')}${rpKpi(fmtDur(dur),'Tiempo')}
+    </div>`;
+    bodyHTML=kpis+rpSection('Reuniones del día',rpMtgTable(ms))+rpSection('Deals & Presupuestos',rpDealsTable(d));
+
+  } else if(view==='semana'){
+    const anyDate=document.getElementById('dpSem').value;
+    const dates=getMeetingsByWeek(anyDate);
+    const workDays=dates.slice(0,5);
+    titulo=`Reporte Semanal — ${fmtDate(dates[0])} al ${fmtDate(dates[4])}`;
+    subtitle=`Generado el ${hoy} · Dashboard Comercial Nubceo`;
+    const allMs=workDays.flatMap(d=>getMeetingsByDate(d)).filter(m=>m.st!=='cancelled');
+    const p=allMs.filter(m=>m.tp==='primera').length;
+    const s=allMs.filter(m=>m.tp==='seguimiento').length;
+    const done=allMs.filter(m=>isMeetingDone(m)).length;
+    const dur=allMs.reduce((a,m)=>a+m.dur,0);
+    const kpis=`<div style="display:flex;gap:10px;flex-wrap:wrap;background:linear-gradient(135deg,#0d1b4b,#1a237e);padding:18px 24px;border-radius:11px;color:#fff;margin-bottom:20px;">
+      ${rpKpi(allMs.length,'Reuniones')}${rpKpi(p,'1ras')}${rpKpi(s,'Seg.')}${rpKpi(done,'Finalizadas')}${rpKpi(fmtDur(dur),'Tiempo')}
+    </div>`;
+    let daysHTML='';
+    workDays.forEach(d=>{
+      const ms=getMeetingsByDate(d).filter(m=>m.st!=='cancelled');
+      daysHTML+=`<div style="margin-bottom:16px;"><h3 style="font-size:9pt;font-weight:800;color:#1a237e;margin:0 0 6px;">${fmtDayName(d)} ${fmtDate(d)}</h3>${rpMtgTable(ms)}</div>`;
+    });
+    const ym=anyDate.slice(0,7);
+    bodyHTML=kpis+rpSection('Ranking semanal',rpRankingTable(ym))+rpSection('Reuniones por día',daysHTML)+rpSection('Deals & Presupuestos',rpDealsTable(ym));
+
+  } else { // mes
+    const ym=document.getElementById('mesSel').value;
+    const [y,mo]=ym.split('-').map(Number);
+    const MNAMES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    titulo=`Reporte Mensual — ${MNAMES[mo-1]} ${y}`;
+    subtitle=`Generado el ${hoy} · Dashboard Comercial Nubceo`;
+    const allMs=getMeetingsByMonth(ym).filter(m=>m.st!=='cancelled');
+    const p=allMs.filter(m=>m.tp==='primera').length;
+    const s=allMs.filter(m=>m.tp==='seguimiento').length;
+    const done=allMs.filter(m=>isMeetingDone(m)).length;
+    const dur=allMs.reduce((a,m)=>a+m.dur,0);
+    const deals=DEALS.filter(d=>d.d.startsWith(ym));
+    const presups=PRESUPUESTOS.filter(p=>p.d.startsWith(ym));
+    const kpis=`<div style="display:flex;gap:10px;flex-wrap:wrap;background:linear-gradient(135deg,#0d1b4b,#1a237e);padding:18px 24px;border-radius:11px;color:#fff;margin-bottom:20px;">
+      ${rpKpi(allMs.length,'Reuniones')}${rpKpi(p,'1ras')}${rpKpi(s,'Seg.')}${rpKpi(done,'Finalizadas')}${rpKpi(fmtDur(dur),'Tiempo total')}${rpKpi(deals.length,'Tratos ganados','rgba(46,125,50,.3)')}${rpKpi(presups.length,'Presup. enviados','rgba(245,127,23,.25)')}
+    </div>`;
+    bodyHTML=kpis+rpSection('Ranking — Performance Comercial',rpRankingTable(ym))+rpSection('Deals & Presupuestos',rpDealsTable(ym))+rpSection('Todas las reuniones del mes',rpMtgTable(allMs));
+  }
+
+  // ─── Armar HTML completo ─────────────────────
+  const reportHTML=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>${titulo}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f7ff;color:#1c1c2e;font-size:9pt;}
+    .rp-header{background:linear-gradient(135deg,#0d1b4b 0%,#1a237e 60%,#3949ab 100%);color:#fff;padding:28px 36px;display:flex;align-items:center;justify-content:space-between;}
+    .rp-logo{font-size:13pt;font-weight:900;letter-spacing:-.3px;}
+    .rp-title{font-size:17pt;font-weight:900;letter-spacing:-.5px;margin-top:3px;}
+    .rp-sub{font-size:8pt;opacity:.6;margin-top:4px;}
+    .rp-body{padding:28px 36px;}
+    .rp-print{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:8.5pt;font-weight:700;}
+    .rp-print:hover{background:rgba(255,255,255,.25);}
+    @media print{
+      .rp-print{display:none;}
+      body{background:#fff;}
+      .rp-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+      thead tr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    }
+  </style>
+  </head><body>
+  <div class="rp-header">
+    <div>
+      <div class="rp-logo">📊 Nubceo <span style="font-size:8pt;opacity:.6;font-weight:400;">Dashboard Comercial</span></div>
+      <div class="rp-title">${titulo}</div>
+      <div class="rp-sub">${subtitle}</div>
+    </div>
+    <button class="rp-print" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+  </div>
+  <div class="rp-body">${bodyHTML}</div>
+  </body></html>`;
+
+  const w=window.open('','_blank','width=1100,height=800');
+  if(w){
+    w.document.open();
+    w.document.write(reportHTML);
+    w.document.close();
+  } else {
+    // fallback: descarga como HTML
+    const blob=new Blob([reportHTML],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`reporte-nubceo-${view}.html`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DATE LISTENERS
+// ═══════════════════════════════════════════════
+document.getElementById('dpDia').addEventListener('change',function(){
+  const d=this.value;
+  updatePeriodBar(d);
+  renderDia(d);
+  renderTareas(d);
+  if(curTab==='vendedores') renderVendors(d.slice(0,7));
+});
+document.getElementById('dpSem').addEventListener('change',function(){ renderSemana(this.value); });
+document.getElementById('mesSel').addEventListener('change',function(){ renderMes(this.value); renderVendors(this.value); });
+document.getElementById('rankingMesSel').addEventListener('change',function(){ renderRanking(this.value); });
+document.getElementById('vendorFilterDia').addEventListener('change',function(){ renderDia(document.getElementById('dpDia').value); });
+document.getElementById('vendorFilterSem').addEventListener('change',function(){ renderSemana(document.getElementById('dpSem').value); });
+
+document.getElementById('btnCopyAgenda').addEventListener('click', function(){
+  const date = document.getElementById('dpDia').value;
+  const vf = document.getElementById('vendorFilterDia').value;
+  let meetings = getMeetingsByDate(date);
+  if(vf !== 'todos') meetings = meetings.filter(m => getAllVendors(m).includes(vf));
+
+  let text = "📅 *Agenda Comercial Nubceo - " + fmtDate(date) + "*\n\n";
+  if(meetings.length===0) text += "No hay reuniones programadas.";
+  else {
+    meetings.forEach(m => {
+       const st = m.st || 'active';
+       const status = st==='cancelled'?'❌ [CANCELADA] ':st==='rescheduled'?'🔄 [REPROGRAMADA] ':'';
+       const vends = getAllVendors(m);
+       text += "⏰ *" + m.t + " hs* - " + m.co + " (" + (m.tp==='primera'?'1ra reunión':m.tp) + ")\n";
+       text += status + "👤 " + vends.map(VN).join(' + ') + "\n";
+       if(m.m) text += "🔗 Meet: " + m.m + "\n";
+       text += "\n";
+    });
+  }
+  navigator.clipboard.writeText(text).then(()=>alert("Agenda copiada al portapapeles! Lista para mandar."));
+});
+
+// CLOCK
+function tick(){
+  const now=new Date();
+  const s=now.toLocaleTimeString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',hour12:false,hour:'2-digit',minute:'2-digit'});
+  document.getElementById('clk').textContent=s;
+}
+tick(); setInterval(tick,1000);
+
+
+// --- MAKE.COM WEBHOOK — proxy público sin OAuth ni login ---
+const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/i8sll981gud2cgnv84f6u63kuufkeoie';
+
+function classifyMeetingLive(title) {
+  const t = title.toLowerCase();
+  if (/partner|alianza|sap|seidor|nodum|sucive/.test(t)) return 'partner';
+  if (/cotizaci|propuesta|seguimiento|técnica|técnico|seg\.|2da|reunion tecnica|kick off/.test(t)) return 'seguimiento';
+  return 'primera';
+}
+
+function getVendorByEmail(email) {
+  for(let id in VENDORS) {
+    if(VENDORS[id].email && VENDORS[id].email.toLowerCase() === email.toLowerCase()) return id;
+  }
+  return 'otro';
+}
+
+function findStaticEnrichment(dateStr, title) {
+  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9 ]/gi,'').trim();
+  const t = norm(title);
+  if(!t) return null;
+  return STATIC_MEETINGS.find(m => {
+    if(m.d !== dateStr) return false;
+    const s = norm(m.co || m.s || '');
+    return s === t || (t.length > 5 && s.includes(t.slice(0,8))) || (s.length > 5 && t.includes(s.slice(0,8)));
+  }) || null;
+}
+
+function syncCalendar() {
+  const btn = document.getElementById('btnUpdate');
+  const status = document.getElementById('userName');
+  if(btn) { btn.disabled = true; btn.classList.add('syncing'); }
+  if(status) status.textContent = '🔄 Sincronizando...';
+
+  const SKIP = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes@nubceo.com',
+                'bautista.lanusse@nubceo.com','fernanda.acevedo@nubceo.com','al@nubceo.com','gl@nubceo.com'];
+
+  fetch(MAKE_WEBHOOK_URL)
+    .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(data => {
+      const events = data.events || [];
+      if(!events.length) throw new Error('Sin eventos');
+
+      MEETINGS = events.map(ev => {
+        const st  = new Date(ev.start);
+        const en  = new Date(ev.end);
+        const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
+
+        const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP.includes(g));
+        const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
+        const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
+        const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
+
+        const dateStr = st.toISOString().slice(0,10);
+        const enriched = findStaticEnrichment(dateStr, ev.title || '');
+
+        const base = {
+          d:   dateStr,
+          t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
+          dur: Math.round((en - st) / 60000),
+          tp:  classifyMeetingLive(ev.title || ''),
+          co:  ev.title || 'Sin título',
+          s:   ev.title || 'Sin título',
+          cnt: extGuests,
+          ctx: enriched ? enriched.ctx : (ev.desc || ''),
+          nx:  enriched ? enriched.nx  : 'Actualizar CRM',
+          m:   ev.meet  || (enriched ? enriched.m : null)
+        };
+        if(companions.length) base.vs = [mainVendor, ...companions];
+        else base.v = mainVendor;
+        return base;
+      });
+
+      const d = document.getElementById('dpDia').value;
+      updatePeriodBar(d);
+      setView(curView);
+      setTab(curTab);
+      const now = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      if(status) status.textContent = '✅ ' + now;
+      const lu = document.getElementById('lastUpdate');
+      if(lu) lu.textContent = 'Sync ' + now;
+      if(btn) { btn.disabled = false; btn.classList.remove('syncing'); }
+    })
+    .catch(err => {
+      console.warn('Sync error (usando datos locales):', err.message);
+      if(status) status.textContent = '📋 Datos locales';
+      if(btn) { btn.disabled = false; btn.classList.remove('syncing'); }
+    });
+}
+
+// Auto-sync al cargar la página
+window.addEventListener('load', () => setTimeout(syncCalendar, 1500));
+// Auto-refresh cada 30 minutos
+setInterval(syncCalendar, 30 * 60 * 1000);
+
+// INIT
+const initDate = todayAR();
+document.getElementById('dpDia').value = initDate;
+document.getElementById('dpSem').value = initDate;
+
+// Ensure mesSel has current month
+(function(){
+  const sel=document.getElementById('mesSel');
+  const ym=initDate.slice(0,7);
+  if(![...sel.options].find(o=>o.value===ym)){
+    const mnames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const [y,m]=ym.split('-').map(Number);
+    const opt=document.createElement('option');
+    opt.value=ym; opt.text=`${mnames[m-1]} ${y}`; opt.selected=true;
+    sel.appendChild(opt);
+  } else {
+    sel.value=ym;
+  }
+})();
+
+// Mostrar timestamp inicial
+document.getElementById('lastUpdate').textContent = 'Datos al ' + new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+
+updatePeriodBar(initDate);
+renderDia(initDate);
+</script>
+</div>
+</body>
+</html>
