@@ -608,7 +608,10 @@ let MEETINGS = [
   {d:'2026-05-06',t:'11:00',dur:45,co:'Bolivia / Divina',vs:['hernan'],tp:'primera',s:'Nubceo x Bolivia - Demo',cnt:['salfano@bolivia-divina.com'],m:'https://meet.google.com/yuw-oefx-czm',ctx:'Demo con Bolivia Divina.',nx:'Propuesta.'},
   {d:'2026-05-06',t:'11:00',dur:60,co:'NCR Voyix (Presencial)',vs:['pablo_arce'],tp:'primera',s:'Reunion NCR Voyix',cnt:[],m:'https://meet.google.com/wrj-spqk-sfs',ctx:'Reunión presencial en oficinas Nubceo (Libertad 1041, Piso 4). NCR Voyix.',nx:'Demo y propuesta.'},
   {d:'2026-05-06',t:'15:00',dur:60,co:'UMT / Eslopet',vs:['pablo_illich'],tp:'seguimiento',s:'Propuesta Comercial - UMT',cnt:['martin.noguera@umt.com.uy'],m:'https://meet.google.com/qke-ekmu-vcg',ctx:'Seguimiento del 30/04 con Martín Noguera. Esperando volumen de transacciones para afinar propuesta.',nx:'Presentar propuesta + negociar.'},
+  {d:'2026-05-07',t:'13:00',dur:30,co:'Jorge Divano',vs:['hernan'],tp:'seguimiento',s:'Nubceo x Jorge Divano - Presentación de Cotización',cnt:['jorgedivano1972@gmail.com','shellfondodelalegua@gmail.com'],m:'https://meet.google.com/xxc-wnpm-eii',ctx:'Presentación de cotización. Hernán organiza. Contactos: Jorge Divano + Shell Fondo de la Legua (shellfondodelalegua@gmail.com).',nx:'Presentar cotización y esperar respuesta. Cerrar en la reunión si es posible.'},
+  {d:'2026-05-07',t:'13:00',dur:30,co:'Joaco Requena',vs:['bautista'],tp:'primera',s:'Joaco Requena and Bautista Lanusse',cnt:['joacorequena@gmail.com'],m:'https://meet.google.com/ibq-jtrj-ius',ctx:'Demo agendada vía Calendly. Empresa: Joaquín José Requena Sastre. Tel: +54 11 6047-2262.',nx:'Demo completa y calificación. Derivar a comercial si cierra.'},
   {d:'2026-05-07',t:'15:00',dur:60,co:'Fiancar',vs:['pablo_illich'],tp:'primera',s:'Presentación Nubceo - Fiancar',cnt:['c.farriols@grupofiancar.com'],m:'https://meet.google.com/kwr-kpju-vav',ctx:'Primera reunión con Fiancar (Grupo Fiancar).',nx:'Presentación completa y calificación.'},
+  {d:'2026-05-07',t:'17:00',dur:30,co:'Pickit',vs:['bautista'],tp:'partner',s:'Pickit Nubceo',cnt:['jsanseau@pickit.net'],m:'https://meet.google.com/nwj-ijbb-scy',ctx:'Reunión con Pickit (pickit.net). Organiza jsanseau@pickit.net.',nx:'Entender propuesta de partnership o integración.'},
   {d:'2026-05-13',t:'10:00',dur:60,co:'Shop Gallery',vs:['mateo'],tp:'primera',s:'Nubceo | Shop Gallery Conciliador',cnt:[],m:null,ctx:'Primera reunión con Shop Gallery.',nx:'Demo y calificación.'},
   {d:'2026-05-13',t:'11:00',dur:60,co:'Club Atlético Olimpia',vs:['vanessa'],tp:'primera',s:'Nubceo / Club Atlético Olimpia',cnt:[],m:null,ctx:'Primera reunión con Club Atlético Olimpia (UY).',nx:'Demo y propuesta.'},
   {d:'2026-05-13',t:'14:00',dur:60,co:'Huinid Hoteles / Calden Oil',vs:['mateo'],tp:'primera',s:'Nubceo | Huinid Hoteles - Calden Oil',cnt:[],m:null,ctx:'Primera reunión con Huinid Hoteles y Calden Oil.',nx:'Calificar y demo.'},
@@ -1976,72 +1979,102 @@ function findStaticEnrichment(dateStr, title) {
   }) || null;
 }
 
-function syncCalendar() {
-  const btn = document.getElementById('btnUpdate');
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 horas
+
+const SKIP_EMAILS = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes@nubceo.com',
+                     'bautista.lanusse@nubceo.com','fernanda.acevedo@nubceo.com','al@nubceo.com','gl@nubceo.com'];
+
+function applyLiveEvents(events) {
+  if(!events || !events.length) return false;
+  MEETINGS = events.map(ev => {
+    const st  = new Date(ev.start);
+    const en  = new Date(ev.end);
+    const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
+    const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP_EMAILS.includes(g));
+    const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
+    const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
+    const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
+    const dateStr    = st.toISOString().slice(0,10);
+    const enriched   = findStaticEnrichment(dateStr, ev.title || '');
+    const base = {
+      d:   dateStr,
+      t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
+      dur: Math.round((en - st) / 60000),
+      tp:  classifyMeetingLive(ev.title || ''),
+      co:  ev.title || 'Sin título',
+      s:   ev.title || 'Sin título',
+      cnt: extGuests,
+      ctx: enriched ? enriched.ctx : (ev.desc || ''),
+      nx:  enriched ? enriched.nx  : 'Actualizar CRM',
+      m:   ev.meet  || (enriched ? enriched.m : null)
+    };
+    if(companions.length) base.vs = [mainVendor, ...companions];
+    else base.v = mainVendor;
+    return base;
+  });
+  return true;
+}
+
+function renderAfterSync(label) {
+  const d = document.getElementById('dpDia').value;
+  updatePeriodBar(d);
+  setView(curView);
+  setTab(curTab);
+  const now = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
   const status = document.getElementById('userName');
-  if(btn) { btn.disabled = true; btn.classList.add('syncing'); }
+  const lu     = document.getElementById('lastUpdate');
+  const btn    = document.getElementById('btnUpdate');
+  if(status) status.textContent = label + ' ' + now;
+  if(lu)     lu.textContent = 'Sync ' + now;
+  if(btn)    { btn.disabled = false; btn.classList.remove('syncing'); }
+}
+
+function syncCalendar(forceRefresh) {
+  const btn    = document.getElementById('btnUpdate');
+  const status = document.getElementById('userName');
+  if(btn)    { btn.disabled = true; btn.classList.add('syncing'); }
   if(status) status.textContent = '🔄 Sincronizando...';
 
-  const SKIP = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes@nubceo.com',
-                'bautista.lanusse@nubceo.com','fernanda.acevedo@nubceo.com','al@nubceo.com','gl@nubceo.com'];
+  // Usar caché si es reciente y no forzamos refresh
+  if(!forceRefresh) {
+    try {
+      const cached = localStorage.getItem('nubceo_cal_cache');
+      if(cached) {
+        const { ts, events } = JSON.parse(cached);
+        if(Date.now() - ts < CACHE_TTL_MS && events && events.length) {
+          applyLiveEvents(events);
+          renderAfterSync('📋');
+          return;
+        }
+      }
+    } catch(e) {}
+  }
 
+  // Llamar a Make solo cuando el cache expiró
   fetch(MAKE_WEBHOOK_URL)
     .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
     .then(data => {
       const events = data.events || [];
       if(!events.length) throw new Error('Sin eventos');
-
-      MEETINGS = events.map(ev => {
-        const st  = new Date(ev.start);
-        const en  = new Date(ev.end);
-        const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
-
-        const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP.includes(g));
-        const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
-        const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
-        const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
-
-        const dateStr = st.toISOString().slice(0,10);
-        const enriched = findStaticEnrichment(dateStr, ev.title || '');
-
-        const base = {
-          d:   dateStr,
-          t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
-          dur: Math.round((en - st) / 60000),
-          tp:  classifyMeetingLive(ev.title || ''),
-          co:  ev.title || 'Sin título',
-          s:   ev.title || 'Sin título',
-          cnt: extGuests,
-          ctx: enriched ? enriched.ctx : (ev.desc || ''),
-          nx:  enriched ? enriched.nx  : 'Actualizar CRM',
-          m:   ev.meet  || (enriched ? enriched.m : null)
-        };
-        if(companions.length) base.vs = [mainVendor, ...companions];
-        else base.v = mainVendor;
-        return base;
-      });
-
-      const d = document.getElementById('dpDia').value;
-      updatePeriodBar(d);
-      setView(curView);
-      setTab(curTab);
-      const now = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-      if(status) status.textContent = '✅ ' + now;
-      const lu = document.getElementById('lastUpdate');
-      if(lu) lu.textContent = 'Sync ' + now;
-      if(btn) { btn.disabled = false; btn.classList.remove('syncing'); }
+      // Guardar en caché
+      localStorage.setItem('nubceo_cal_cache', JSON.stringify({ ts: Date.now(), events }));
+      applyLiveEvents(events);
+      renderAfterSync('✅');
     })
     .catch(err => {
-      console.warn('Sync error (usando datos locales):', err.message);
+      console.warn('Sync error (datos locales):', err.message);
       if(status) status.textContent = '📋 Datos locales';
-      if(btn) { btn.disabled = false; btn.classList.remove('syncing'); }
+      if(btn)    { btn.disabled = false; btn.classList.remove('syncing'); }
     });
 }
 
-// Auto-sync al cargar la página
-window.addEventListener('load', () => setTimeout(syncCalendar, 1500));
-// Auto-refresh cada 30 minutos
-setInterval(syncCalendar, 30 * 60 * 1000);
+// Al cargar: usa caché si existe, llama a Make si expiró
+window.addEventListener('load', () => setTimeout(() => syncCalendar(false), 1000));
+// Botón manual = siempre fuerza refresh real
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnUpdate');
+  if(btn) btn.onclick = () => syncCalendar(true);
+});
 
 // INIT
 const initDate = todayAR();
