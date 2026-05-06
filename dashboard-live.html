@@ -44,10 +44,122 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
 .kp .l{font-size:6.5pt;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
 .kp.hi{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);}
 
+/* VIEW STRIP — mobile only, inside agenda tab */
+.view-strip{display:none;}
+
 /* LAYOUT */
 .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;padding:20px 32px;align-items:start;}
 @media(max-width:860px){.layout{grid-template-columns:1fr;}}
-@media(max-width:760px){#tab-minutas .min-layout{grid-template-columns:1fr!important;}}
+
+/* ════════════════════════════════════════════
+   RESPONSIVE MOBILE — ≤768px
+   ════════════════════════════════════════════ */
+@media(max-width:768px){
+
+  /* Topbar */
+  .tb{padding:0 10px;height:50px;gap:3px;position:sticky;top:0;z-index:200;}
+  .tb-logo{font-size:10.5pt;padding-right:8px;}
+  .tb-logo small{display:none;}
+  .tb-views{display:none!important;}
+  .tb-tabs{flex:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 2px;gap:1px;}
+  .tb-tabs::-webkit-scrollbar{display:none;}
+  .tbtn{padding:5px 9px;font-size:8.5pt;min-height:36px;white-space:nowrap;}
+  .tb-right{gap:5px;}
+  .clk{font-size:9pt;}
+  #lastUpdate{display:none;}
+  .dbtn{display:none!important;}
+  .updbtn{padding:4px 8px;font-size:7.5pt;}
+  #userName{display:none;}
+  button[onclick="syncCalendar()"]{font-size:7.5pt;padding:3px 6px;}
+
+  /* Period bar */
+  .pbar{padding:10px 12px 0;}
+  .pb-top{gap:8px;margin-bottom:10px;}
+  .pb-top h1{font-size:15pt;}
+  .period-tag{font-size:6.5pt;padding:2px 8px;}
+  .kpis{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;gap:6px;padding-bottom:10px;}
+  .kpis::-webkit-scrollbar{display:none;}
+  .kp{min-width:70px;padding:6px 9px;flex-shrink:0;}
+  .kp .n{font-size:14pt;}
+  .kp .l{font-size:5.5pt;}
+
+  /* View strip — visible solo en mobile */
+  .view-strip{display:flex;gap:4px;margin-bottom:12px;background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:4px;}
+  .view-strip .vbtn{flex:1;background:none;border:none;color:var(--muted);padding:7px 4px;border-radius:7px;font-size:9pt;font-weight:700;cursor:pointer;min-height:36px;text-align:center;transition:.15s;touch-action:manipulation;}
+  .view-strip .vbtn.on{background:var(--mid);color:#fff;}
+
+  /* Layout — single column */
+  .layout{display:block;padding:10px 12px;}
+  .sdb{display:none!important;}
+
+  /* Date nav */
+  .date-nav{gap:5px;flex-wrap:wrap;}
+  .qbtns{flex-wrap:nowrap;}
+  .qbtn-day,.qbtn{padding:7px 11px;font-size:9pt;min-height:38px;touch-action:manipulation;}
+  input[type=date],select.msel{padding:7px 10px;font-size:10pt;max-width:100%;}
+  #btnCopyAgenda{min-height:38px;padding:7px 12px;}
+  .daykpis{margin-left:0!important;width:100%;}
+
+  /* Cards */
+  .card{padding:12px 11px;margin-bottom:10px;border-radius:10px;}
+  .sh h2{font-size:8pt;}
+
+  /* Meeting rows */
+  .mh{padding:12px 11px;}
+  .mt{font-size:11pt;min-width:44px;}
+  .mc .mn{font-size:10pt;}
+  .mc .ms{font-size:8pt;}
+  .mr{margin-bottom:7px;}
+  .mb{padding:0 11px 11px;}
+  .mgrid{grid-template-columns:1fr;}
+
+  /* Week view */
+  .day-block-head{padding:9px 11px;}
+  .day-block-head .dname{font-size:10pt;}
+
+  /* Month view — 3 cols */
+  .month-grid{grid-template-columns:repeat(3,1fr);}
+  .month-header-days{grid-template-columns:repeat(3,1fr);}
+
+  /* Ranking — scroll horizontal */
+  #tab-ranking .card>div{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .rtable{min-width:540px;font-size:7.5pt;}
+  .rtable th,.rtable td{padding:5px 7px;}
+
+  /* Vendedores grid — single column */
+  .vgrid{grid-template-columns:1fr!important;}
+  .mes-vendor-grid{grid-template-columns:1fr 1fr;}
+  .mes-deals-grid{grid-template-columns:1fr;}
+
+  /* Tareas */
+  .tarea-priors-grid{grid-template-columns:1fr!important;}
+  .tarea-rituals-grid{grid-template-columns:1fr!important;}
+  .ttable{font-size:8.5pt;}
+
+  /* Minutas — stack vertical */
+  .min-layout{grid-template-columns:1fr!important;}
+  #minMeetingsPanel,#minDayPanel{position:static!important;}
+  .min-search-input{font-size:10pt;padding:10px 13px;}
+  .min-search-btn{min-height:44px;padding:10px 14px;font-size:10pt;}
+  .min-search-bar{gap:6px;}
+
+  /* Pipeline */
+  .pipe-kpis{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .pipe-kp{min-width:unset;}
+  .pipe-section{overflow-x:hidden;}
+  .pipe-table{min-width:460px;font-size:7.5pt;}
+  .pipe-section>div{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+  /* Misc */
+  .alert{font-size:9pt;padding:10px 12px;}
+  .period-kpis{gap:6px;}
+  .pkp{min-width:66px;padding:7px 10px;}
+  .pkp .pn{font-size:13pt;}
+  .nodata{padding:24px;font-size:10pt;}
+  .footer{font-size:8pt;padding:14px;}
+  .dtasks-table th,.dtasks-table td{padding:6px 10px;}
+  .mes-table th,.mes-table td{padding:5px 8px;}
+}
 
 /* DATE NAV */
 .date-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
@@ -391,6 +503,13 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <!-- AGENDA TAB -->
     <div id="tab-agenda">
 
+      <!-- VIEW STRIP — solo visible en mobile (desktop usa topbar) -->
+      <div class="view-strip">
+        <button class="vbtn on" id="vsDay" onclick="setView('dia')">📅 Día</button>
+        <button class="vbtn" id="vsSem" onclick="setView('semana')">📆 Semana</button>
+        <button class="vbtn" id="vsMes" onclick="setView('mes')">🗓 Mes</button>
+      </div>
+
       <!-- DAY VIEW -->
       <div id="view-dia">
         <div class="date-nav" style="flex-wrap:wrap;gap:8px;">
@@ -484,39 +603,55 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 
     <!-- MINUTAS TAB -->
     <div id="tab-minutas" style="display:none">
-      <!-- Header con nav y búsqueda -->
+
+      <!-- Búsqueda de historial (izquierda en desktop, arriba en mobile) -->
       <div class="card" style="margin-bottom:14px">
-        <div class="sh"><h2>Minutas de Reuniones</h2><div class="ln"></div><span id="minStatus" class="sc" style="background:#43a047">Gemini Notes</span></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="qbtn-day" onclick="minDayJump(-1)">◀ Anterior</button>
-          <button class="qbtn-day" onclick="minDayJump(0)">Hoy</button>
-          <button class="qbtn-day" onclick="minDayJump(1)">Siguiente ▶</button>
-          <input type="date" id="minDate" style="border:2px solid var(--mid);border-radius:8px;padding:5px 10px;font-size:9pt;font-family:inherit;" onchange="loadMinutasHoy()">
-          <span id="minDateLabel" style="font-size:8.5pt;color:var(--muted);margin-left:4px;"></span>
-        </div>
+        <div class="sh"><h2>Buscar historial de cliente</h2><div class="ln"></div><span id="minStatus" class="sc" style="background:#43a047">Gemini Notes</span></div>
         <div class="min-search-bar">
-          <input type="text" id="minSearch" class="min-search-input" placeholder="Buscar historial de cliente (ej: Glic, Santucci, Acodike...) → Gemini genera resumen" onkeydown="if(event.key==='Enter')searchMinutas()">
-          <button class="min-search-btn" onclick="searchMinutas()">🔍 Resumen cliente</button>
+          <input type="text" id="minSearch" class="min-search-input" placeholder="Glic, Santucci, Acodike... → Gemini genera resumen del historial" onkeydown="if(event.key==='Enter')searchMinutas()">
+          <button class="min-search-btn" onclick="searchMinutas()">🔍 Resumen</button>
+        </div>
+        <div id="minSearchResults" class="min-cards" style="margin-top:10px;">
+          <div style="text-align:center;padding:20px;color:#ccc;font-size:8.5pt;">Escribí el nombre de una empresa o contacto y presioná Resumen para ver el historial.</div>
         </div>
       </div>
 
-      <!-- Layout: minutas izq + reuniones der -->
-      <div class="min-layout" style="display:grid;grid-template-columns:1fr 280px;gap:14px;align-items:start;">
-        <div id="minResults" class="min-cards">
-          <div class="min-status">
-            <div style="font-size:24pt;margin-bottom:8px">📋</div>
-            Cargando minutas...<br>
-            <small style="font-size:7.5pt;color:#ccc">Fuente: Google Meet → Gemini Notes → Data Store</small>
+      <!-- Layout: minutas del día (derecha/abajo) + reuniones del día -->
+      <div class="min-layout" style="display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start;">
+
+        <!-- Panel MINUTAS DEL DÍA — auto-cargadas del data store -->
+        <div>
+          <div style="background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;">
+            <div style="background:linear-gradient(135deg,var(--navy),var(--blue));padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="color:#fff;font-weight:800;font-size:8.5pt;text-transform:uppercase;letter-spacing:.5px;">📋 Minutas del día</span>
+              <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+                <button class="qbtn-day" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff;font-size:7.5pt;padding:3px 8px;" onclick="minDayJump(-1)">◀</button>
+                <input type="date" id="minDate" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 8px;font-size:8.5pt;font-family:inherit;color:#fff;cursor:pointer;" onchange="loadMinutasHoy()">
+                <button class="qbtn-day" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff;font-size:7.5pt;padding:3px 8px;" onclick="minDayJump(0)">Hoy</button>
+                <button class="qbtn-day" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff;font-size:7.5pt;padding:3px 8px;" onclick="minDayJump(1)">▶</button>
+              </div>
+            </div>
+            <div style="padding:8px 12px 2px;background:rgba(0,0,0,.03);border-bottom:1px solid var(--bdr);">
+              <span id="minDateLabel" style="font-size:8pt;color:var(--muted);font-weight:600;"></span>
+            </div>
+            <div id="minDayResults" class="min-cards" style="padding:12px;gap:10px;">
+              <div class="min-status">
+                <div style="font-size:22pt;margin-bottom:8px">📋</div>
+                Cargando minutas...<br>
+                <small style="font-size:7.5pt;color:#ccc">El Digest corre a las 18:30hs</small>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Panel derecho: reuniones del día -->
+        <!-- Panel derecho: reuniones del día (referencia) -->
         <div id="minMeetingsPanel" style="background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;position:sticky;top:10px;">
-          <div style="background:linear-gradient(135deg,var(--navy),var(--blue));padding:10px 14px;display:flex;align-items:center;gap:8px;">
+          <div style="background:linear-gradient(135deg,#1a237e,#3949ab);padding:10px 14px;">
             <span style="color:#fff;font-weight:800;font-size:8.5pt;text-transform:uppercase;letter-spacing:.5px;">📅 Reuniones del día</span>
           </div>
-          <div id="minMeetingsList" style="padding:10px 0;"></div>
+          <div id="minMeetingsList" style="padding:8px 0;"></div>
         </div>
+
       </div>
     </div>
 
@@ -1658,7 +1793,13 @@ function setView(v){
   ['dia','semana','mes'].forEach(x=>{
     document.getElementById('view-'+x).style.display = x===v ? '' : 'none';
     document.getElementById('v'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('on', x===v);
+    // sync mobile view strip buttons
+    const vsBtn = document.getElementById('vs'+x.charAt(0).toUpperCase()+x.slice(1).replace('semana','Sem').replace('dia','Day').replace('mes','Mes'));
+    if(vsBtn) vsBtn.classList.toggle('on', x===v);
   });
+  // mobile view strip sync
+  const vsMap = {dia:'vsDay', semana:'vsSem', mes:'vsMes'};
+  Object.keys(vsMap).forEach(k=>{ const b=document.getElementById(vsMap[k]); if(b) b.classList.toggle('on',k===v); });
   if(v==='dia') renderDia(document.getElementById('dpDia').value);
   if(v==='semana') renderSemana(document.getElementById('dpSem').value);
   if(v==='mes') renderMes(document.getElementById('mesSel').value);
@@ -2100,7 +2241,7 @@ function updateMinDateLabel(){
 }
 
 function loadMinutasHoy(){
-  const el = document.getElementById('minResults');
+  const el = document.getElementById('minDayResults');
   const st = document.getElementById('minStatus');
   if(!el) return;
   const dp = document.getElementById('minDate');
@@ -2140,8 +2281,8 @@ function loadMinutasHoy(){
 
 function searchMinutas(){
   const q = (document.getElementById('minSearch')||{value:''}).value.trim();
-  if(!q){ loadMinutasHoy(); return; }
-  const el = document.getElementById('minResults');
+  if(!q){ return; }
+  const el = document.getElementById('minSearchResults');
   const st = document.getElementById('minStatus');
   if(st) st.textContent = 'Buscando...';
   el.innerHTML = `<div class="min-loading">🔍 Buscando historial de "<strong>${q}</strong>" — Gemini generando resumen...</div>`;
