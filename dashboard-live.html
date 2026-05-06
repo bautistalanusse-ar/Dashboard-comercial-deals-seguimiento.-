@@ -80,12 +80,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
     overflow-x:auto;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
-    background:#fff;
-    border-bottom:2px solid var(--bdr);
+    background:linear-gradient(135deg,#0d1b4b 0%,#1a237e 60%,#3949ab 100%);
     position:sticky;
     top:46px;
     z-index:190;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    box-shadow:0 3px 12px rgba(0,0,0,.25);
+    padding:0 4px;
   }
   .mob-tabs::-webkit-scrollbar{display:none;}
   .mtbtn{
@@ -93,26 +93,24 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    gap:2px;
-    padding:8px 14px;
+    gap:3px;
+    padding:10px 16px;
     background:none;
     border:none;
     border-bottom:3px solid transparent;
-    color:#888;
-    font-size:7.5pt;
-    font-weight:700;
+    color:rgba(255,255,255,.5);
     cursor:pointer;
     white-space:nowrap;
-    min-width:68px;
+    min-width:74px;
     font-family:inherit;
     transition:.15s;
     touch-action:manipulation;
     -webkit-tap-highlight-color:transparent;
   }
-  .mtbtn > :first-child{font-size:15pt;line-height:1.1;}
-  .mtbtn span{font-size:7.5pt;font-weight:700;letter-spacing:.2px;}
-  .mtbtn.on{color:var(--p);border-bottom-color:var(--p);}
-  .mtbtn:active{background:#f0f4ff;}
+  .mtbtn > :first-child{font-size:17pt;line-height:1.1;}
+  .mtbtn span{font-size:8.5pt;font-weight:700;letter-spacing:.2px;}
+  .mtbtn.on{color:#fff;border-bottom-color:#fff;}
+  .mtbtn:active{background:rgba(255,255,255,.12);}
 
   /* Period bar */
   .pbar{padding:10px 12px 0;}
@@ -999,6 +997,11 @@ function fmtMonto(amt){
   return '$' + amt.toLocaleString('es-AR');
 }
 
+function fmtYm(ym){
+  const [y,m]=ym.split('-').map(Number);
+  return new Date(y,m-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+}
+
 function todayAR(){
   const now=new Date();
   return new Date(now.toLocaleString('en-US',{timeZone:'America/Argentina/Buenos_Aires'})).toISOString().slice(0,10);
@@ -1358,8 +1361,7 @@ function renderMes(ym){
   const today=todayAR();
   const cont=document.getElementById('mesCont');
   const kpisEl=document.getElementById('mesKpis');
-  const MONTHS={'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
-  const mLabel=MONTHS[ym]||ym;
+  const mLabel=fmtYm(ym);
 
   const mesMtgs = getMeetingsByMonth(ym).filter(m=>m.st!=='cancelled');
   const mesDone = mesMtgs.filter(m=>isMeetingDone(m));
@@ -1591,8 +1593,7 @@ function renderRanking(ym){
 
   const maxT=sorted[0]?.total||1;
   const sc=(n)=>Math.max(n/maxT*110,2);
-  const MONTHS={'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
-  const mLabel=MONTHS[ym]||ym;
+  const mLabel=fmtYm(ym);
 
   document.getElementById('rankingPeriod').textContent=`${mLabel} — ${meetings.length} reuniones`;
   document.getElementById('rtbody').innerHTML=sorted.map((v,i)=>`
@@ -1812,8 +1813,7 @@ function updatePeriodBar(date){
   const s=validMs.filter(m=>m.tp==='seguimiento').length;
   const x=validMs.filter(m=>m.tp==='partner').length;
   const vendors=new Set(validMs.flatMap(m=>getAllVendors(m))).size;
-  const months={'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
-  document.getElementById('periodTitle').textContent=months[ym]||ym;
+  document.getElementById('periodTitle').textContent=fmtYm(ym);
   document.getElementById('periodTag').textContent=`${validMs.length} reuniones válidas en el mes`;
   document.getElementById('kpisEl').innerHTML=`
     <div class="kp hi"><div class="n">${validMs.length}</div><div class="l">Reuniones</div></div>
@@ -2378,9 +2378,8 @@ function renderPipeline(selYm){
   if(!allYms.includes(curYm)) allYms.unshift(curYm);
   const ym = selYm || (document.getElementById('pipeMesSel') ? document.getElementById('pipeMesSel').value : curYm) || curYm;
 
-  const MONTHS={'2026-04':'Abril 2026','2026-05':'Mayo 2026','2026-06':'Junio 2026','2026-07':'Julio 2026'};
-  const mLabel = MONTHS[ym]||ym;
-  const mesOpts = allYms.map(y=>`<option value="${y}" ${y===ym?'selected':''}>${MONTHS[y]||y}</option>`).join('');
+  const mLabel = fmtYm(ym);
+  const mesOpts = allYms.map(y=>`<option value="${y}" ${y===ym?'selected':''}>${fmtYm(y)}</option>`).join('');
 
   // Filtrar por mes seleccionado
   const mesDeals  = DEALS.filter(d=>d.d.startsWith(ym));
@@ -2610,15 +2609,12 @@ if(minDateEl){ minDateEl.value = initDate; updateMinDateLabel(); }
 (function(){
   const sel=document.getElementById('mesSel');
   const ym=initDate.slice(0,7);
-  if(![...sel.options].find(o=>o.value===ym)){
-    const mnames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const [y,m]=ym.split('-').map(Number);
-    const opt=document.createElement('option');
-    opt.value=ym; opt.text=`${mnames[m-1]} ${y}`; opt.selected=true;
-    sel.appendChild(opt);
-  } else {
-    sel.value=ym;
-  }
+  // Rebuild options from actual meeting months + current month
+  const allMths=[...new Set([...MEETINGS.map(m=>m.d.slice(0,7)),ym])].sort();
+  sel.innerHTML=allMths.map(y=>`<option value="${y}"${y===ym?' selected':''}>${fmtYm(y)}</option>`).join('');
+  // also update rankingMesSel
+  const rsel=document.getElementById('rankingMesSel');
+  if(rsel) rsel.innerHTML=sel.innerHTML;
 })();
 
 // Mostrar timestamp inicial
