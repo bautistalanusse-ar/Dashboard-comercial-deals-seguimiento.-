@@ -322,10 +322,6 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 .tmeta{font-size:7.5pt;color:#555;margin-top:2px;}
 .tamt{font-size:11pt;font-weight:900;color:var(--won);}
 
-/* VENDOR GRID */
-.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-.vcard{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:13px 15px;}
-.vcard.inactive{opacity:.55;}
 .vname{font-size:9pt;font-weight:800;margin-bottom:5px;}
 .vstats{display:flex;gap:5px;flex-wrap:wrap;}
 .vs{font-size:7pt;padding:2px 7px;border-radius:10px;font-weight:700;}
@@ -513,9 +509,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <button class="vbtn" id="vMes" onclick="setView('mes')">🗓 Mes</button>
   </div>
   <div class="tb-tabs">
-    <button class="tbtn on" id="tAgenda" onclick="setTab('agenda')">Agenda</button>
     <button class="tbtn" id="tRanking" onclick="setTab('ranking')">Ranking</button>
-    <button class="tbtn" id="tVend" onclick="setTab('vendedores')">Vendedores</button>
     <button class="tbtn" id="tTar" onclick="setTab('tareas')">Tareas</button>
     <button class="tbtn" id="tMin" onclick="setTab('minutas')">Minutas</button>
     <button class="tbtn" id="tPipe" onclick="setTab('pipeline')">Pipeline</button>
@@ -532,9 +526,8 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 
 <!-- MOBILE TAB NAV — solo visible en mobile -->
 <div class="mob-tabs" id="mobTabs">
-  <button class="mtbtn on" id="mtAgenda" onclick="setTab('agenda')">📅<span>Agenda</span></button>
+  <button class="mtbtn on" id="mtAgenda" onclick="setTab('agenda')">📅<span>Día</span></button>
   <button class="mtbtn" id="mtRanking" onclick="setTab('ranking')">🏆<span>Ranking</span></button>
-  <button class="mtbtn" id="mtVend" onclick="setTab('vendedores')">👥<span>Vendedores</span></button>
   <button class="mtbtn" id="mtTar" onclick="setTab('tareas')">✅<span>Tareas</span></button>
   <button class="mtbtn" id="mtMin" onclick="setTab('minutas')">📋<span>Minutas</span></button>
   <button class="mtbtn" id="mtPipe" onclick="setTab('pipeline')">📊<span>Pipeline</span></button>
@@ -640,11 +633,6 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
           <div class="rli"><div class="rld" style="background:var(--won)"></div> Tratos ganados</div>
         </div>
       </div>
-    </div>
-
-    <!-- VENDEDORES TAB -->
-    <div id="tab-vendedores" style="display:none">
-      <div class="card"><div class="sh"><h2>Scoreboard — Vendedores</h2><div class="ln"></div></div><div class="vgrid" id="vgrid"></div></div>
     </div>
 
     <!-- TAREAS TAB -->
@@ -1651,127 +1639,6 @@ function renderRanking(ym){
 }
 
 // ═══════════════════════════════════════════════
-// VENDORS — SCOREBOARD
-// ═══════════════════════════════════════════════
-function renderVendors(ym){
-  const meetings = getMeetingsByMonth(ym).filter(m => m.st !== 'cancelled');
-  const cancelled = getMeetingsByMonth(ym).filter(m => m.st === 'cancelled');
-  const today = todayAR();
-  const stats = {};
-  Object.keys(VENDORS).forEach(id => {
-    stats[id] = {primeras:0, seg:0, partner:0, done:0, dur:0, cancel:0, pres1:0, presS:0};
-  });
-  meetings.forEach(m => {
-    const pres = isPresencial(m);
-    getAllVendors(m).forEach(vid => {
-      if(!stats[vid]) stats[vid] = {primeras:0, seg:0, partner:0, done:0, dur:0, cancel:0, pres1:0, presS:0};
-      if(m.tp === 'primera'){ stats[vid].primeras++; if(pres) stats[vid].pres1++; }
-      else if(m.tp === 'seguimiento'){ stats[vid].seg++; if(pres) stats[vid].presS++; }
-      else if(m.tp === 'partner') stats[vid].partner++;
-      stats[vid].dur += m.dur;
-      if(isMeetingDone(m)) stats[vid].done++;
-    });
-  });
-  cancelled.forEach(m => {
-    getAllVendors(m).forEach(vid => {
-      if(stats[vid]) stats[vid].cancel++;
-    });
-  });
-
-  // Reuniones de la semana actual por vendedor
-  const weekDates = getMeetingsByWeek(today);
-  const weekStats = {};
-  weekDates.forEach(d => {
-    getMeetingsByDate(d).filter(m => m.st !== 'cancelled').forEach(m => {
-      getAllVendors(m).forEach(vid => { weekStats[vid] = (weekStats[vid]||0)+1; });
-    });
-  });
-
-  const META = 6000000;
-  const fmtMoney = n => n >= 1000000 ? '$'+(n/1000000).toFixed(1).replace('.0','')+'M' : n > 0 ? '$'+n.toLocaleString('es-AR') : '';
-
-  const sorted = Object.keys(stats)
-    .filter(id => VENDORS[id]?.active !== false)
-    .map(id => {
-      const s = stats[id];
-      const total = s.primeras + s.seg + s.partner;
-      const deals = getDealsByVendor(id, ym);
-      const presup = getPresupByVendor(id, ym);
-      const monto = deals.reduce((a, d) => a+(d.amt||0), 0);
-      const metaPct = Math.min(monto/META*100, 100);
-      const conv = total > 0 ? (deals.length/total*100).toFixed(0)+'%' : '—';
-      const presupActivos = presup.filter(p => p.st !== 'ganado');
-      return { id, name:VN(id), color:VC(id), ...s, total, deals, presup, presupActivos, monto, metaPct, conv, week:weekStats[id]||0 };
-    })
-    .sort((a,b) => {
-      if(b.deals.length !== a.deals.length) return b.deals.length - a.deals.length;
-      if(b.monto !== a.monto) return b.monto - a.monto;
-      return b.total - a.total;
-    });
-
-  document.getElementById('vgrid').innerHTML = sorted.map((v, i) => {
-    const pres = v.pres1 + v.presS;
-    const rankMedal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
-    const montoStr = v.monto > 0 ? ` · ${fmtMoney(v.monto)}` : '';
-    const tareasPend = TAREAS_DIA.filter(t => t.v===v.id && t.st!=='done').length;
-    const presupBadges = v.presupActivos.map(p => {
-      const stColor = p.st==='negociando'?'#e65100': p.st==='trial activo'?'#1565c0':'#777';
-      const stLabel = p.st==='negociando'?'negoc.': p.st==='trial activo'?'trial':'esp.';
-      return `<span style="background:#fff8e1;color:${stColor};border:1px solid #ffe082;border-radius:6px;padding:2px 6px;font-size:6.5pt;font-weight:700;white-space:nowrap;">${p.co} · ${stLabel}</span>`;
-    }).join('');
-
-    return `<div class="vcard ${v.total>0?'active':'inactive'}" style="border-top:3px solid ${v.color};">
-      <!-- Cabecera -->
-      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;">
-        <span style="font-size:15pt;line-height:1;">${rankMedal}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:10.5pt;font-weight:900;color:${v.color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${v.name}</div>
-          <div style="font-size:7pt;color:#888;margin-top:1px;">${v.total} reun. · ${fmtDur(v.dur)} · ${v.week} esta sem.</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
-          ${v.total===0?'<span style="background:#fce4e4;color:#c62828;border-radius:5px;padding:2px 6px;font-size:6pt;font-weight:700;">Sin reun.</span>':''}
-          ${tareasPend?`<span style="background:#fff3e0;color:#e65100;border-radius:5px;padding:2px 6px;font-size:6pt;font-weight:700;">⚡${tareasPend} tarea${tareasPend>1?'s':''}</span>`:''}
-          ${v.done?`<span style="background:#e8eaf6;color:#3949ab;border-radius:5px;padding:2px 6px;font-size:6pt;font-weight:700;">✓${v.done} hecha${v.done>1?'s':''}</span>`:''}
-        </div>
-      </div>
-
-      <!-- Reuniones -->
-      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
-        <span class="vs p">${v.primeras} 1ras</span>
-        ${v.seg?`<span class="vs s">${v.seg} seg.</span>`:''}
-        ${v.partner?`<span class="vs x">${v.partner} partner</span>`:''}
-        ${pres?`<span class="bdg presencial">🏢 ${pres}</span>`:''}
-        ${v.cancel?`<span style="background:#fce4e4;color:#c62828;border-radius:8px;padding:2px 6px;font-size:7pt;font-weight:700;">❌ ${v.cancel}</span>`:''}
-      </div>
-
-      <!-- Resultados -->
-      <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
-        ${v.deals.length
-          ? `<span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:3px 8px;font-size:7.5pt;font-weight:700;">🏆 ${v.deals.length} ganado${v.deals.length>1?'s':''}${montoStr}</span>`
-          : '<span style="color:#ccc;font-size:7pt;">Sin cierres</span>'}
-        ${v.presup.length?`<span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:3px 8px;font-size:7.5pt;font-weight:700;">📄 ${v.presup.length} presup.${v.presupActivos.length<v.presup.length?` · ${v.presup.length-v.presupActivos.length} ganado${v.presup.length-v.presupActivos.length>1?'s':''}`:''}</span>`:''}
-        ${v.total>0?`<span style="background:#f0f4ff;color:#5c6bc0;border-radius:8px;padding:3px 8px;font-size:7.5pt;font-weight:600;">${v.conv} conv.</span>`:''}
-      </div>
-
-      <!-- Barra meta $6M -->
-      ${v.monto>0?`
-      <div style="margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-          <span style="font-size:6.5pt;font-weight:700;color:#1565c0;text-transform:uppercase;letter-spacing:.5px;">Meta $6M</span>
-          <span style="font-size:6.5pt;font-weight:700;color:#2e7d32;">${fmtMoney(v.monto)} · ${v.metaPct.toFixed(0)}%</span>
-        </div>
-        <div style="height:5px;background:#e3f2fd;border-radius:3px;overflow:hidden;">
-          <div style="width:${v.metaPct}%;height:100%;background:linear-gradient(90deg,#1565c0,#42a5f5);border-radius:3px;transition:.4s;"></div>
-        </div>
-      </div>`:'<div style="height:5px;background:#f5f5f5;border-radius:3px;margin-bottom:8px;" title="Sin facturación registrada"></div>'}
-
-      <!-- Pipeline activo -->
-      ${presupBadges?`<div style="display:flex;gap:4px;flex-wrap:wrap;">${presupBadges}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════
 // TAREAS
 // ═══════════════════════════════════════════════
 function renderTareas(date){
@@ -1917,16 +1784,16 @@ function updatePeriodBar(date){
 // NAVIGATION
 // ═══════════════════════════════════════════════
 let curView='dia', curTab='agenda';
-const TAB_BTN_IDS={agenda:'tAgenda',ranking:'tRanking',vendedores:'tVend',tareas:'tTar',minutas:'tMin',pipeline:'tPipe'};
-const MOB_TAB_IDS={agenda:'mtAgenda',ranking:'mtRanking',vendedores:'mtVend',tareas:'mtTar',minutas:'mtMin',pipeline:'mtPipe'};
-const ALL_TABS=['agenda','ranking','vendedores','tareas','minutas','pipeline'];
+const TAB_BTN_IDS={ranking:'tRanking',tareas:'tTar',minutas:'tMin',pipeline:'tPipe'};
+const MOB_TAB_IDS={agenda:'mtAgenda',ranking:'mtRanking',tareas:'mtTar',minutas:'mtMin',pipeline:'mtPipe'};
+const ALL_TABS=['agenda','ranking','tareas','minutas','pipeline'];
 
 function setView(v){
   curView=v;
   // Always switch to Agenda tab — views live inside tab-agenda
   if(curTab !== 'agenda'){
     curTab = 'agenda';
-    const tabs=['agenda','ranking','vendedores','tareas'];
+    const tabs=['agenda','ranking','tareas'];
     tabs.forEach(x=>{
       document.getElementById('tab-'+x).style.display = x==='agenda' ? '' : 'none';
       const btn = document.getElementById(TAB_BTN_IDS[x]);
@@ -1976,7 +1843,6 @@ function setTab(t){
   if(mBtn) mBtn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   const ym=document.getElementById('dpDia').value.slice(0,7);
   if(t==='ranking') renderRanking(document.getElementById('rankingMesSel').value);
-  if(t==='vendedores') renderVendors(ym);
   if(t==='tareas') renderTareas(document.getElementById('dpDia').value);
   if(t==='minutas') loadMinutasHoy();
   if(t==='pipeline') renderPipeline();
@@ -2041,7 +1907,6 @@ function actualizarDashboard(){
     if(curView==='semana') renderSemana(document.getElementById('dpSem').value);
     if(curView==='mes') renderMes(document.getElementById('mesSel').value);
     if(curTab==='ranking') renderRanking(document.getElementById('rankingMesSel').value);
-    if(curTab==='vendedores') renderVendors(d.slice(0,7));
     if(curTab==='tareas') renderTareas(d);
     btn.classList.remove('syncing');
     btn.disabled=false;
@@ -2290,10 +2155,9 @@ document.getElementById('dpDia').addEventListener('change',function(){
   updatePeriodBar(d);
   renderDia(d);
   renderTareas(d);
-  if(curTab==='vendedores') renderVendors(d.slice(0,7));
 });
 document.getElementById('dpSem').addEventListener('change',function(){ renderSemana(this.value); });
-document.getElementById('mesSel').addEventListener('change',function(){ renderMes(this.value); renderVendors(this.value); });
+document.getElementById('mesSel').addEventListener('change',function(){ renderMes(this.value); });
 document.getElementById('rankingMesSel').addEventListener('change',function(){ renderRanking(this.value); });
 document.getElementById('vendorFilterDia').addEventListener('change',function(){ renderDia(document.getElementById('dpDia').value); });
 document.getElementById('vendorFilterSem').addEventListener('change',function(){ renderSemana(document.getElementById('dpSem').value); });
