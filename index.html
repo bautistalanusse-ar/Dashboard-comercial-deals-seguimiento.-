@@ -485,16 +485,27 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <div id="tab-minutas" style="display:none">
       <div class="card">
         <div class="sh"><h2>Minutas de Reuniones</h2><div class="ln"></div><span id="minStatus" class="sc" style="background:#43a047">Gemini Notes</span></div>
-        <div class="min-search-bar">
-          <input type="text" id="minSearch" class="min-search-input" placeholder="Buscar minuta por empresa (ej: Glic, Santucci, Acodike...)" onkeydown="if(event.key==='Enter')searchMinutas()">
-          <button class="min-search-btn" onclick="searchMinutas()">🔍 Buscar</button>
-          <button class="min-search-btn sec" onclick="loadMinutasHoy()">📅 Recientes</button>
+
+        <!-- Navegación por fecha -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="qbtn-day" onclick="minDayJump(-1)">◀ Anterior</button>
+          <button class="qbtn-day" onclick="minDayJump(0)">Hoy</button>
+          <button class="qbtn-day" onclick="minDayJump(1)">Siguiente ▶</button>
+          <input type="date" id="minDate" style="border:2px solid var(--mid);border-radius:8px;padding:5px 10px;font-size:9pt;font-family:inherit;" onchange="loadMinutasHoy()">
+          <span id="minDateLabel" style="font-size:8.5pt;color:var(--muted);margin-left:4px;"></span>
         </div>
+
+        <!-- Búsqueda con resumen Gemini -->
+        <div class="min-search-bar">
+          <input type="text" id="minSearch" class="min-search-input" placeholder="Buscar historial de cliente (ej: Glic, Santucci, Acodike...) → Gemini genera resumen" onkeydown="if(event.key==='Enter')searchMinutas()">
+          <button class="min-search-btn" onclick="searchMinutas()">🔍 Resumen cliente</button>
+        </div>
+
         <div id="minResults" class="min-cards">
           <div class="min-status">
             <div style="font-size:24pt;margin-bottom:8px">📋</div>
-            Cargando minutas recientes...<br>
-            <small style="font-size:7.5pt;color:#ccc">Fuente: Google Meet → Gemini Notes → Dashboard</small>
+            Cargando minutas...<br>
+            <small style="font-size:7.5pt;color:#ccc">Fuente: Google Meet → Gemini Notes → Data Store</small>
           </div>
         </div>
       </div>
@@ -878,6 +889,10 @@ function meetingHTML(m,idx){
   const ownerChip = `<span class="owner-chip" style="background:${VC(owner)}18;color:${VC(owner)};border:1px solid ${VC(owner)}44">${VN(owner)}</span>`;
   const compChips = companions.map(c=>`<span class="comp-chip">+ ${VN(c)}</span>`).join('');
 
+  const meetBtn = m.m && !isCancelled
+    ? `<a href="${m.m}" target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;background:#1a73e8;color:#fff;border-radius:6px;padding:3px 9px;font-size:7pt;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;" title="Unirse a Google Meet">📹 Meet</a>`
+    : '';
+
   return `<div class="mr ${m.tp}${active?' now':''}${isCancelled?' cancelled':''}" id="mr${idx}" onclick="tog(${idx})" style="${isCancelled?'opacity:0.6;border-left-color:#ccc;':''}${done&&!active&&!isCancelled?'opacity:0.82;':''}">
     <div class="mh">
       <div class="mt">${m.t}<small>${fmtDur(m.dur)}</small></div>
@@ -888,6 +903,7 @@ function meetingHTML(m,idx){
         <div class="chips-row">${ownerChip}${compChips}</div>
       </div>
       <div class="mr-right" style="flex-wrap:wrap;justify-content:flex-end;gap:3px;">
+        ${meetBtn}
         ${badgeHTML(m.tp, st)}
         ${doneBadge}${dealBadge}${presupBadge}
       </div>
@@ -2021,12 +2037,39 @@ tick(); setInterval(tick,1000);
 const MINUTAS_CACHE_URL  = 'https://hook.us2.make.com/ae72m59gpy48969btvo56dvktadqjliw';
 const MINUTAS_SEARCH_URL = 'https://hook.us2.make.com/8lzi2dc9ujfwvl597ql3n31ki4ciu2ds';
 
+function minDayJump(delta){
+  const dp = document.getElementById('minDate');
+  if(!dp) return;
+  if(delta === 0){
+    dp.value = todayAR();
+  } else {
+    const d = new Date(dp.value + 'T12:00:00');
+    d.setDate(d.getDate() + delta);
+    dp.value = d.toISOString().slice(0,10);
+  }
+  updateMinDateLabel();
+  loadMinutasHoy();
+}
+
+function updateMinDateLabel(){
+  const dp = document.getElementById('minDate');
+  const lbl = document.getElementById('minDateLabel');
+  if(!dp || !lbl) return;
+  const today = todayAR();
+  if(dp.value === today) lbl.textContent = '(hoy)';
+  else if(dp.value === new Date(new Date(today+'T12:00:00').getTime()-86400000).toISOString().slice(0,10)) lbl.textContent = '(ayer)';
+  else lbl.textContent = fmtDate(dp.value);
+}
+
 function loadMinutasHoy(){
   const el = document.getElementById('minResults');
   const st = document.getElementById('minStatus');
   if(!el) return;
+  const dp = document.getElementById('minDate');
+  const date = dp ? dp.value : todayAR();
+  updateMinDateLabel();
   el.innerHTML = '<div class="min-loading">🔄 Cargando minutas del Gemini Notes...</div>';
-  fetch(MINUTAS_CACHE_URL)
+  fetch(MINUTAS_CACHE_URL + '?d=' + date)
     .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(html => {
       if(html && html.trim().length > 30) {
@@ -2035,7 +2078,7 @@ function loadMinutasHoy(){
       } else {
         el.innerHTML = `<div class="min-status">
           <div style="font-size:20pt;margin-bottom:10px">📭</div>
-          No hay minutas almacenadas aún.<br>
+          No hay minutas almacenadas para ${fmtDate(date)}.<br>
           <span style="font-size:8pt;color:#ccc;display:block;margin-top:8px">El Digest se ejecuta a las 18:30hs con las reuniones del día.<br>Las minutas aparecen aquí automáticamente después de ese proceso.</span>
         </div>`;
         if(st) st.textContent = 'Sin datos';
@@ -2056,21 +2099,14 @@ function searchMinutas(){
   if(!q){ loadMinutasHoy(); return; }
   const el = document.getElementById('minResults');
   const st = document.getElementById('minStatus');
-  el.innerHTML = `<div class="min-loading">🔍 Buscando minutas de "<strong>${q}</strong>"...</div>`;
+  if(st) st.textContent = 'Buscando...';
+  el.innerHTML = `<div class="min-loading">🔍 Buscando historial de "<strong>${q}</strong>" — Gemini generando resumen...</div>`;
   fetch(MINUTAS_SEARCH_URL + '?q=' + encodeURIComponent(q))
-    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(data => {
-      const results = data.results || [];
-      if(results.length){
-        el.innerHTML = results.map(r => `
-          <div style="background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;">
-            <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:12px 20px;">
-              <div style="color:#fff;font-weight:700;font-size:10pt;">${r.subject||'Sin título'}</div>
-              <div style="color:rgba(255,255,255,.5);font-size:7.5pt;margin-top:3px;">${r.date||''}</div>
-            </div>
-            <div style="padding:12px 20px;font-size:8.5pt;color:#444;line-height:1.7;">${(r.snippet||r.body||'Sin contenido disponible').replace(/<[^>]+>/g,'').slice(0,500)}...</div>
-          </div>`).join('');
-        if(st) st.textContent = results.length + ' encontradas';
+    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(html => {
+      if(html && html.trim().length > 30){
+        el.innerHTML = html;
+        if(st) st.textContent = '✅ Resumen listo';
       } else {
         el.innerHTML = `<div class="min-status">🔍 Sin resultados para "<strong>${q}</strong>".<br><small>Probá con el nombre exacto de la empresa o del contacto.</small></div>`;
         if(st) st.textContent = 'Sin resultados';
@@ -2078,6 +2114,7 @@ function searchMinutas(){
     })
     .catch(() => {
       el.innerHTML = '<div class="min-status">⚠️ Error al buscar. Verificá la conexión.</div>';
+      if(st) st.textContent = 'Error';
     });
 }
 
@@ -2306,6 +2343,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const initDate = todayAR();
 document.getElementById('dpDia').value = initDate;
 document.getElementById('dpSem').value = initDate;
+const minDateEl = document.getElementById('minDate');
+if(minDateEl){ minDateEl.value = initDate; updateMinDateLabel(); }
 
 // Ensure mesSel has current month
 (function(){
