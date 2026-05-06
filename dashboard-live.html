@@ -2069,8 +2069,11 @@ function loadMinutasHoy(){
   const date = dp ? dp.value : todayAR();
   updateMinDateLabel();
   el.innerHTML = '<div class="min-loading">🔄 Cargando minutas del Gemini Notes...</div>';
-  fetch(MINUTAS_CACHE_URL + '?d=' + date)
-    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+  if(st) st.textContent = 'Cargando...';
+  const ctrl = new AbortController();
+  const tid = setTimeout(()=>ctrl.abort(), 25000);
+  fetch(MINUTAS_CACHE_URL + '?d=' + date, {signal:ctrl.signal})
+    .then(r => { clearTimeout(tid); if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(html => {
       if(html && html.trim().length > 30) {
         el.innerHTML = html;
@@ -2084,13 +2087,15 @@ function loadMinutasHoy(){
         if(st) st.textContent = 'Sin datos';
       }
     })
-    .catch(() => {
+    .catch(err => {
+      clearTimeout(tid);
+      const isTimeout = err.name === 'AbortError';
       el.innerHTML = `<div class="min-status">
         <div style="font-size:18pt;margin-bottom:8px">⚠️</div>
-        Sin conexión al servidor de minutas.<br>
-        <span style="font-size:8pt;color:#ccc">Verificá que el escenario "Minutas — Leer Cache" en Make.com esté activo.</span>
+        ${isTimeout ? 'Timeout — el escenario tardó más de 25s.' : 'Sin conexión al servidor de minutas.'}<br>
+        <span style="font-size:8pt;color:#ccc">Verificá que "Minutas — Leer Cache" en Make.com esté activo.<br>El Digest se corre a las 18:30hs — antes de esa hora no hay data del día.</span>
       </div>`;
-      if(st) st.textContent = 'Desconectado';
+      if(st) st.textContent = isTimeout ? 'Timeout' : 'Desconectado';
     });
 }
 
@@ -2101,8 +2106,10 @@ function searchMinutas(){
   const st = document.getElementById('minStatus');
   if(st) st.textContent = 'Buscando...';
   el.innerHTML = `<div class="min-loading">🔍 Buscando historial de "<strong>${q}</strong>" — Gemini generando resumen...</div>`;
-  fetch(MINUTAS_SEARCH_URL + '?q=' + encodeURIComponent(q))
-    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+  const sCtrl = new AbortController();
+  const sTid = setTimeout(()=>sCtrl.abort(), 55000); // Gemini puede tardar ~40s
+  fetch(MINUTAS_SEARCH_URL + '?q=' + encodeURIComponent(q), {signal:sCtrl.signal})
+    .then(r => { clearTimeout(sTid); if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(html => {
       if(html && html.trim().length > 30){
         el.innerHTML = html;
@@ -2112,36 +2119,45 @@ function searchMinutas(){
         if(st) st.textContent = 'Sin resultados';
       }
     })
-    .catch(() => {
-      el.innerHTML = '<div class="min-status">⚠️ Error al buscar. Verificá la conexión.</div>';
-      if(st) st.textContent = 'Error';
+    .catch(err => {
+      clearTimeout(sTid);
+      const isTimeout = err.name === 'AbortError';
+      el.innerHTML = `<div class="min-status">⚠️ ${isTimeout?'Gemini tardó demasiado (>55s). Intentá de nuevo.':'Error al buscar. Verificá la conexión.'}</div>`;
+      if(st) st.textContent = isTimeout ? 'Timeout' : 'Error';
     });
 }
 
 // ═══════════════════════════════════════════════
 // PIPELINE TAB
 // ═══════════════════════════════════════════════
-function renderPipeline(){
+function renderPipeline(selYm){
   const cont = document.getElementById('pipelineContent');
   if(!cont) return;
-  const ym = document.getElementById('dpDia').value.slice(0,7);
-  const MONTHS = {'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
+
+  // Armar opciones de meses disponibles
+  const allYms = [...new Set([...DEALS.map(d=>d.d.slice(0,7)), ...PRESUPUESTOS.map(p=>p.d.slice(0,7))])].sort().reverse();
+  const curYm = document.getElementById('dpDia').value.slice(0,7);
+  if(!allYms.includes(curYm)) allYms.unshift(curYm);
+  const ym = selYm || (document.getElementById('pipeMesSel') ? document.getElementById('pipeMesSel').value : curYm) || curYm;
+
+  const MONTHS={'2026-04':'Abril 2026','2026-05':'Mayo 2026','2026-06':'Junio 2026','2026-07':'Julio 2026'};
   const mLabel = MONTHS[ym]||ym;
+  const mesOpts = allYms.map(y=>`<option value="${y}" ${y===ym?'selected':''}>${MONTHS[y]||y}</option>`).join('');
 
-  const wonMonto  = DEALS.reduce((a,d)=>a+(d.amt||0),0);
+  // Filtrar por mes seleccionado
   const mesDeals  = DEALS.filter(d=>d.d.startsWith(ym));
-  const mesPresup = PRESUPUESTOS.filter(p=>p.d.startsWith(ym));
   const mesWon    = mesDeals.reduce((a,d)=>a+(d.amt||0),0);
-  const negCount  = PRESUPUESTOS.filter(p=>p.st==='negociando').length;
-  const pendCount = PRESUPUESTOS.filter(p=>!['ganado'].includes(p.st)).length;
+  // Presupuestos: activos (no ganado) son atemporales; ganados filtrar por mes
+  const activePresup = PRESUPUESTOS.filter(p=>p.st !== 'ganado');
+  const negCount  = activePresup.filter(p=>p.st==='negociando').length;
+  const pendCount = activePresup.length;
 
-  // Vendor pipeline cards
+  // Vendor cards — ganados del mes seleccionado + presupuestos activos
   const activeVids = Object.keys(VENDORS).filter(id => VENDORS[id].active !== false);
   const vendorCards = activeVids.map(id => {
-    const vDeals  = DEALS.filter(d=>d.v===id);
-    const vPresup = PRESUPUESTOS.filter(p=>p.v===id);
+    const vDeals  = mesDeals.filter(d=>d.v===id);
+    const vPresup = activePresup.filter(p=>p.v===id);
     const wonAmt  = vDeals.reduce((a,d)=>a+(d.amt||0),0);
-    const pending = vPresup.filter(p=>p.st!=='ganado');
     if(!vDeals.length && !vPresup.length) return '';
     return `<div style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:11px 14px;border-top:3px solid ${VC(id)}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
@@ -2149,17 +2165,18 @@ function renderPipeline(){
         ${wonAmt?`<span style="color:var(--won);font-weight:700;font-size:9pt">${fmtMonto(wonAmt)}</span>`:''}
       </div>
       <div style="font-size:7.5pt;display:flex;gap:4px;flex-wrap:wrap">
-        ${vDeals.length?`<span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;font-weight:700">🏆 ${vDeals.length} ganados</span>`:''}
-        ${pending.filter(p=>p.st==='negociando').length?`<span style="background:#fff8e1;color:#e65100;border-radius:8px;padding:2px 8px;font-weight:700">⚡ ${pending.filter(p=>p.st==='negociando').length} negociando</span>`:''}
-        ${pending.filter(p=>p.st==='esperando').length?`<span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-weight:700">📄 ${pending.filter(p=>p.st==='esperando').length} esperando</span>`:''}
+        ${vDeals.length?`<span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;font-weight:700">🏆 ${vDeals.length} ganado${vDeals.length>1?'s':''}</span>`:''}
+        ${vPresup.filter(p=>p.st==='negociando').length?`<span style="background:#fff8e1;color:#e65100;border-radius:8px;padding:2px 8px;font-weight:700">⚡ ${vPresup.filter(p=>p.st==='negociando').length} negociando</span>`:''}
+        ${vPresup.filter(p=>p.st==='esperando').length?`<span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-weight:700">📄 ${vPresup.filter(p=>p.st==='esperando').length} esperando</span>`:''}
+        ${vPresup.filter(p=>p.st==='trial activo').length?`<span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;font-weight:700">🧪 ${vPresup.filter(p=>p.st==='trial activo').length} trial</span>`:''}
       </div>
-      ${pending.length?`<div style="margin-top:7px;font-size:7.5pt;color:#555;border-top:1px dashed #eee;padding-top:6px">${pending.map(p=>`<div style="padding:2px 0">→ ${p.co} <span class="st-badge st-${(p.st||'').replace(/ /g,'-').replace('trial activo','trial')}">${p.st}</span></div>`).join('')}</div>`:''}
+      ${vPresup.length?`<div style="margin-top:7px;font-size:7.5pt;color:#555;border-top:1px dashed #eee;padding-top:6px">${vPresup.map(p=>`<div style="padding:2px 0">→ ${p.co} <span class="st-badge st-${(p.st||'').replace(/ /g,'-').replace('trial activo','trial')}">${p.st}</span></div>`).join('')}</div>`:''}
     </div>`;
   }).filter(Boolean).join('');
 
-  // Presupuestos table (sorted by urgency)
-  const stOrd = {negociando:0, 'trial activo':1, esperando:2, ganado:3};
-  const presupRows = [...PRESUPUESTOS].sort((a,b)=>(stOrd[a.st]||9)-(stOrd[b.st]||9)).map(p=>`<tr>
+  // Presupuestos activos (atemporales — muestran el pipeline real sin importar mes)
+  const stOrd = {negociando:0, 'trial activo':1, esperando:2};
+  const presupRows = [...activePresup].sort((a,b)=>(stOrd[a.st]||9)-(stOrd[b.st]||9)).map(p=>`<tr>
     <td style="white-space:nowrap">${p.d.slice(8,10)}/${p.d.slice(5,7)}</td>
     <td><span class="vc" style="background:${VC(p.v)};font-size:6.5pt">${VN(p.v)}</span></td>
     <td style="font-weight:700">${p.co}</td>
@@ -2168,7 +2185,8 @@ function renderPipeline(){
     <td style="font-size:7.5pt;color:#555;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(p.ctx||'').replace(/<[^>]+>/g,'').slice(0,80)||'—'}</td>
   </tr>`).join('');
 
-  const dealsRows = [...DEALS].sort((a,b)=>b.d.localeCompare(a.d)).map(d=>`<tr>
+  // Deals del mes seleccionado
+  const dealsRows = [...mesDeals].sort((a,b)=>b.d.localeCompare(a.d)).map(d=>`<tr>
     <td style="white-space:nowrap">${d.d.slice(8,10)}/${d.d.slice(5,7)}</td>
     <td><span class="vc" style="background:${VC(d.v)};font-size:6.5pt">${VN(d.v)}</span></td>
     <td style="font-weight:700">${d.co}</td>
@@ -2177,38 +2195,42 @@ function renderPipeline(){
   </tr>`).join('');
 
   cont.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <span style="font-size:8pt;font-weight:700;color:var(--navy)">Mes:</span>
+      <select id="pipeMesSel" onchange="renderPipeline(this.value)" style="border:2px solid var(--mid);border-radius:8px;padding:5px 10px;font-size:9pt;font-family:inherit;cursor:pointer;">${mesOpts}</select>
+    </div>
+
     <div class="pipe-kpis">
-      <div class="pipe-kp hiw"><div class="pn" style="color:var(--won)">${DEALS.length}</div><div class="pl">Tratos ganados</div></div>
-      <div class="pipe-kp hip"><div class="pn" style="font-size:11pt">${wonMonto?fmtMonto(wonMonto):'$0'}</div><div class="pl">Monto total ganado</div></div>
-      <div class="pipe-kp"><div class="pn" style="color:#f57f17">${PRESUPUESTOS.length}</div><div class="pl">Presupuestos</div></div>
+      <div class="pipe-kp hiw"><div class="pn" style="color:var(--won)">${mesDeals.length}</div><div class="pl">Ganados ${mLabel}</div></div>
+      <div class="pipe-kp hip"><div class="pn" style="font-size:11pt">${mesWon?fmtMonto(mesWon):'$0'}</div><div class="pl">$ ganado ${mLabel}</div></div>
+      <div class="pipe-kp"><div class="pn" style="color:#f57f17">${activePresup.length}</div><div class="pl">Presupuestos activos</div></div>
       <div class="pipe-kp hio"><div class="pn" style="color:var(--s)">${negCount}</div><div class="pl">Negociando</div></div>
-      <div class="pipe-kp"><div class="pn" style="color:#888">${pendCount}</div><div class="pl">Activos (sin cerrar)</div></div>
-      ${mesWon?`<div class="pipe-kp hiw"><div class="pn" style="color:var(--won);font-size:11pt">${fmtMonto(mesWon)}</div><div class="pl">${mLabel}</div></div>`:''}
+      <div class="pipe-kp"><div class="pn" style="color:#888">${pendCount}</div><div class="pl">Sin cerrar</div></div>
     </div>
 
     <div style="font-size:8pt;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-      <span style="display:block;width:3px;height:14px;background:var(--mid);border-radius:2px;"></span>Por Vendedor
+      <span style="display:block;width:3px;height:14px;background:var(--mid);border-radius:2px;"></span>Por Vendedor — ${mLabel}
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px;margin-bottom:20px;">
-      ${vendorCards||'<div style="color:#ccc;font-size:8.5pt;padding:12px 0">Sin datos de pipeline.</div>'}
+      ${vendorCards||`<div style="color:#ccc;font-size:8.5pt;padding:12px 0">Sin ganados ni pipeline activo para ${mLabel}.</div>`}
     </div>
 
     <div class="pipe-section">
-      <div class="pipe-section-head">📄 Presupuestos activos & Pipeline</div>
+      <div class="pipe-section-head">📄 Pipeline activo (presupuestos sin cerrar)</div>
       <div style="overflow-x:auto">
         <table class="pipe-table">
           <thead><tr><th>Fecha</th><th>Vendedor</th><th>Empresa</th><th>Monto</th><th>Estado</th><th>Contexto</th></tr></thead>
-          <tbody>${presupRows||'<tr><td colspan="6" style="color:#ccc;text-align:center;padding:16px">Sin presupuestos registrados.</td></tr>'}</tbody>
+          <tbody>${presupRows||'<tr><td colspan="6" style="color:#ccc;text-align:center;padding:16px">Sin presupuestos activos.</td></tr>'}</tbody>
         </table>
       </div>
     </div>
 
     <div class="pipe-section" style="margin-top:14px">
-      <div class="pipe-section-head">🏆 Tratos Ganados (todos)</div>
+      <div class="pipe-section-head">🏆 Tratos Ganados — ${mLabel}</div>
       <div style="overflow-x:auto">
         <table class="pipe-table">
           <thead><tr><th>Fecha</th><th>Vendedor</th><th>Empresa</th><th>Monto</th><th>Nota</th></tr></thead>
-          <tbody>${dealsRows||'<tr><td colspan="5" style="color:#ccc;text-align:center;padding:16px">Sin tratos ganados.</td></tr>'}</tbody>
+          <tbody>${dealsRows||`<tr><td colspan="5" style="color:#ccc;text-align:center;padding:16px">Sin tratos ganados en ${mLabel}.</td></tr>`}</tbody>
         </table>
       </div>
     </div>`;
