@@ -60,18 +60,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
 @media(max-width:768px){
 
   /* Topbar — compacto, sin tabs (se mueven al mob-tabs) */
-  .tb{padding:0 12px;height:46px;gap:6px;position:sticky;top:0;z-index:200;}
-  .tb-logo{font-size:11pt;padding-right:0;border-right:none;}
+  .tb{padding:0 12px;height:44px;gap:6px;position:sticky;top:0;z-index:200;}
+  .tb-logo{font-size:10pt;padding-right:0;border-right:none;flex-shrink:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
   .tb-logo small{display:none;}
   .tb-views{display:none!important;}
   .tb-tabs{display:none!important;}
-  .tb-right{gap:8px;margin-left:auto;}
-  .clk{font-size:10pt;}
+  .tb-right{gap:6px;margin-left:auto;flex-shrink:0;}
+  .clk{font-size:9.5pt;}
   #lastUpdate{display:none;}
   .dbtn{display:none!important;}
-  .updbtn{padding:5px 10px;font-size:8.5pt;}
+  .updbtn{padding:4px 8px;font-size:0;}  /* solo ícono */
+  .updbtn .upd-icon{font-size:14pt;margin:0;}
   #userName{display:none;}
-  button[onclick="syncCalendar()"]{font-size:8pt;padding:4px 8px;}
+  button[onclick="syncCalendar()"]{display:none!important;}
 
   /* Mobile tab nav */
   .mob-tabs{
@@ -82,7 +83,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
     -webkit-overflow-scrolling:touch;
     background:linear-gradient(135deg,#0d1b4b 0%,#1a237e 60%,#3949ab 100%);
     position:sticky;
-    top:46px;
+    top:44px;
     z-index:190;
     box-shadow:0 3px 12px rgba(0,0,0,.25);
     padding:0 4px;
@@ -93,24 +94,24 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    gap:3px;
-    padding:10px 16px;
+    gap:2px;
+    padding:7px 12px;
     background:none;
     border:none;
     border-bottom:3px solid transparent;
     color:rgba(255,255,255,.5);
     cursor:pointer;
     white-space:nowrap;
-    min-width:74px;
+    min-width:58px;
     font-family:inherit;
     transition:.15s;
     touch-action:manipulation;
     -webkit-tap-highlight-color:transparent;
   }
-  .mtbtn > :first-child{font-size:17pt;line-height:1.1;}
-  .mtbtn span{font-size:8.5pt;font-weight:700;letter-spacing:.2px;}
+  .mtbtn > :first-child{font-size:13pt;line-height:1.1;}
+  .mtbtn span{font-size:7pt;font-weight:700;letter-spacing:.2px;}
   .mtbtn.on{color:#fff;border-bottom-color:#fff;}
-  .mtbtn:active{background:rgba(255,255,255,.12);}
+  .mtbtn:active{background:rgba(255,255,255,.1);}
 
   /* Period bar */
   .pbar{padding:10px 12px 0;}
@@ -238,6 +239,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 .bdg.won{background:var(--wonbg);color:var(--won);border:1px solid #a5d6a7;}
 .bdg.cancel{background:#ffebee;color:#c62828;border:1px solid #ffcdd2;}
 .bdg.resched{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2;}
+.bdg.presencial{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
 .vc{display:inline-flex;background:var(--blue);color:#fff;border-radius:16px;padding:2px 8px;font-size:7pt;font-weight:700;}
 .chev{font-size:9pt;color:#ccc;transition:transform .2s;}
 .mr.open .chev{transform:rotate(180deg);}
@@ -630,7 +632,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Tiempo de habla</th><th>Tratos ganados</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th><th style="text-align:right">Total mtgs</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Presenciales</th><th>Tratos ganados</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th><th style="text-align:right">Total</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -1067,6 +1069,11 @@ function chipHTMLAll(m){
 // MEETING CARD HTML
 // ═══════════════════════════════════════════════
 let mtgIdx=0;
+function isPresencial(m){
+  const txt=((m.s||m.n||'')+(m.ctx||'')).toLowerCase();
+  return /presencial|en persona/.test(txt);
+}
+
 function meetingHTML(m,idx){
   const active=isActiveNow(m);
   const done=isMeetingDone(m);
@@ -1091,6 +1098,9 @@ function meetingHTML(m,idx){
   const meetBtn = m.m && !isCancelled
     ? `<a href="${m.m}" target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:4px;background:#1a73e8;color:#fff;border-radius:6px;padding:3px 9px;font-size:7pt;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;" title="Unirse a Google Meet">📹 Meet</a>`
     : '';
+  const presencialBadge = isPresencial(m) && !isCancelled
+    ? `<span class="bdg presencial">🏢 Presencial</span>`
+    : '';
 
   return `<div class="mr ${m.tp}${active?' now':''}${isCancelled?' cancelled':''}" id="mr${idx}" onclick="tog(${idx})" style="${isCancelled?'opacity:0.6;border-left-color:#ccc;':''}${done&&!active&&!isCancelled?'opacity:0.82;':''}">
     <div class="mh">
@@ -1104,6 +1114,7 @@ function meetingHTML(m,idx){
       <div class="mr-right" style="flex-wrap:wrap;justify-content:flex-end;gap:3px;">
         ${meetBtn}
         ${badgeHTML(m.tp, st)}
+        ${presencialBadge}
         ${doneBadge}${dealBadge}${presupBadge}
       </div>
       <div class="chev">▾</div>
@@ -1560,12 +1571,13 @@ function renderRanking(ym){
   const meetings = allMtgsMonth.filter(m => m.st !== 'cancelled');
   const cancelledMtgs = allMtgsMonth.filter(m => m.st === 'cancelled');
   const stats={};
-  Object.keys(VENDORS).forEach(id=>{stats[id]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0};});
+  Object.keys(VENDORS).forEach(id=>{stats[id]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0,pres1:0,presS:0};});
   meetings.forEach(m=>{
+    const pres = isPresencial(m);
     getAllVendors(m).forEach(vid=>{
-      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0};
-      if(m.tp==='primera') stats[vid].primeras++;
-      else if(m.tp==='seguimiento') stats[vid].seg++;
+      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0,pres1:0,presS:0};
+      if(m.tp==='primera'){ stats[vid].primeras++; if(pres) stats[vid].pres1++; }
+      else if(m.tp==='seguimiento'){ stats[vid].seg++; if(pres) stats[vid].presS++; }
       else if(m.tp==='partner') stats[vid].partner++;
       stats[vid].dur += m.dur;
       if(isMeetingDone(m)) stats[vid].done++;
@@ -1609,7 +1621,7 @@ function renderRanking(ym){
           ${v.seg?`<div class="barseg bar-s" style="width:${sc(v.seg)}px" title="${v.seg} seg."></div>`:''}
           ${v.partner?`<div class="barseg bar-x" style="width:${sc(v.partner)}px" title="${v.partner} partner"></div>`:''}
         </div>
-        <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓ fin.</strong> · <strong style="color:#888">${fmtDur(v.dur)}</strong></div>
+        <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓</strong> · ${v.pres1+v.presS>0?`<strong style="color:#2e7d32">🏢 ${v.pres1+v.presS}</strong> · `:''}${fmtDur(v.dur)}</div>
       </td>
       <td><span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span></td>
       <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
@@ -1628,6 +1640,7 @@ function renderRanking(ym){
               <span style="min-width:36px;font-weight:700;color:#555">${m.d.slice(8,10)}/${m.d.slice(5,7)}</span>
               <span style="flex:1;font-weight:600">${m.co}</span>
               <span style="color:#777;font-size:7.5pt;">${m.tp==='primera'?'1ra':m.tp==='seguimiento'?'Seg.':'Partner'}</span>
+              ${isPresencial(m)?'<span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:1px 5px;font-size:6.5pt;font-weight:700;">🏢</span>':''}
               <span style="font-size:7pt;color:${isOwner?'var(--p)':'#888'}">${isOwner?'Propietario':'Acompañante'}</span>
               ${deal?'<span class="bdg won2" style="font-size:6.5pt;">🏆</span>':''}
               ${isMeetingDone(m)?'<span class="bdg done" style="font-size:6.5pt;">✓</span>':''}
