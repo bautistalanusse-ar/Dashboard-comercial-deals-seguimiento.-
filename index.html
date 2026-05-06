@@ -47,6 +47,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
 /* LAYOUT */
 .layout{display:grid;grid-template-columns:1fr 300px;gap:18px;padding:20px 32px;align-items:start;}
 @media(max-width:860px){.layout{grid-template-columns:1fr;}}
+@media(max-width:760px){#tab-minutas .min-layout{grid-template-columns:1fr!important;}}
 
 /* DATE NAV */
 .date-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
@@ -483,10 +484,9 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 
     <!-- MINUTAS TAB -->
     <div id="tab-minutas" style="display:none">
-      <div class="card">
+      <!-- Header con nav y búsqueda -->
+      <div class="card" style="margin-bottom:14px">
         <div class="sh"><h2>Minutas de Reuniones</h2><div class="ln"></div><span id="minStatus" class="sc" style="background:#43a047">Gemini Notes</span></div>
-
-        <!-- Navegación por fecha -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="qbtn-day" onclick="minDayJump(-1)">◀ Anterior</button>
           <button class="qbtn-day" onclick="minDayJump(0)">Hoy</button>
@@ -494,19 +494,28 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
           <input type="date" id="minDate" style="border:2px solid var(--mid);border-radius:8px;padding:5px 10px;font-size:9pt;font-family:inherit;" onchange="loadMinutasHoy()">
           <span id="minDateLabel" style="font-size:8.5pt;color:var(--muted);margin-left:4px;"></span>
         </div>
-
-        <!-- Búsqueda con resumen Gemini -->
         <div class="min-search-bar">
           <input type="text" id="minSearch" class="min-search-input" placeholder="Buscar historial de cliente (ej: Glic, Santucci, Acodike...) → Gemini genera resumen" onkeydown="if(event.key==='Enter')searchMinutas()">
           <button class="min-search-btn" onclick="searchMinutas()">🔍 Resumen cliente</button>
         </div>
+      </div>
 
+      <!-- Layout: minutas izq + reuniones der -->
+      <div class="min-layout" style="display:grid;grid-template-columns:1fr 280px;gap:14px;align-items:start;">
         <div id="minResults" class="min-cards">
           <div class="min-status">
             <div style="font-size:24pt;margin-bottom:8px">📋</div>
             Cargando minutas...<br>
             <small style="font-size:7.5pt;color:#ccc">Fuente: Google Meet → Gemini Notes → Data Store</small>
           </div>
+        </div>
+
+        <!-- Panel derecho: reuniones del día -->
+        <div id="minMeetingsPanel" style="background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;position:sticky;top:10px;">
+          <div style="background:linear-gradient(135deg,var(--navy),var(--blue));padding:10px 14px;display:flex;align-items:center;gap:8px;">
+            <span style="color:#fff;font-weight:800;font-size:8.5pt;text-transform:uppercase;letter-spacing:.5px;">📅 Reuniones del día</span>
+          </div>
+          <div id="minMeetingsList" style="padding:10px 0;"></div>
         </div>
       </div>
     </div>
@@ -2037,6 +2046,35 @@ tick(); setInterval(tick,1000);
 const MINUTAS_CACHE_URL  = 'https://hook.us2.make.com/ae72m59gpy48969btvo56dvktadqjliw';
 const MINUTAS_SEARCH_URL = 'https://hook.us2.make.com/8lzi2dc9ujfwvl597ql3n31ki4ciu2ds';
 
+function renderMinMeetings(date){
+  const panel = document.getElementById('minMeetingsList');
+  if(!panel) return;
+  const mtgs = getMeetingsByDate(date).filter(m => m.st !== 'cancelled');
+  if(!mtgs.length){
+    panel.innerHTML = `<div style="padding:14px;text-align:center;color:#bbb;font-size:8pt;">Sin reuniones<br>para esta fecha</div>`;
+    return;
+  }
+  const tpColor = {primera:'#1565c0', seguimiento:'#e65100', partner:'#6a1b9a'};
+  const tpLabel = {primera:'1ra', seguimiento:'Seg.', partner:'Part.'};
+  panel.innerHTML = mtgs.map(m=>{
+    const vid = getMainVendor(m);
+    const color = tpColor[m.tp]||'#555';
+    const label = tpLabel[m.tp]||m.tp;
+    const done = isMeetingDone(m);
+    return `<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 14px;border-bottom:1px solid #f0f0f0;${done?'opacity:.55':''}">
+      <div style="min-width:38px;font-size:8.5pt;font-weight:700;color:var(--navy);padding-top:1px">${m.t}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:8pt;font-weight:700;color:#1c1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${m.co||m.n||''}">${m.co||m.n||'Sin título'}</div>
+        <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;align-items:center">
+          <span style="background:${VC(vid)};color:#fff;border-radius:6px;padding:1px 6px;font-size:6.5pt;font-weight:700">${VN(vid)}</span>
+          <span style="background:${color}22;color:${color};border-radius:6px;padding:1px 6px;font-size:6.5pt;font-weight:700">${label}</span>
+          ${m.m ? `<a href="${m.m}" target="_blank" onclick="event.stopPropagation()" style="background:#1a73e8;color:#fff;border-radius:5px;padding:1px 5px;font-size:6.5pt;font-weight:700;text-decoration:none;">Meet</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function minDayJump(delta){
   const dp = document.getElementById('minDate');
   if(!dp) return;
@@ -2068,10 +2106,11 @@ function loadMinutasHoy(){
   const dp = document.getElementById('minDate');
   const date = dp ? dp.value : todayAR();
   updateMinDateLabel();
+  renderMinMeetings(date);
   el.innerHTML = '<div class="min-loading">🔄 Cargando minutas del Gemini Notes...</div>';
   if(st) st.textContent = 'Cargando...';
   const ctrl = new AbortController();
-  const tid = setTimeout(()=>ctrl.abort(), 25000);
+  const tid = setTimeout(()=>ctrl.abort(), 40000);
   fetch(MINUTAS_CACHE_URL + '?d=' + date, {signal:ctrl.signal})
     .then(r => { clearTimeout(tid); if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(html => {
