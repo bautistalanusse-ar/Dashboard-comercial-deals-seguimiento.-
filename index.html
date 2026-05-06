@@ -311,6 +311,38 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 
 /* LOGIN SCREEN REMOVED */
 
+/* MINUTAS TAB */
+.min-search-bar{display:flex;gap:8px;margin-bottom:18px;align-items:center;flex-wrap:wrap;}
+.min-search-input{flex:1;min-width:200px;border:2px solid var(--mid);border-radius:8px;padding:8px 14px;font-size:9pt;font-family:inherit;color:var(--txt);background:#fff;}
+.min-search-input:focus{outline:none;border-color:var(--p);}
+.min-search-btn{background:var(--p);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:9pt;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap;}
+.min-search-btn:hover{filter:brightness(1.12);}
+.min-search-btn.sec{background:var(--ind);}
+.min-cards{display:flex;flex-direction:column;gap:14px;}
+.min-status{text-align:center;padding:40px 16px;color:#bbb;font-size:9pt;line-height:1.8;}
+.min-loading{text-align:center;padding:32px;color:var(--muted);font-size:9pt;}
+
+/* PIPELINE TAB */
+.pipe-kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.pipe-kp{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:10px 16px;text-align:center;min-width:88px;}
+.pipe-kp .pn{font-size:15pt;font-weight:900;color:var(--blue);}
+.pipe-kp .pl{font-size:6.5pt;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.pipe-kp.hiw{border-top:3px solid var(--won);}
+.pipe-kp.hip{border-top:3px solid var(--p);}
+.pipe-kp.hio{border-top:3px solid var(--s);}
+.pipe-section{background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.pipe-section-head{background:linear-gradient(90deg,var(--navy),var(--ind));color:#fff;padding:10px 16px;font-size:8.5pt;font-weight:800;text-transform:uppercase;letter-spacing:.7px;}
+.pipe-table{width:100%;border-collapse:collapse;}
+.pipe-table th{font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 12px;border-bottom:2px solid var(--bdr);text-align:left;white-space:nowrap;}
+.pipe-table td{padding:7px 12px;border-bottom:1px solid var(--bdr);font-size:8pt;vertical-align:middle;}
+.pipe-table tr:last-child td{border-bottom:none;}
+.pipe-table tr:hover td{background:#f8f9ff;}
+.st-badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:6.5pt;font-weight:700;text-transform:capitalize;}
+.st-negociando{background:#fff8e1;color:#e65100;}
+.st-esperando{background:#e3f2fd;color:#1565c0;}
+.st-ganado{background:#e8f5e9;color:#2e7d32;}
+.st-trial{background:#f3e5f5;color:#6a1b9a;}
+
 </style>
 </head>
 <body>
@@ -331,6 +363,8 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <button class="tbtn" id="tRanking" onclick="setTab('ranking')">Ranking</button>
     <button class="tbtn" id="tVend" onclick="setTab('vendedores')">Vendedores</button>
     <button class="tbtn" id="tTar" onclick="setTab('tareas')">Tareas</button>
+    <button class="tbtn" id="tMin" onclick="setTab('minutas')">Minutas</button>
+    <button class="tbtn" id="tPipe" onclick="setTab('pipeline')">Pipeline</button>
   </div>
   <div class="tb-right">
     <span><span class="ldot"></span><span id="clk" class="clk">--:--</span></span>
@@ -426,7 +460,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones finalizadas / Tiempo</th><th>Tratos ganados</th><th>Presup. enviados</th><th>Conversión</th><th style="text-align:right">Total mtgs</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Tiempo de habla</th><th>Tratos ganados</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th><th style="text-align:right">Total mtgs</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -445,6 +479,30 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <!-- TAREAS TAB -->
     <div id="tab-tareas" style="display:none">
       <div id="tareasContent"></div>
+    </div>
+
+    <!-- MINUTAS TAB -->
+    <div id="tab-minutas" style="display:none">
+      <div class="card">
+        <div class="sh"><h2>Minutas de Reuniones</h2><div class="ln"></div><span id="minStatus" class="sc" style="background:#43a047">Gemini Notes</span></div>
+        <div class="min-search-bar">
+          <input type="text" id="minSearch" class="min-search-input" placeholder="Buscar minuta por empresa (ej: Glic, Santucci, Acodike...)" onkeydown="if(event.key==='Enter')searchMinutas()">
+          <button class="min-search-btn" onclick="searchMinutas()">🔍 Buscar</button>
+          <button class="min-search-btn sec" onclick="loadMinutasHoy()">📅 Recientes</button>
+        </div>
+        <div id="minResults" class="min-cards">
+          <div class="min-status">
+            <div style="font-size:24pt;margin-bottom:8px">📋</div>
+            Cargando minutas recientes...<br>
+            <small style="font-size:7.5pt;color:#ccc">Fuente: Google Meet → Gemini Notes → Dashboard</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE TAB -->
+    <div id="tab-pipeline" style="display:none">
+      <div id="pipelineContent"></div>
     </div>
 
   </div>
@@ -1270,9 +1328,9 @@ function renderMes(ym){
 function goToDay(date){
   document.getElementById('dpDia').value=date;
   curTab='agenda';
-  ['agenda','ranking','vendedores','tareas'].forEach(x=>{
+  ALL_TABS.forEach(x=>{
     document.getElementById('tab-'+x).style.display=x==='agenda'?'':'none';
-    const btn=document.getElementById('t'+x.charAt(0).toUpperCase()+x.slice(1));
+    const btn=document.getElementById(TAB_BTN_IDS[x]);
     if(btn) btn.classList.toggle('on',x==='agenda');
   });
   setView('dia');
@@ -1284,18 +1342,25 @@ function goToDay(date){
 // RANKING
 // ═══════════════════════════════════════════════
 function renderRanking(ym){
-  const meetings=getMeetingsByMonth(ym).filter(m => m.st !== 'cancelled');
+  const allMtgsMonth = getMeetingsByMonth(ym);
+  const meetings = allMtgsMonth.filter(m => m.st !== 'cancelled');
+  const cancelledMtgs = allMtgsMonth.filter(m => m.st === 'cancelled');
   const stats={};
-  Object.keys(VENDORS).forEach(id=>{stats[id]={primeras:0,seg:0,partner:0,dur:0,done:0};});
+  Object.keys(VENDORS).forEach(id=>{stats[id]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0};});
   meetings.forEach(m=>{
-    // Conta para todos los vendedores del meeting (owner + acompañantes)
     getAllVendors(m).forEach(vid=>{
-      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,dur:0,done:0};
+      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0};
       if(m.tp==='primera') stats[vid].primeras++;
       else if(m.tp==='seguimiento') stats[vid].seg++;
       else if(m.tp==='partner') stats[vid].partner++;
       stats[vid].dur += m.dur;
       if(isMeetingDone(m)) stats[vid].done++;
+    });
+  });
+  cancelledMtgs.forEach(m=>{
+    getAllVendors(m).forEach(vid=>{
+      if(!stats[vid]) stats[vid]={primeras:0,seg:0,partner:0,dur:0,done:0,cancel:0};
+      stats[vid].cancel++;
     });
   });
 
@@ -1307,7 +1372,6 @@ function renderRanking(ym){
     const conv=total>0?(deals.length/total*100).toFixed(0)+'%':'—';
     return {id,name:VN(id),...s,total,deals:deals.length,presup:presup.length,monto,conv};
   }).sort((a,b)=>{
-    // Orden: tratos ganados → presup → reuniones → monto
     if(b.deals!==a.deals) return b.deals-a.deals;
     if(b.presup!==a.presup) return b.presup-a.presup;
     return b.total-a.total;
@@ -1332,15 +1396,16 @@ function renderRanking(ym){
           ${v.seg?`<div class="barseg bar-s" style="width:${sc(v.seg)}px" title="${v.seg} seg."></div>`:''}
           ${v.partner?`<div class="barseg bar-x" style="width:${sc(v.partner)}px" title="${v.partner} partner"></div>`:''}
         </div>
-        <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓ fin.</strong> · ${fmtDur(v.dur)}</div>
+        <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓ fin.</strong> · <strong style="color:#888">${fmtDur(v.dur)}</strong></div>
       </td>
       <td><span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span></td>
       <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
+      <td><span style="${v.cancel>0?'color:#c62828;font-weight:700':'color:#ccc'}">${v.cancel>0?'❌ '+v.cancel:'—'}</span></td>
       <td class="rcnv">${v.conv}</td>
       <td class="rtotal">${v.total}</td>
     </tr>
     <tr id="rankDet_${v.id}" style="display:none;background:#fafafc;">
-      <td colspan="7" style="padding:12px;border-bottom:1px solid #eee;">
+      <td colspan="8" style="padding:12px;border-bottom:1px solid #eee;">
         <div style="font-weight:700;margin-bottom:6px;color:var(--p);">Detalle — ${v.name} (${mLabel}):</div>
         <div style="max-height:200px;overflow-y:auto;font-size:8.5pt;">
           ${meetings.filter(m=>getAllVendors(m).includes(v.id)).sort((a,b)=>a.d.localeCompare(b.d)).map(m=>{
@@ -1550,7 +1615,8 @@ function updatePeriodBar(date){
 // NAVIGATION
 // ═══════════════════════════════════════════════
 let curView='dia', curTab='agenda';
-const TAB_BTN_IDS={agenda:'tAgenda',ranking:'tRanking',vendedores:'tVend',tareas:'tTar'};
+const TAB_BTN_IDS={agenda:'tAgenda',ranking:'tRanking',vendedores:'tVend',tareas:'tTar',minutas:'tMin',pipeline:'tPipe'};
+const ALL_TABS=['agenda','ranking','vendedores','tareas','minutas','pipeline'];
 
 function setView(v){
   curView=v;
@@ -1589,19 +1655,17 @@ function dayJump(delta){
 
 function setTab(t){
   curTab=t;
-  const tabs=['agenda','ranking','vendedores','tareas'];
-  tabs.forEach(x=>{
+  ALL_TABS.forEach(x=>{
     document.getElementById('tab-'+x).style.display=x===t?'':'none';
     const btn=document.getElementById(TAB_BTN_IDS[x]);
     if(btn) btn.classList.toggle('on',x===t);
   });
   const ym=document.getElementById('dpDia').value.slice(0,7);
-  if(t==='ranking') {
-    const selYm = document.getElementById('rankingMesSel').value;
-    renderRanking(selYm);
-  }
+  if(t==='ranking') renderRanking(document.getElementById('rankingMesSel').value);
   if(t==='vendedores') renderVendors(ym);
   if(t==='tareas') renderTareas(document.getElementById('dpDia').value);
+  if(t==='minutas') loadMinutasHoy();
+  if(t==='pipeline') renderPipeline();
 }
 
 // ═══════════════════════════════════════════════
@@ -1950,6 +2014,168 @@ function tick(){
 }
 tick(); setInterval(tick,1000);
 
+
+// ═══════════════════════════════════════════════
+// MINUTAS — Gemini Notes
+// ═══════════════════════════════════════════════
+const MINUTAS_CACHE_URL  = 'https://hook.us2.make.com/ae72m59gpy48969btvo56dvktadqjliw';
+const MINUTAS_SEARCH_URL = 'https://hook.us2.make.com/8lzi2dc9ujfwvl597ql3n31ki4ciu2ds';
+
+function loadMinutasHoy(){
+  const el = document.getElementById('minResults');
+  const st = document.getElementById('minStatus');
+  if(!el) return;
+  el.innerHTML = '<div class="min-loading">🔄 Cargando minutas del Gemini Notes...</div>';
+  fetch(MINUTAS_CACHE_URL)
+    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(html => {
+      if(html && html.trim().length > 30) {
+        el.innerHTML = html;
+        if(st) st.textContent = '✅ Sincronizado';
+      } else {
+        el.innerHTML = `<div class="min-status">
+          <div style="font-size:20pt;margin-bottom:10px">📭</div>
+          No hay minutas almacenadas aún.<br>
+          <span style="font-size:8pt;color:#ccc;display:block;margin-top:8px">El Digest se ejecuta a las 18:30hs con las reuniones del día.<br>Las minutas aparecen aquí automáticamente después de ese proceso.</span>
+        </div>`;
+        if(st) st.textContent = 'Sin datos';
+      }
+    })
+    .catch(() => {
+      el.innerHTML = `<div class="min-status">
+        <div style="font-size:18pt;margin-bottom:8px">⚠️</div>
+        Sin conexión al servidor de minutas.<br>
+        <span style="font-size:8pt;color:#ccc">Verificá que el escenario "Minutas — Leer Cache" en Make.com esté activo.</span>
+      </div>`;
+      if(st) st.textContent = 'Desconectado';
+    });
+}
+
+function searchMinutas(){
+  const q = (document.getElementById('minSearch')||{value:''}).value.trim();
+  if(!q){ loadMinutasHoy(); return; }
+  const el = document.getElementById('minResults');
+  const st = document.getElementById('minStatus');
+  el.innerHTML = `<div class="min-loading">🔍 Buscando minutas de "<strong>${q}</strong>"...</div>`;
+  fetch(MINUTAS_SEARCH_URL + '?q=' + encodeURIComponent(q))
+    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data => {
+      const results = data.results || [];
+      if(results.length){
+        el.innerHTML = results.map(r => `
+          <div style="background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:12px 20px;">
+              <div style="color:#fff;font-weight:700;font-size:10pt;">${r.subject||'Sin título'}</div>
+              <div style="color:rgba(255,255,255,.5);font-size:7.5pt;margin-top:3px;">${r.date||''}</div>
+            </div>
+            <div style="padding:12px 20px;font-size:8.5pt;color:#444;line-height:1.7;">${(r.snippet||r.body||'Sin contenido disponible').replace(/<[^>]+>/g,'').slice(0,500)}...</div>
+          </div>`).join('');
+        if(st) st.textContent = results.length + ' encontradas';
+      } else {
+        el.innerHTML = `<div class="min-status">🔍 Sin resultados para "<strong>${q}</strong>".<br><small>Probá con el nombre exacto de la empresa o del contacto.</small></div>`;
+        if(st) st.textContent = 'Sin resultados';
+      }
+    })
+    .catch(() => {
+      el.innerHTML = '<div class="min-status">⚠️ Error al buscar. Verificá la conexión.</div>';
+    });
+}
+
+// ═══════════════════════════════════════════════
+// PIPELINE TAB
+// ═══════════════════════════════════════════════
+function renderPipeline(){
+  const cont = document.getElementById('pipelineContent');
+  if(!cont) return;
+  const ym = document.getElementById('dpDia').value.slice(0,7);
+  const MONTHS = {'2026-04':'Abril 2026','2026-05':'Mayo 2026'};
+  const mLabel = MONTHS[ym]||ym;
+
+  const wonMonto  = DEALS.reduce((a,d)=>a+(d.amt||0),0);
+  const mesDeals  = DEALS.filter(d=>d.d.startsWith(ym));
+  const mesPresup = PRESUPUESTOS.filter(p=>p.d.startsWith(ym));
+  const mesWon    = mesDeals.reduce((a,d)=>a+(d.amt||0),0);
+  const negCount  = PRESUPUESTOS.filter(p=>p.st==='negociando').length;
+  const pendCount = PRESUPUESTOS.filter(p=>!['ganado'].includes(p.st)).length;
+
+  // Vendor pipeline cards
+  const activeVids = Object.keys(VENDORS).filter(id => VENDORS[id].active !== false);
+  const vendorCards = activeVids.map(id => {
+    const vDeals  = DEALS.filter(d=>d.v===id);
+    const vPresup = PRESUPUESTOS.filter(p=>p.v===id);
+    const wonAmt  = vDeals.reduce((a,d)=>a+(d.amt||0),0);
+    const pending = vPresup.filter(p=>p.st!=='ganado');
+    if(!vDeals.length && !vPresup.length) return '';
+    return `<div style="background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:11px 14px;border-top:3px solid ${VC(id)}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <span class="vc" style="background:${VC(id)}">${VN(id)}</span>
+        ${wonAmt?`<span style="color:var(--won);font-weight:700;font-size:9pt">${fmtMonto(wonAmt)}</span>`:''}
+      </div>
+      <div style="font-size:7.5pt;display:flex;gap:4px;flex-wrap:wrap">
+        ${vDeals.length?`<span style="background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;font-weight:700">🏆 ${vDeals.length} ganados</span>`:''}
+        ${pending.filter(p=>p.st==='negociando').length?`<span style="background:#fff8e1;color:#e65100;border-radius:8px;padding:2px 8px;font-weight:700">⚡ ${pending.filter(p=>p.st==='negociando').length} negociando</span>`:''}
+        ${pending.filter(p=>p.st==='esperando').length?`<span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;font-weight:700">📄 ${pending.filter(p=>p.st==='esperando').length} esperando</span>`:''}
+      </div>
+      ${pending.length?`<div style="margin-top:7px;font-size:7.5pt;color:#555;border-top:1px dashed #eee;padding-top:6px">${pending.map(p=>`<div style="padding:2px 0">→ ${p.co} <span class="st-badge st-${(p.st||'').replace(/ /g,'-').replace('trial activo','trial')}">${p.st}</span></div>`).join('')}</div>`:''}
+    </div>`;
+  }).filter(Boolean).join('');
+
+  // Presupuestos table (sorted by urgency)
+  const stOrd = {negociando:0, 'trial activo':1, esperando:2, ganado:3};
+  const presupRows = [...PRESUPUESTOS].sort((a,b)=>(stOrd[a.st]||9)-(stOrd[b.st]||9)).map(p=>`<tr>
+    <td style="white-space:nowrap">${p.d.slice(8,10)}/${p.d.slice(5,7)}</td>
+    <td><span class="vc" style="background:${VC(p.v)};font-size:6.5pt">${VN(p.v)}</span></td>
+    <td style="font-weight:700">${p.co}</td>
+    <td>${p.amt?fmtMonto(p.amt):'—'}</td>
+    <td><span class="st-badge st-${(p.st||'').replace(/ /g,'-').replace('trial activo','trial')}">${p.st||'—'}</span></td>
+    <td style="font-size:7.5pt;color:#555;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(p.ctx||'').replace(/<[^>]+>/g,'').slice(0,80)||'—'}</td>
+  </tr>`).join('');
+
+  const dealsRows = [...DEALS].sort((a,b)=>b.d.localeCompare(a.d)).map(d=>`<tr>
+    <td style="white-space:nowrap">${d.d.slice(8,10)}/${d.d.slice(5,7)}</td>
+    <td><span class="vc" style="background:${VC(d.v)};font-size:6.5pt">${VN(d.v)}</span></td>
+    <td style="font-weight:700">${d.co}</td>
+    <td style="color:var(--won);font-weight:700">${d.amt?fmtMonto(d.amt):'—'}</td>
+    <td style="font-size:7.5pt;color:#555">${d.n||'—'}</td>
+  </tr>`).join('');
+
+  cont.innerHTML = `
+    <div class="pipe-kpis">
+      <div class="pipe-kp hiw"><div class="pn" style="color:var(--won)">${DEALS.length}</div><div class="pl">Tratos ganados</div></div>
+      <div class="pipe-kp hip"><div class="pn" style="font-size:11pt">${wonMonto?fmtMonto(wonMonto):'$0'}</div><div class="pl">Monto total ganado</div></div>
+      <div class="pipe-kp"><div class="pn" style="color:#f57f17">${PRESUPUESTOS.length}</div><div class="pl">Presupuestos</div></div>
+      <div class="pipe-kp hio"><div class="pn" style="color:var(--s)">${negCount}</div><div class="pl">Negociando</div></div>
+      <div class="pipe-kp"><div class="pn" style="color:#888">${pendCount}</div><div class="pl">Activos (sin cerrar)</div></div>
+      ${mesWon?`<div class="pipe-kp hiw"><div class="pn" style="color:var(--won);font-size:11pt">${fmtMonto(mesWon)}</div><div class="pl">${mLabel}</div></div>`:''}
+    </div>
+
+    <div style="font-size:8pt;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      <span style="display:block;width:3px;height:14px;background:var(--mid);border-radius:2px;"></span>Por Vendedor
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px;margin-bottom:20px;">
+      ${vendorCards||'<div style="color:#ccc;font-size:8.5pt;padding:12px 0">Sin datos de pipeline.</div>'}
+    </div>
+
+    <div class="pipe-section">
+      <div class="pipe-section-head">📄 Presupuestos activos & Pipeline</div>
+      <div style="overflow-x:auto">
+        <table class="pipe-table">
+          <thead><tr><th>Fecha</th><th>Vendedor</th><th>Empresa</th><th>Monto</th><th>Estado</th><th>Contexto</th></tr></thead>
+          <tbody>${presupRows||'<tr><td colspan="6" style="color:#ccc;text-align:center;padding:16px">Sin presupuestos registrados.</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="pipe-section" style="margin-top:14px">
+      <div class="pipe-section-head">🏆 Tratos Ganados (todos)</div>
+      <div style="overflow-x:auto">
+        <table class="pipe-table">
+          <thead><tr><th>Fecha</th><th>Vendedor</th><th>Empresa</th><th>Monto</th><th>Nota</th></tr></thead>
+          <tbody>${dealsRows||'<tr><td colspan="5" style="color:#ccc;text-align:center;padding:16px">Sin tratos ganados.</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
 
 // --- MAKE.COM WEBHOOK — proxy público sin OAuth ni login ---
 const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/i8sll981gud2cgnv84f6u63kuufkeoie';
