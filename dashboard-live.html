@@ -44,6 +44,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
 .kp .l{font-size:6.5pt;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
 .kp.hi{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3);}
 
+/* MOBILE TAB NAV — oculto en desktop */
+.mob-tabs{display:none;}
+
 /* VIEW STRIP — mobile only, inside agenda tab */
 .view-strip{display:none;}
 
@@ -56,21 +59,60 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sf);color:var(
    ════════════════════════════════════════════ */
 @media(max-width:768px){
 
-  /* Topbar */
-  .tb{padding:0 10px;height:50px;gap:3px;position:sticky;top:0;z-index:200;}
-  .tb-logo{font-size:10.5pt;padding-right:8px;}
+  /* Topbar — compacto, sin tabs (se mueven al mob-tabs) */
+  .tb{padding:0 12px;height:46px;gap:6px;position:sticky;top:0;z-index:200;}
+  .tb-logo{font-size:11pt;padding-right:0;border-right:none;}
   .tb-logo small{display:none;}
   .tb-views{display:none!important;}
-  .tb-tabs{flex:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 2px;gap:1px;}
-  .tb-tabs::-webkit-scrollbar{display:none;}
-  .tbtn{padding:5px 9px;font-size:8.5pt;min-height:36px;white-space:nowrap;}
-  .tb-right{gap:5px;}
-  .clk{font-size:9pt;}
+  .tb-tabs{display:none!important;}
+  .tb-right{gap:8px;margin-left:auto;}
+  .clk{font-size:10pt;}
   #lastUpdate{display:none;}
   .dbtn{display:none!important;}
-  .updbtn{padding:4px 8px;font-size:7.5pt;}
+  .updbtn{padding:5px 10px;font-size:8.5pt;}
   #userName{display:none;}
-  button[onclick="syncCalendar()"]{font-size:7.5pt;padding:3px 6px;}
+  button[onclick="syncCalendar()"]{font-size:8pt;padding:4px 8px;}
+
+  /* Mobile tab nav */
+  .mob-tabs{
+    display:flex;
+    align-items:stretch;
+    overflow-x:auto;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    background:#fff;
+    border-bottom:2px solid var(--bdr);
+    position:sticky;
+    top:46px;
+    z-index:190;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+  }
+  .mob-tabs::-webkit-scrollbar{display:none;}
+  .mtbtn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    padding:8px 14px;
+    background:none;
+    border:none;
+    border-bottom:3px solid transparent;
+    color:#888;
+    font-size:7.5pt;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:68px;
+    font-family:inherit;
+    transition:.15s;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mtbtn > :first-child{font-size:15pt;line-height:1.1;}
+  .mtbtn span{font-size:7.5pt;font-weight:700;letter-spacing:.2px;}
+  .mtbtn.on{color:var(--p);border-bottom-color:var(--p);}
+  .mtbtn:active{background:#f0f4ff;}
 
   /* Period bar */
   .pbar{padding:10px 12px 0;}
@@ -487,6 +529,16 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <button style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.7);padding:4px 10px;cursor:pointer;font-size:8pt;" onclick="syncCalendar()">📡 Sync Calendar</button>
     <span id="userName" style="font-size:8pt;margin-left:6px;color:rgba(255,255,255,.7);"></span>
   </div>
+</div>
+
+<!-- MOBILE TAB NAV — solo visible en mobile -->
+<div class="mob-tabs" id="mobTabs">
+  <button class="mtbtn on" id="mtAgenda" onclick="setTab('agenda')">📅<span>Agenda</span></button>
+  <button class="mtbtn" id="mtRanking" onclick="setTab('ranking')">🏆<span>Ranking</span></button>
+  <button class="mtbtn" id="mtVend" onclick="setTab('vendedores')">👥<span>Vendedores</span></button>
+  <button class="mtbtn" id="mtTar" onclick="setTab('tareas')">✅<span>Tareas</span></button>
+  <button class="mtbtn" id="mtMin" onclick="setTab('minutas')">📋<span>Minutas</span></button>
+  <button class="mtbtn" id="mtPipe" onclick="setTab('pipeline')">📊<span>Pipeline</span></button>
 </div>
 
 <!-- PERIOD BAR -->
@@ -1776,6 +1828,7 @@ function updatePeriodBar(date){
 // ═══════════════════════════════════════════════
 let curView='dia', curTab='agenda';
 const TAB_BTN_IDS={agenda:'tAgenda',ranking:'tRanking',vendedores:'tVend',tareas:'tTar',minutas:'tMin',pipeline:'tPipe'};
+const MOB_TAB_IDS={agenda:'mtAgenda',ranking:'mtRanking',vendedores:'mtVend',tareas:'mtTar',minutas:'mtMin',pipeline:'mtPipe'};
 const ALL_TABS=['agenda','ranking','vendedores','tareas','minutas','pipeline'];
 
 function setView(v){
@@ -1825,7 +1878,12 @@ function setTab(t){
     document.getElementById('tab-'+x).style.display=x===t?'':'none';
     const btn=document.getElementById(TAB_BTN_IDS[x]);
     if(btn) btn.classList.toggle('on',x===t);
+    const mBtn=document.getElementById(MOB_TAB_IDS[x]);
+    if(mBtn) mBtn.classList.toggle('on',x===t);
   });
+  // scroll active tab into view on mobile
+  const mBtn=document.getElementById(MOB_TAB_IDS[t]);
+  if(mBtn) mBtn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   const ym=document.getElementById('dpDia').value.slice(0,7);
   if(t==='ranking') renderRanking(document.getElementById('rankingMesSel').value);
   if(t==='vendedores') renderVendors(ym);
