@@ -509,7 +509,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     <button class="vbtn" id="vMes" onclick="setView('mes')">🗓 Mes</button>
   </div>
   <div class="tb-tabs">
-    <button class="tbtn" id="tRanking" onclick="setTab('ranking')">Ranking</button>
+    <button class="tbtn on" id="tRanking" onclick="setTab('ranking')">Ranking</button>
     <button class="tbtn" id="tTar" onclick="setTab('tareas')">Tareas</button>
     <button class="tbtn" id="tMin" onclick="setTab('minutas')">Minutas</button>
     <button class="tbtn" id="tPipe" onclick="setTab('pipeline')">Pipeline</button>
@@ -526,8 +526,8 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 
 <!-- MOBILE TAB NAV — solo visible en mobile -->
 <div class="mob-tabs" id="mobTabs">
-  <button class="mtbtn on" id="mtAgenda" onclick="setTab('agenda')">📅<span>Día</span></button>
-  <button class="mtbtn" id="mtRanking" onclick="setTab('ranking')">🏆<span>Ranking</span></button>
+  <button class="mtbtn" id="mtAgenda" onclick="setTab('agenda')">📅<span>Día</span></button>
+  <button class="mtbtn on" id="mtRanking" onclick="setTab('ranking')">🏆<span>Ranking</span></button>
   <button class="mtbtn" id="mtTar" onclick="setTab('tareas')">✅<span>Tareas</span></button>
   <button class="mtbtn" id="mtMin" onclick="setTab('minutas')">📋<span>Minutas</span></button>
   <button class="mtbtn" id="mtPipe" onclick="setTab('pipeline')">📊<span>Pipeline</span></button>
@@ -545,7 +545,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 <div class="layout">
   <div>
     <!-- AGENDA TAB -->
-    <div id="tab-agenda">
+    <div id="tab-agenda" style="display:none">
 
       <!-- VIEW STRIP — solo visible en mobile (desktop usa topbar) -->
       <div class="view-strip">
@@ -613,7 +613,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
     </div>
 
     <!-- RANKING TAB -->
-    <div id="tab-ranking" style="display:none">
+    <div id="tab-ranking">
       <div class="date-nav" style="margin-bottom:10px;">
           <label>🗓 Ver mes:</label>
           <select class="msel" id="rankingMesSel">
@@ -624,7 +624,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Presenciales</th><th>Tratos ganados</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th><th style="text-align:right">Total</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Presenciales</th><th style="text-align:right">Total reus.</th><th>Tratos ganados</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -1610,11 +1610,11 @@ function renderRanking(ym){
         </div>
         <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓</strong> · ${v.pres1+v.presS>0?`<strong style="color:#2e7d32">🏢 ${v.pres1+v.presS}</strong> · `:''}${fmtDur(v.dur)}</div>
       </td>
+      <td class="rtotal" style="text-align:right">${v.total}</td>
       <td><span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span></td>
       <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
       <td><span style="${v.cancel>0?'color:#c62828;font-weight:700':'color:#ccc'}">${v.cancel>0?'❌ '+v.cancel:'—'}</span></td>
       <td class="rcnv">${v.conv}</td>
-      <td class="rtotal">${v.total}</td>
     </tr>
     <tr id="rankDet_${v.id}" style="display:none;background:#fafafc;">
       <td colspan="8" style="padding:12px;border-bottom:1px solid #eee;">
@@ -1783,7 +1783,7 @@ function updatePeriodBar(date){
 // ═══════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════
-let curView='dia', curTab='agenda';
+let curView='dia', curTab='ranking';
 const TAB_BTN_IDS={ranking:'tRanking',tareas:'tTar',minutas:'tMin',pipeline:'tPipe'};
 const MOB_TAB_IDS={agenda:'mtAgenda',ranking:'mtRanking',tareas:'mtTar',minutas:'mtMin',pipeline:'mtPipe'};
 const ALL_TABS=['agenda','ranking','tareas','minutas','pipeline'];
