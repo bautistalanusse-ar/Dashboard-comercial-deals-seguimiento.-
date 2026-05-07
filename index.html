@@ -2478,7 +2478,11 @@ const SKIP_EMAILS = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes
 
 function applyLiveEvents(events) {
   if(!events || !events.length) return false;
-  MEETINGS = events.map(ev => {
+  MEETINGS = events.filter(ev => {
+    // Descartar eventos sin ningún invitado externo (reuniones internas)
+    const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
+    return guests.some(g => !g.endsWith('@nubceo.com'));
+  }).map(ev => {
     const st  = new Date(ev.start);
     const en  = new Date(ev.end);
     const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
@@ -2530,7 +2534,7 @@ function syncCalendar(forceRefresh) {
   // Usar caché si es reciente y no forzamos refresh
   if(!forceRefresh) {
     try {
-      const cached = localStorage.getItem('nubceo_cal_cache');
+      const cached = localStorage.getItem('nubceo_cal_cache_v2');
       if(cached) {
         const { ts, events } = JSON.parse(cached);
         if(Date.now() - ts < CACHE_TTL_MS && events && events.length) {
@@ -2549,7 +2553,7 @@ function syncCalendar(forceRefresh) {
       const events = data.events || [];
       if(!events.length) throw new Error('Sin eventos');
       // Guardar en caché
-      localStorage.setItem('nubceo_cal_cache', JSON.stringify({ ts: Date.now(), events }));
+      localStorage.setItem('nubceo_cal_cache_v2', JSON.stringify({ ts: Date.now(), events }));
       applyLiveEvents(events);
       renderAfterSync('✅');
     })
