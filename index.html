@@ -845,7 +845,7 @@ let MEETINGS = [
   {d:'2026-05-04',t:'10:00',dur:60,co:'SIXT Uruguay',vs:['pablo_illich'],tp:'seguimiento',s:'Avance propuesta SIXT',cnt:['facundo.lopez@sixt.com.uy','vmoran@carone.com.uy'],m:'https://meet.google.com/ppt-chav-akr',st:'cancelled',ctx:'Continuación de la propuesta SIXT del 29/04. Facundo confirmó asistencia.',nx:'Negociar condiciones y avanzar a cierre.'},
   {d:'2026-05-04',t:'12:00',dur:60,co:'Club Atlético Talleres',vs:['luciano'],tp:'seguimiento',s:'PROPUESTA NUBCEO - CAT',cnt:['m.calvimonte@clubtalleres.com.ar','m.garcia@clubtalleres.com.ar'],m:'https://meet.google.com/ijw-yjov-pap',st:'rescheduled',ctx:'Seguimiento de la reunión del 21/04. Luciano presenta propuesta al Club Atlético Talleres.',nx:'Presentar propuesta → conseguir aprobación.'},
   {d:'2026-05-04',t:'14:00',dur:60,co:'Gofun / Easygoband',vs:['pablo_arce'],tp:'primera',s:'Reunion Pablo Arce (Gofun.easygoband.com)',cnt:['daniel.olivera@easygoband.com'],m:'https://meet.google.com/bxg-xogo-bpy',ctx:'Primera reunión. Temas: Cash Flow, conciliación de cupones, costo operativo, contracargos.',nx:'Calificar necesidad y volumen. Demo si aplica.'},
-  {d:'2026-05-04',t:'15:00',dur:60,co:'El Dorado (UY)',vs:['omar'],tp:'seguimiento',s:'Relevamiento necesidad EL DORADO - NUBCEO',cnt:['scondon@eldorado.com.uy','gbattaggia@eldorado.com.uy'],m:'https://meet.google.com/pui-oukp-jcz',ctx:'Seguimiento de la reunión café con Bettoni del 16/04. Vanessa también participa.',nx:'Relevar necesidad específica → propuesta.'},
+  {d:'2026-05-04',t:'15:00',dur:60,co:'El Dorado (UY)',vs:['pablo_illich'],tp:'seguimiento',s:'Relevamiento necesidad EL DORADO - NUBCEO',cnt:['scondon@eldorado.com.uy','gbattaggia@eldorado.com.uy'],m:'https://meet.google.com/pui-oukp-jcz',ctx:'Seguimiento de la reunión café con Bettoni del 16/04. Vanessa también participa.',nx:'Relevar necesidad específica → propuesta.'},
   {d:'2026-05-04',t:'15:00',dur:60,co:'Centro Rossi',vs:['mateo'],tp:'primera',s:'Nubceo | Centro Rossi',cnt:['fpulella@cdrossi.com','ecamino@cdrossi.com'],m:'https://meet.google.com/yop-azhy-nws',ctx:'Primera reunión con Centro Rossi.',nx:'Demo y calificación.'},
   {d:'2026-05-04',t:'15:00',dur:60,co:'Bedson SA',vs:['pablo_arce'],tp:'primera',s:'Nubceo - Bedson',cnt:['carina.caba@bedson.com'],m:'https://meet.google.com/wkc-cyqs-saj',ctx:'Primera reunión con Bedson.',nx:'Demo.'},
   {d:'2026-05-05',t:'09:15',dur:30,co:'Iván Carini (Hasar)',vs:['pablo_arce'],tp:'primera',s:'Iván Carini Hasar - Pablo',cnt:['ivan.carini@hasar.com'],m:'https://meet.google.com/nya-knkh-vpm',ctx:'Primera reunión con Iván Carini de Hasar. Pablo Arce organiza.',nx:'Calificar y demo.'},
@@ -1128,7 +1128,7 @@ function meetingHTML(m,idx){
     ? `<span class="bdg presencial">🏢 Presencial</span>`
     : '';
 
-  return `<div class="mr ${m.tp}${active?' now':''}${isCancelled?' cancelled':''}" id="mr${idx}" onclick="tog(${idx})" style="${isCancelled?'opacity:0.6;border-left-color:#ccc;':''}${done&&!active&&!isCancelled?'opacity:0.82;':''}">
+  return `<div class="mr ${m.tp}${active?' now':''}${isCancelled?' cancelled':''}" onclick="this.classList.toggle('open')" style="cursor:pointer;${isCancelled?'opacity:0.6;border-left-color:#ccc;':''}${done&&!active&&!isCancelled?'opacity:0.82;':''}">
     <div class="mh">
       <div class="mt">${m.t}<small>${fmtDur(m.dur)}</small></div>
       <div class="mc">
@@ -1176,7 +1176,7 @@ function meetingHTML(m,idx){
     </div>
   </div>`;
 }
-function tog(i){document.getElementById('mr'+i).classList.toggle('open');}
+
 
 // ═══════════════════════════════════════════════
 // SIN REUNIONES BOX
