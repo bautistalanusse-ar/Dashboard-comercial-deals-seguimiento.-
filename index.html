@@ -1637,7 +1637,7 @@ function renderRanking(ym){
   const mgmt      = sorted.filter(v=> MGMT.includes(v.id));
 
   const maxV=comercial[0]?.vTotal||1;
-  const sc=(n)=>Math.max(n/maxV*110,2);
+  const sc=(n)=>Math.max(n/maxV*60,2);
   const mLabel=fmtYm(ym);
   const isAnual = !ym.includes('-');
   const META = isAnual ? 72000000 : 6000000;
