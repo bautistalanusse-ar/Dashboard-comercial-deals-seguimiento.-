@@ -617,6 +617,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="date-nav" style="margin-bottom:10px;">
           <label>🗓 Ver mes:</label>
           <select class="msel" id="rankingMesSel">
+            <option value="2026">⭐ Anual 2026</option>
             <option value="2026-04">Abril 2026</option>
             <option value="2026-05" selected>Mayo 2026</option>
           </select>
@@ -624,7 +625,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Presenciales</th><th style="text-align:right">Total reus.</th><th>Tratos ganados</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Presenciales</th><th style="text-align:right">Total reus.</th><th>Tratos ganados · Facturado</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -919,6 +920,8 @@ let DEALS = [
   {d:'2026-04-30',v:'hernan',  co:'Valentino',              amt:700000,  mtg:'Valentino',              n:'Trato 115858 ganado. Trials Activos ARG · Marco Plataformas.'},
   {d:'2026-04-30',v:'vanessa', co:'Santucci / Amo Cocinar', amt:0,       mtg:'Santucci',               n:'Trato 105964 ganado. UYU 20.778. Trials Activos UY · OnBoarding.'},
   {d:'2026-04-30',v:'mateo',   co:'Fabric Franquicia',      amt:1900000, mtg:'Fabric Franquicia',      n:'Trato 115860 ganado. Trials Activos ARG · Marco Plataformas.'},
+  // ── MAYO 2026 ──────────────────────────────────────────────────────────────
+  {d:'2026-05-06',v:'vanessa', co:'Welaman',                amt:0,       mtg:'Welaman',                n:'Trato 115926 ganado. UYU 22.640. Trials Activos UY · OnBoarding Incompleto. mercadopago_uy.'},
   // TODO: montos en UYU pendientes de conversión a ARS para sumar al total del mes
 ];
 
@@ -1005,6 +1008,7 @@ function fmtMonto(amt){
 }
 
 function fmtYm(ym){
+  if(!ym.includes('-')) return 'Año ' + ym;
   const [y,m]=ym.split('-').map(Number);
   return new Date(y,m-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
 }
@@ -1611,9 +1615,21 @@ function renderRanking(ym){
   const maxT=sorted[0]?.total||1;
   const sc=(n)=>Math.max(n/maxT*110,2);
   const mLabel=fmtYm(ym);
+  const isAnual = !ym.includes('-');
+  const META = isAnual ? 72000000 : 6000000; // $72M anual / $6M mensual
 
   document.getElementById('rankingPeriod').textContent=`${mLabel} — ${meetings.length} reuniones`;
-  document.getElementById('rtbody').innerHTML=sorted.map((v,i)=>`
+  document.getElementById('rtbody').innerHTML=sorted.map((v,i)=>{
+    const pct = v.monto>0 ? Math.min(Math.round(v.monto/META*100),100) : 0;
+    const pctColor = pct>=100?'#2e7d32':pct>=70?'#1565c0':pct>=40?'#f57f17':'#c62828';
+    const montoDeals = getDealsByVendor(v.id, ym);
+    const uyu = montoDeals.filter(d=>d.n&&d.n.includes('UYU'));
+    const arsDeals = montoDeals.filter(d=>!(d.n&&d.n.includes('UYU')));
+    const uyuCount = uyu.length;
+    const montoLabel = v.monto>0
+      ? `$${(v.monto/1000).toFixed(0)}K${uyuCount?' <span style="font-size:6pt;color:#888">+${uyuCount}UYU</span>':''}`
+      : (uyuCount ? `<span style="font-size:7.5pt;color:#1565c0">${uyuCount} UYU</span>` : '—');
+    return `
     <tr style="cursor:pointer" onclick="const el=document.getElementById('rankDet_${v.id}'); el.style.display=el.style.display==='none'?'table-row':'none';">
       <td class="rpos ${i<3?'top':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
       <td class="rname" style="font-size:9pt;">
@@ -1629,7 +1645,15 @@ function renderRanking(ym){
         <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓</strong> · ${v.pres1+v.presS>0?`<strong style="color:#2e7d32">🏢 ${v.pres1+v.presS}</strong> · `:''}${fmtDur(v.dur)}</div>
       </td>
       <td class="rtotal" style="text-align:right">${v.total}</td>
-      <td><span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span></td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:80px;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span>
+            <span style="font-size:7.5pt;font-weight:700;color:${pctColor}">${montoLabel}</span>
+          </div>
+          ${v.deals>0?`<div style="height:4px;background:#e8eaf6;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;transition:width .3s;"></div></div><div style="font-size:6pt;color:${pctColor};font-weight:700;">${pct}% de meta</div>`:''}
+        </div>
+      </td>
       <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
       <td><span style="${v.cancel>0?'color:#c62828;font-weight:700':'color:#ccc'}">${v.cancel>0?'❌ '+v.cancel:'—'}</span></td>
       <td class="rcnv">${v.conv}</td>
@@ -1653,7 +1677,8 @@ function renderRanking(ym){
           }).join('')}
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -2613,9 +2638,14 @@ if(minDateEl){ minDateEl.value = initDate; updateMinDateLabel(); }
   // Rebuild options from actual meeting months + current month
   const allMths=[...new Set([...MEETINGS.map(m=>m.d.slice(0,7)),ym])].sort();
   sel.innerHTML=allMths.map(y=>`<option value="${y}"${y===ym?' selected':''}>${fmtYm(y)}</option>`).join('');
-  // also update rankingMesSel
+  // also update rankingMesSel (keep annual option at top)
   const rsel=document.getElementById('rankingMesSel');
-  if(rsel) rsel.innerHTML=sel.innerHTML;
+  const curRsel=rsel?rsel.value:'';
+  if(rsel){
+    const anualOpt=`<option value="${y.slice(0,4)}">⭐ Anual ${y.slice(0,4)}</option>`;
+    rsel.innerHTML=anualOpt+sel.innerHTML;
+    if(curRsel) rsel.value=curRsel;
+  }
 })();
 
 // Mostrar timestamp inicial
