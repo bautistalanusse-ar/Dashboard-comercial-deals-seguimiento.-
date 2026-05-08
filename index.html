@@ -626,7 +626,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones virtuales</th><th style="text-align:right">Total</th><th style="text-align:center">R. presenciales</th><th>Ganados · Facturado</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones virtuales</th><th style="text-align:right">Total</th><th style="text-align:center">R. presenciales</th><th>Ganados · Facturado</th><th>Forecast</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -959,6 +959,21 @@ const TAREAS_DIA = [
   {d:'2026-05-04',v:'mateo',    tarea:'Presentar cotización Sodimac',        st:'done',     venc:'2026-04-30', rel:'Sodimac'},
   // TODO: poblar automáticamente desde Pipedrive Activities API
 ];
+
+// ═══════════════════════════════════════════════
+// FORECAST POR VENDEDOR (pipeline actual — fuente: Pipedrive)
+// ─ Actualizar manualmente hasta integrar API
+// ═══════════════════════════════════════════════
+const FORECAST = {
+  luciano:     13850000,
+  emiliana:    13350000,
+  hernan:      12100000,
+  mateo:        6028000,
+  federico:      950000,
+  vanessa:     32536000,
+  lucia:        7239330,
+  pablo_illich: 2772000,
+};
 
 // ═══════════════════════════════════════════════
 // HELPERS
@@ -1652,7 +1667,7 @@ function renderRanking(ym){
           ${v.deals>0?`<div style="height:4px;background:#e8eaf6;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;"></div></div><div style="font-size:6pt;color:${pctColor};font-weight:700;">${pct}%</div>`:''}
         </div>
       </td>
-      <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
+      <td><span style="color:#f57f17;font-weight:700">${FORECAST[v.id]?'$'+(FORECAST[v.id]/1000000).toFixed(2).replace('.',',')+'M':'—'}</span></td>
       <td><span style="${v.cancel>0?'color:#c62828;font-weight:700':'color:#ccc'}">${v.cancel>0?'❌ '+v.cancel:'—'}</span></td>
       <td class="rcnv">${v.conv}</td>
     </tr>
