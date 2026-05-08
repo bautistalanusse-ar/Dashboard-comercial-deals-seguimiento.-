@@ -1630,7 +1630,7 @@ function renderRanking(ym){
     if(b.deals!==a.deals) return b.deals-a.deals;
     if(b.presup!==a.presup) return b.presup-a.presup;
     return b.total-a.total;
-  }).filter(v=>v.total>0 && VENDORS[v.id]?.active !== false);
+  }).filter(v=>!['juanb','bautista','gonzalo'].includes(v.id) && VENDORS[v.id]?.active !== false);
 
   const maxV=sorted[0]?.vTotal||1;
   const sc=(n)=>Math.max(n/maxV*110,2);
