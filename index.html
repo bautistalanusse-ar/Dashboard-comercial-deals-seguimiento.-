@@ -668,6 +668,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
                 <input type="date" id="minDate" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 8px;font-size:8.5pt;font-family:inherit;color:#fff;cursor:pointer;" onchange="loadMinutasHoy()">
                 <button class="qbtn-day" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff;font-size:7.5pt;padding:3px 8px;" onclick="minDayJump(0)">Hoy</button>
                 <button class="qbtn-day" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff;font-size:7.5pt;padding:3px 8px;" onclick="minDayJump(1)">▶</button>
+                <button class="qbtn-day" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);color:#fff;font-size:7.5pt;padding:3px 8px;" onclick="loadMinutasHoy(true)" title="Forzar actualización desde Make">↺</button>
               </div>
             </div>
             <div style="padding:8px 12px 2px;background:rgba(0,0,0,.03);border-bottom:1px solid var(--bdr);">
@@ -2269,7 +2270,7 @@ function updateMinDateLabel(){
   else lbl.textContent = fmtDate(dp.value);
 }
 
-function loadMinutasHoy(){
+function loadMinutasHoy(forceRefresh){
   const el = document.getElementById('minDayResults');
   const st = document.getElementById('minStatus');
   if(!el) return;
@@ -2277,6 +2278,21 @@ function loadMinutasHoy(){
   const date = dp ? dp.value : todayAR();
   updateMinDateLabel();
   renderMinMeetings(date);
+
+  // Check local cache first (30 min TTL)
+  const MINUTAS_CACHE_TTL = 30 * 60 * 1000;
+  const cacheKey = 'nubceo_minutas_' + date;
+  if(!forceRefresh){
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if(cached && (Date.now() - cached.ts) < MINUTAS_CACHE_TTL && cached.html && cached.html.trim().length > 30){
+        el.innerHTML = cached.html;
+        if(st) st.textContent = '✅ Caché local';
+        return;
+      }
+    } catch(e){}
+  }
+
   el.innerHTML = '<div class="min-loading">🔄 Cargando minutas del Gemini Notes...</div>';
   if(st) st.textContent = 'Cargando...';
   const ctrl = new AbortController();
@@ -2285,6 +2301,7 @@ function loadMinutasHoy(){
     .then(r => { clearTimeout(tid); if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
     .then(html => {
       if(html && html.trim().length > 30) {
+        try { localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), html})); } catch(e){}
         el.innerHTML = html;
         if(st) st.textContent = '✅ Sincronizado';
       } else {
@@ -2299,6 +2316,15 @@ function loadMinutasHoy(){
     .catch(err => {
       clearTimeout(tid);
       const isTimeout = err.name === 'AbortError';
+      // Show cached data if available, even if stale
+      try {
+        const stale = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+        if(stale && stale.html && stale.html.trim().length > 30){
+          el.innerHTML = stale.html + `<div style="margin-top:8px;padding:6px;background:rgba(255,165,0,.15);border-radius:6px;font-size:7.5pt;color:#ffa500;">⚠️ Mostrando datos en caché — sin conexión a Make.</div>`;
+          if(st) st.textContent = 'Caché (offline)';
+          return;
+        }
+      } catch(e){}
       el.innerHTML = `<div class="min-status">
         <div style="font-size:18pt;margin-bottom:8px">⚠️</div>
         ${isTimeout ? 'Timeout — el escenario tardó más de 25s.' : 'Sin conexión al servidor de minutas.'}<br>
