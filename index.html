@@ -2638,7 +2638,7 @@ if(minDateEl){ minDateEl.value = initDate; updateMinDateLabel(); }
   const rsel=document.getElementById('rankingMesSel');
   const curRsel=rsel?rsel.value:'';
   if(rsel){
-    const anualOpt=`<option value="${y.slice(0,4)}">⭐ Anual ${y.slice(0,4)}</option>`;
+    const anualOpt=`<option value="${ym.slice(0,4)}">⭐ Anual ${ym.slice(0,4)}</option>`;
     rsel.innerHTML=anualOpt+sel.innerHTML;
     if(curRsel) rsel.value=curRsel;
   }
