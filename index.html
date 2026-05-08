@@ -626,7 +626,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones virtuales</th><th style="text-align:right">Total</th><th style="text-align:center">R. presenciales</th><th>Ganados · Facturado</th><th>Forecast</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones virtuales</th><th style="text-align:right">Total</th><th style="text-align:center">R. presenciales</th><th>Ganados</th><th>Forecast</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -1663,7 +1663,7 @@ function renderRanking(ym){
       <td style="text-align:center;font-weight:700;color:#2e7d32">${v.pres>0?v.pres:'—'}</td>
       <td>
         <div style="display:flex;flex-direction:column;gap:2px;min-width:70px;">
-          <div style="font-weight:700;color:var(--won)">${v.deals>0?'🏆 '+v.deals:'—'} <span style="font-size:7.5pt;color:${pctColor};font-weight:700;">${montoStr}</span></div>
+          <div style="font-weight:700;color:var(--won)">${v.deals>0?v.deals:'—'} <span style="font-size:7.5pt;color:${pctColor};font-weight:700;">${montoStr}</span></div>
           ${v.deals>0?`<div style="height:4px;background:#e8eaf6;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;"></div></div><div style="font-size:6pt;color:${pctColor};font-weight:700;">${pct}%</div>`:''}
         </div>
       </td>
