@@ -1630,22 +1630,25 @@ function renderRanking(ym){
     if(b.deals!==a.deals) return b.deals-a.deals;
     if(b.presup!==a.presup) return b.presup-a.presup;
     return b.total-a.total;
-  }).filter(v=>!['juanb','bautista','gonzalo'].includes(v.id) && VENDORS[v.id]?.active !== false);
+  }).filter(v=> VENDORS[v.id]?.active !== false);
 
-  const maxV=sorted[0]?.vTotal||1;
+  const MGMT = ['juanb','bautista','gonzalo'];
+  const comercial = sorted.filter(v=>!MGMT.includes(v.id));
+  const mgmt      = sorted.filter(v=> MGMT.includes(v.id));
+
+  const maxV=comercial[0]?.vTotal||1;
   const sc=(n)=>Math.max(n/maxV*110,2);
   const mLabel=fmtYm(ym);
   const isAnual = !ym.includes('-');
   const META = isAnual ? 72000000 : 6000000;
 
-  document.getElementById('rankingPeriod').textContent=`${mLabel} — ${meetings.length} reuniones`;
-  document.getElementById('rtbody').innerHTML=sorted.map((v,i)=>{
+  const renderRow=(v,i,isMgmt)=>{
     const pct = v.monto>0 ? Math.min(Math.round(v.monto/META*100),100) : 0;
     const pctColor = pct>=100?'#2e7d32':pct>=70?'#1565c0':pct>=40?'#f57f17':'#c62828';
     const montoStr = v.monto>0 ? `$${(v.monto/1000).toFixed(0)}K` : '—';
     return `
-    <tr style="cursor:pointer" onclick="const el=document.getElementById('rankDet_${v.id}'); el.style.display=el.style.display==='none'?'table-row':'none';">
-      <td class="rpos ${i<3?'top':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+    <tr style="cursor:pointer;${isMgmt?'opacity:.65;background:#fafafa;':''}" onclick="const el=document.getElementById('rankDet_${v.id}'); el.style.display=el.style.display==='none'?'table-row':'none';">
+      <td class="rpos ${!isMgmt&&i<3?'top':''}">${isMgmt?'—':i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
       <td class="rname" style="font-size:9pt;">
         <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${VC(v.id)};margin-right:5px;"></span>
         ${v.name} <span style="font-size:7pt;color:#bbb">▼</span>
@@ -1691,7 +1694,12 @@ function renderRanking(ym){
         </div>
       </td>
     </tr>`;
-  }).join('');
+  };
+
+  document.getElementById('rankingPeriod').textContent=`${mLabel} — ${meetings.length} reuniones`;
+  document.getElementById('rtbody').innerHTML=
+    comercial.map((v,i)=>renderRow(v,i,false)).join('') +
+    (mgmt.some(v=>v.total>0) ? `<tr><td colspan="9" style="padding:4px 8px;background:#f0f0f0;font-size:7pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;border-top:2px solid #e0e0e0;">Management</td></tr>` + mgmt.filter(v=>v.total>0).map((v,i)=>renderRow(v,i,true)).join('') : '');
 }
 
 // ═══════════════════════════════════════════════
