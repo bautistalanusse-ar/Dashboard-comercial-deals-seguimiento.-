@@ -305,6 +305,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
 .bar-p{background:var(--p);}
 .bar-s{background:var(--s);}
 .bar-x{background:var(--x);}
+.bar-pres{background:#2e7d32;}
 .rtotal{font-size:9pt;font-weight:900;color:var(--blue);text-align:right;min-width:28px;}
 .rleg{display:flex;gap:10px;margin-top:9px;flex-wrap:wrap;}
 .rli{display:flex;align-items:center;gap:4px;font-size:7pt;color:var(--muted);}
@@ -631,6 +632,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
           <div class="rli"><div class="rld" style="background:var(--s)"></div> Seguimientos</div>
           <div class="rli"><div class="rld" style="background:var(--x)"></div> Partnerships</div>
+          <div class="rli"><div class="rld" style="background:#2e7d32"></div> Presenciales</div>
           <div class="rli"><div class="rld" style="background:var(--won)"></div> Tratos ganados</div>
         </div>
       </div>
@@ -1636,11 +1638,12 @@ function renderRanking(ym){
       </td>
       <td>
         <div class="barwrap">
-          ${v.vPrim?`<div class="barseg bar-p" style="width:${sc(v.vPrim)}px" title="${v.vPrim} primeras virtuales"></div>`:''}
-          ${v.vSeg?`<div class="barseg bar-s" style="width:${sc(v.vSeg)}px" title="${v.vSeg} seg. virtuales"></div>`:''}
+          ${v.vPrim?`<div class="barseg bar-p" style="width:${sc(v.vPrim)}px" title="${v.vPrim} primeras"></div>`:''}
+          ${v.vSeg?`<div class="barseg bar-s" style="width:${sc(v.vSeg)}px" title="${v.vSeg} seg."></div>`:''}
           ${v.partner?`<div class="barseg bar-x" style="width:${sc(v.partner)}px" title="${v.partner} partner"></div>`:''}
+          ${v.pres?`<div class="barseg bar-pres" style="width:${sc(v.pres)}px" title="${v.pres} presenciales"></div>`:''}
         </div>
-        <div style="font-size:7pt;color:#888;margin-top:2px">${v.vPrim}p · ${v.vSeg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓</strong> · ${fmtDur(v.dur)}</div>
+        <div style="font-size:7pt;color:#888;margin-top:2px">${v.vPrim}p · ${v.vSeg}s · ${v.partner}x · ${v.pres?`<strong style="color:#2e7d32">🏢${v.pres}</strong> · `:''}<strong style="color:#3949ab">${v.done} ✓</strong> · ${fmtDur(v.dur)}</div>
       </td>
       <td class="rtotal" style="text-align:right">${v.vTotal}</td>
       <td style="text-align:center;font-weight:700;color:#2e7d32">${v.pres>0?'🏢 '+v.pres:'—'}</td>
