@@ -874,7 +874,7 @@ let MEETINGS = [
   {d:'2026-05-08',t:'11:30',dur:30,co:'Club Atlético Talleres',vs:['luciano'],tp:'seguimiento',s:'PROPUESTA NUBCEO - CAT',cnt:['m.calvimonte@clubtalleres.com.ar','m.garcia@clubtalleres.com.ar'],m:'https://meet.google.com/ijw-yjov-pap',ctx:'Reagendada del 04/05. Luciano presenta propuesta al Club Atlético Talleres. Gonzalo acompañante.',nx:'Presentar propuesta → conseguir aprobación.'},
   {d:'2026-05-08',t:'14:00',dur:30,co:'Reino Ceramicos',vs:['mateo'],tp:'seguimiento',s:'Nubceo | Reino Ceramicos (Cotizacion)',cnt:['abigail@reinoceramicos.com.ar'],m:'https://meet.google.com/isp-ckpm-xgh',ctx:'Seguimiento de la primera reunión del 09/04. Mateo presenta cotización.',nx:'Presentar cotización y avanzar a cierre.'},
   {d:'2026-05-11',t:'15:00',dur:30,co:'Fan de Pan (Cotización)',vs:['mateo'],tp:'seguimiento',s:'Nubceo | Fan de Pan (Cotización)',cnt:['ianbela2001@gmail.com'],m:'https://meet.google.com/nce-friz-dea',ctx:'Seguimiento de la primera reunión del 05/05. Mateo presenta cotización a Fan de Pan (cadena gastronómica).',nx:'Presentar cotización. Cerrar si hay acuerdo.'},
-  {d:'2026-05-11',t:'15:00',dur:45,co:'Cerámica Norte (Sebastián Ferreira)',vs:['bautista'],tp:'primera',s:'Sebastián Ferreira and Bautista Lanusse',cnt:['sebastiancferreira@gmail.com'],m:'https://meet.google.com/ssa-bafh-ppj',ctx:'Demo agendada vía Calendly. Empresa: Menta Value.',nx:'Demo completa y calificación. Derivar a comercial.'},
+  {d:'2026-05-11',t:'15:00',dur:45,co:'Cerámica Norte (Sebastián Ferreira)',vs:['bautista'],tp:'primera',s:'Sebastián Ferreira and Bautista Lanusse',cnt:['sebastiancferreira@gmail.com'],m:'https://meet.google.com/ssa-bafh-ppj',ctx:'Demo agendada vía Calendly. Empresa: Cerámica Norte S.A. Tel: +54 379 482-8109.',nx:'Demo completa y calificación. Derivar a comercial.'},
   {d:'2026-05-11',t:'16:00',dur:60,co:'OFFCORSS / Hermeco (Colombia)',vs:['omar'],tp:'primera',s:'Presentación NUBCEO - OFFCORSS C.I. HERMECO S.A. (Colombia)',cnt:['maria.canas@offcorss.com','diana.gomez@offcorss.com','andrestinoco100@gmail.com'],m:'https://meet.google.com/sem-ipqs-ruw',ctx:'Gran cuenta retail Colombia (Hermeco / OFFCORSS). Omar organiza. NextValue como invitado opcional.',nx:'Presentación completa. Calificar volumen transacciones Colombia.'},
   {d:'2026-05-12',t:'10:00',dur:45,co:'Hasar (Ivan Carini)',vs:['pablo_arce'],tp:'seguimiento',s:'Reunion con Pablo Arce (Ivan Carini)',cnt:['ivan.carini@hasar.com'],m:'https://meet.google.com/nxk-qhft-pyj',ctx:'Segunda reunión con Ivan Carini de Hasar (primer contacto 05/05). Pablo Arce organiza.',nx:'Avanzar propuesta y calificación técnica.'},
   {d:'2026-05-12',t:'12:00',dur:30,co:'Grupo del Plata',vs:['hernan'],tp:'seguimiento',s:'Nubceo x Grupo del Plata - Reunión técnica',cnt:['gbamba@gdpsalud.com.ar','ncanto@gdpsalud.com.ar'],m:'https://meet.google.com/mof-xajo-irw',ctx:'Reunión técnica con Grupo del Plata. Hernán organiza. Eduardo Andre y Silvana Mascitelli de Nubceo acompañan.',nx:'Avanzar propuesta técnica.'},
@@ -2545,43 +2545,91 @@ function findStaticEnrichment(dateStr, title) {
   }) || null;
 }
 
-const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutos
+const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutos — cambios de Calendar reflejan rápido
 
 const SKIP_EMAILS = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes@nubceo.com',
                      'bautista.lanusse@nubceo.com','fernanda.acevedo@nubceo.com','al@nubceo.com','gl@nubceo.com'];
 
 function applyLiveEvents(events) {
   if(!events || !events.length) return false;
-  MEETINGS = events.filter(ev => {
-    // Descartar eventos sin ningún invitado externo (reuniones internas)
+
+  // Build lookup maps from live events (only those with at least one external guest)
+  const liveByMeet  = {};
+  const liveByTitle = {};
+  const liveWithExt = events.filter(ev => {
     const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
     return guests.some(g => !g.endsWith('@nubceo.com'));
-  }).map(ev => {
-    const st  = new Date(ev.start);
-    const en  = new Date(ev.end);
-    const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
-    const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP_EMAILS.includes(g));
-    const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
-    const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
-    const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
-    const dateStr    = st.toISOString().slice(0,10);
-    const enriched   = findStaticEnrichment(dateStr, ev.title || '');
-    const base = {
-      d:   dateStr,
+  });
+  liveWithExt.forEach(ev => {
+    if(ev.meet) liveByMeet[ev.meet] = ev;
+    const t = (ev.title||'').toLowerCase().trim();
+    if(t) liveByTitle[t] = ev;
+  });
+
+  const usedMeet  = new Set();
+  const usedTitle = new Set();
+
+  // Helper: apply a live event's time data to a hardcoded entry
+  function applyTime(mtg, liveEv) {
+    const st = new Date(liveEv.start);
+    const en = new Date(liveEv.end);
+    return Object.assign({}, mtg, {
+      d:   st.toISOString().slice(0,10),
       t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
       dur: Math.round((en - st) / 60000),
-      tp:  classifyMeetingLive(ev.title || ''),
-      co:  ev.title || 'Sin título',
-      s:   ev.title || 'Sin título',
-      cnt: extGuests,
-      ctx: enriched ? enriched.ctx : (ev.desc || ''),
-      nx:  enriched ? enriched.nx  : 'Actualizar CRM',
-      m:   ev.meet  || (enriched ? enriched.m : null)
-    };
-    if(companions.length) base.vs = [mainVendor, ...companions];
-    else base.v = mainVendor;
-    return base;
+      m:   liveEv.meet || mtg.m
+    });
+  }
+
+  // Step 1: update hardcoded STATIC_MEETINGS entries from live matches
+  const updated = STATIC_MEETINGS.map(mtg => {
+    let liveEv = null;
+    if(mtg.m && liveByMeet[mtg.m]) {
+      liveEv = liveByMeet[mtg.m];
+      usedMeet.add(mtg.m);
+      usedTitle.add((liveEv.title||'').toLowerCase().trim());
+    } else {
+      const titleKey = (mtg.s||mtg.co||'').toLowerCase().trim();
+      if(titleKey && liveByTitle[titleKey]) {
+        liveEv = liveByTitle[titleKey];
+        usedTitle.add(titleKey);
+        if(liveEv.meet) usedMeet.add(liveEv.meet);
+      }
+    }
+    return liveEv ? applyTime(mtg, liveEv) : mtg;
   });
+
+  // Step 2: add brand-new live events not matched to any hardcoded entry
+  const newEvents = liveWithExt
+    .filter(ev => !(ev.meet && usedMeet.has(ev.meet)) && !usedTitle.has((ev.title||'').toLowerCase().trim()))
+    .map(ev => {
+      const st  = new Date(ev.start);
+      const en  = new Date(ev.end);
+      const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
+      const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP_EMAILS.includes(g));
+      const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
+      const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
+      const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
+      const dateStr    = st.toISOString().slice(0,10);
+      const enriched   = findStaticEnrichment(dateStr, ev.title || '');
+      const base = {
+        d:   dateStr,
+        t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
+        dur: Math.round((en - st) / 60000),
+        tp:  classifyMeetingLive(ev.title || ''),
+        co:  ev.title || 'Sin título',
+        s:   ev.title || 'Sin título',
+        cnt: extGuests,
+        ctx: enriched ? enriched.ctx : (ev.desc || ''),
+        nx:  enriched ? enriched.nx  : 'Actualizar CRM',
+        m:   ev.meet || (enriched ? enriched.m : null)
+      };
+      if(companions.length) base.vs = [mainVendor, ...companions];
+      else base.v = mainVendor;
+      return base;
+    });
+
+  MEETINGS = [...updated, ...newEvents];
   return true;
 }
 
@@ -2620,19 +2668,22 @@ function syncCalendar(forceRefresh) {
     } catch(e) {}
   }
 
-  // Llamar a Make solo cuando el cache expiró
-  fetch(MAKE_WEBHOOK_URL)
-    .then(res => { if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+  // Llamar a Make con timeout de 12s para no bloquear la UI
+  const ctrl = new AbortController();
+  const tOut = setTimeout(() => ctrl.abort(), 12000);
+  fetch(MAKE_WEBHOOK_URL, { signal: ctrl.signal })
+    .then(res => { clearTimeout(tOut); if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
     .then(data => {
       const events = data.events || [];
       if(!events.length) throw new Error('Sin eventos');
-      // Guardar en caché
       localStorage.setItem('nubceo_cal_cache_v2', JSON.stringify({ ts: Date.now(), events }));
       applyLiveEvents(events);
       renderAfterSync('✅');
     })
     .catch(err => {
-      console.warn('Sync error (datos locales):', err.message);
+      clearTimeout(tOut);
+      const msg = err.name === 'AbortError' ? 'timeout Make' : err.message;
+      console.warn('Sync error (datos locales):', msg);
       if(status) status.textContent = '📋 Datos locales';
       if(btn)    { btn.disabled = false; btn.classList.remove('syncing'); }
     });
