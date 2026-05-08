@@ -625,7 +625,7 @@ input[type=date]:focus,select.msel:focus{outline:none;border-color:var(--p);}
       <div class="card">
         <div class="sh"><h2>Ranking — Performance Comercial</h2><div class="ln"></div><span class="sc" id="rankingPeriod">Abril 2026</span></div>
         <div style="overflow-x:auto">
-        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones / Presenciales</th><th style="text-align:right">Total reus.</th><th>Tratos ganados · Facturado</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
+        <table class="rtable"><thead><tr><th>#</th><th>Vendedor</th><th>Reuniones virtuales</th><th style="text-align:right">Total</th><th style="text-align:center">🏢 Pres.</th><th>Ganados · Facturado</th><th>Presup.</th><th>Canceladas</th><th>Conversión</th></tr></thead><tbody id="rtbody"></tbody></table>
         </div>
         <div class="rleg" style="margin-top:10px;">
           <div class="rli"><div class="rld" style="background:var(--p)"></div> 1ras reuniones</div>
@@ -921,7 +921,7 @@ let DEALS = [
   {d:'2026-04-30',v:'vanessa', co:'Santucci / Amo Cocinar', amt:0,       mtg:'Santucci',               n:'Trato 105964 ganado. UYU 20.778. Trials Activos UY · OnBoarding.'},
   {d:'2026-04-30',v:'mateo',   co:'Fabric Franquicia',      amt:1900000, mtg:'Fabric Franquicia',      n:'Trato 115860 ganado. Trials Activos ARG · Marco Plataformas.'},
   // ── MAYO 2026 ──────────────────────────────────────────────────────────────
-  {d:'2026-05-06',v:'vanessa', co:'Welaman',                amt:0,       mtg:'Welaman',                n:'Trato 115926 ganado. UYU 22.640. Trials Activos UY · OnBoarding Incompleto. mercadopago_uy.'},
+  {d:'2026-05-06',v:'vanessa', co:'Welaman',                amt:792400,  mtg:'Welaman',                n:'Trato 115926 ganado. UYU 22.640 ≈ ARS 792.400. Trials Activos UY · OnBoarding Incompleto. mercadopago_uy.'},
   // TODO: montos en UYU pendientes de conversión a ARS para sumar al total del mes
 ];
 
@@ -1600,35 +1600,33 @@ function renderRanking(ym){
   });
 
   const sorted=Object.entries(stats).map(([id,s])=>{
+    const pres=s.pres1+s.presS;
+    const vPrim=s.primeras-s.pres1;
+    const vSeg=s.seg-s.presS;
+    const vTotal=vPrim+vSeg+s.partner;
     const total=s.primeras+s.seg+s.partner;
     const deals=getDealsByVendor(id,ym);
     const presup=getPresupByVendor(id,ym);
     const monto=deals.reduce((a,d)=>a+(d.amt||0),0);
     const conv=total>0?(deals.length/total*100).toFixed(0)+'%':'—';
-    return {id,name:VN(id),...s,total,deals:deals.length,presup:presup.length,monto,conv};
+    return {id,name:VN(id),...s,pres,vPrim,vSeg,vTotal,total,deals:deals.length,presup:presup.length,monto,conv};
   }).sort((a,b)=>{
     if(b.deals!==a.deals) return b.deals-a.deals;
     if(b.presup!==a.presup) return b.presup-a.presup;
     return b.total-a.total;
   }).filter(v=>v.total>0 && VENDORS[v.id]?.active !== false);
 
-  const maxT=sorted[0]?.total||1;
-  const sc=(n)=>Math.max(n/maxT*110,2);
+  const maxV=sorted[0]?.vTotal||1;
+  const sc=(n)=>Math.max(n/maxV*110,2);
   const mLabel=fmtYm(ym);
   const isAnual = !ym.includes('-');
-  const META = isAnual ? 72000000 : 6000000; // $72M anual / $6M mensual
+  const META = isAnual ? 72000000 : 6000000;
 
   document.getElementById('rankingPeriod').textContent=`${mLabel} — ${meetings.length} reuniones`;
   document.getElementById('rtbody').innerHTML=sorted.map((v,i)=>{
     const pct = v.monto>0 ? Math.min(Math.round(v.monto/META*100),100) : 0;
     const pctColor = pct>=100?'#2e7d32':pct>=70?'#1565c0':pct>=40?'#f57f17':'#c62828';
-    const montoDeals = getDealsByVendor(v.id, ym);
-    const uyu = montoDeals.filter(d=>d.n&&d.n.includes('UYU'));
-    const arsDeals = montoDeals.filter(d=>!(d.n&&d.n.includes('UYU')));
-    const uyuCount = uyu.length;
-    const montoLabel = v.monto>0
-      ? `$${(v.monto/1000).toFixed(0)}K${uyuCount?' <span style="font-size:6pt;color:#888">+${uyuCount}UYU</span>':''}`
-      : (uyuCount ? `<span style="font-size:7.5pt;color:#1565c0">${uyuCount} UYU</span>` : '—');
+    const montoStr = v.monto>0 ? `$${(v.monto/1000).toFixed(0)}K` : '—';
     return `
     <tr style="cursor:pointer" onclick="const el=document.getElementById('rankDet_${v.id}'); el.style.display=el.style.display==='none'?'table-row':'none';">
       <td class="rpos ${i<3?'top':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
@@ -1638,20 +1636,18 @@ function renderRanking(ym){
       </td>
       <td>
         <div class="barwrap">
-          ${v.primeras?`<div class="barseg bar-p" style="width:${sc(v.primeras)}px" title="${v.primeras} primeras"></div>`:''}
-          ${v.seg?`<div class="barseg bar-s" style="width:${sc(v.seg)}px" title="${v.seg} seg."></div>`:''}
+          ${v.vPrim?`<div class="barseg bar-p" style="width:${sc(v.vPrim)}px" title="${v.vPrim} primeras virtuales"></div>`:''}
+          ${v.vSeg?`<div class="barseg bar-s" style="width:${sc(v.vSeg)}px" title="${v.vSeg} seg. virtuales"></div>`:''}
           ${v.partner?`<div class="barseg bar-x" style="width:${sc(v.partner)}px" title="${v.partner} partner"></div>`:''}
         </div>
-        <div style="font-size:7pt;color:#888;margin-top:2px">${v.primeras}p · ${v.seg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓</strong> · ${v.pres1+v.presS>0?`<strong style="color:#2e7d32">🏢 ${v.pres1+v.presS}</strong> · `:''}${fmtDur(v.dur)}</div>
+        <div style="font-size:7pt;color:#888;margin-top:2px">${v.vPrim}p · ${v.vSeg}s · ${v.partner}x · <strong style="color:#3949ab">${v.done} ✓</strong> · ${fmtDur(v.dur)}</div>
       </td>
-      <td class="rtotal" style="text-align:right">${v.total}</td>
+      <td class="rtotal" style="text-align:right">${v.vTotal}</td>
+      <td style="text-align:center;font-weight:700;color:#2e7d32">${v.pres>0?'🏢 '+v.pres:'—'}</td>
       <td>
-        <div style="display:flex;flex-direction:column;gap:2px;min-width:80px;">
-          <div style="display:flex;align-items:center;gap:5px;">
-            <span style="color:var(--won);font-weight:700">${v.deals>0?'🏆 '+v.deals:'—'}</span>
-            <span style="font-size:7.5pt;font-weight:700;color:${pctColor}">${montoLabel}</span>
-          </div>
-          ${v.deals>0?`<div style="height:4px;background:#e8eaf6;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;transition:width .3s;"></div></div><div style="font-size:6pt;color:${pctColor};font-weight:700;">${pct}% de meta</div>`:''}
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:70px;">
+          <div style="font-weight:700;color:var(--won)">${v.deals>0?'🏆 '+v.deals:'—'} <span style="font-size:7.5pt;color:${pctColor};font-weight:700;">${montoStr}</span></div>
+          ${v.deals>0?`<div style="height:4px;background:#e8eaf6;border-radius:2px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;"></div></div><div style="font-size:6pt;color:${pctColor};font-weight:700;">${pct}%</div>`:''}
         </div>
       </td>
       <td><span style="color:#f57f17;font-weight:700">${v.presup>0?'📄 '+v.presup:'—'}</span></td>
@@ -1659,7 +1655,7 @@ function renderRanking(ym){
       <td class="rcnv">${v.conv}</td>
     </tr>
     <tr id="rankDet_${v.id}" style="display:none;background:#fafafc;">
-      <td colspan="8" style="padding:12px;border-bottom:1px solid #eee;">
+      <td colspan="9" style="padding:12px;border-bottom:1px solid #eee;">
         <div style="font-weight:700;margin-bottom:6px;color:var(--p);">Detalle — ${v.name} (${mLabel}):</div>
         <div style="max-height:200px;overflow-y:auto;font-size:8.5pt;">
           ${meetings.filter(m=>getAllVendors(m).includes(v.id)).sort((a,b)=>a.d.localeCompare(b.d)).map(m=>{
