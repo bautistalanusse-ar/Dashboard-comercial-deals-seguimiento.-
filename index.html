@@ -2516,11 +2516,12 @@
                     <th>#</th>
                     <th>Vendedor</th>
                     <th>Reuniones virtuales</th>
-                    <th style="text-align:right">Total</th>
                     <th style="text-align:center">R. presenciales</th>
                     <th>Ganados</th>
                     <th>Forecast</th>
-                    <th>Canceladas</th>
+                    <th style="text-align:center">Reagendadas</th>
+                    <th style="text-align:center">Canceladas</th>
+                    <th style="text-align:right;font-weight:900">Total</th>
                     <th>Conversión</th>
                   </tr>
                 </thead>
@@ -3571,22 +3572,24 @@
         }
         const meetings = allMtgsMonth.filter(m => m.st !== 'cancelled');
         const cancelledMtgs = allMtgsMonth.filter(m => m.st === 'cancelled');
+        const reagendadosMtgs = allMtgsMonth.filter(m => m.st === 'rescheduled');
         const stats = {};
-        Object.keys(VENDORS).forEach(id => { stats[id] = { primeras: 0, seg: 0, partner: 0, dur: 0, done: 0, cancel: 0, pres1: 0, presS: 0 }; });
+        Object.keys(VENDORS).forEach(id => { stats[id] = { primeras: 0, seg: 0, partner: 0, dur: 0, done: 0, cancel: 0, reagend: 0, pres1: 0, presS: 0 }; });
         meetings.forEach(m => {
           const pres = isPresencial(m);
           getAllVendors(m).forEach(vid => {
-            if (!stats[vid]) stats[vid] = { primeras: 0, seg: 0, partner: 0, dur: 0, done: 0, cancel: 0, pres1: 0, presS: 0 };
+            if (!stats[vid]) stats[vid] = { primeras: 0, seg: 0, partner: 0, dur: 0, done: 0, cancel: 0, reagend: 0, pres1: 0, presS: 0 };
             if (m.tp === 'primera') { stats[vid].primeras++; if (pres) stats[vid].pres1++; }
             else if (m.tp === 'seguimiento') { stats[vid].seg++; if (pres) stats[vid].presS++; }
             else if (m.tp === 'partner') stats[vid].partner++;
             stats[vid].dur += m.dur;
             if (isMeetingDone(m)) stats[vid].done++;
+            if (m.st === 'rescheduled') stats[vid].reagend++;
           });
         });
         cancelledMtgs.forEach(m => {
           getAllVendors(m).forEach(vid => {
-            if (!stats[vid]) stats[vid] = { primeras: 0, seg: 0, partner: 0, dur: 0, done: 0, cancel: 0 };
+            if (!stats[vid]) stats[vid] = { primeras: 0, seg: 0, partner: 0, dur: 0, done: 0, cancel: 0, reagend: 0 };
             stats[vid].cancel++;
           });
         });
@@ -3597,11 +3600,12 @@
           const vSeg = s.seg - s.presS;
           const vTotal = vPrim + vSeg + s.partner;
           const total = s.primeras + s.seg + s.partner;
+          const grandTotal = total + s.cancel; // reagend ya está en total
           const deals = getDealsByVendor(id, ym);
           const presup = getPresupByVendor(id, ym);
           const monto = deals.reduce((a, d) => a + (d.amt || 0), 0);
           const conv = total > 0 ? (deals.length / total * 100).toFixed(0) + '%' : '—';
-          return { id, name: VN(id), ...s, pres, vPrim, vSeg, vTotal, total, deals: deals.length, presup: presup.length, monto, conv };
+          return { id, name: VN(id), ...s, pres, vPrim, vSeg, vTotal, total, grandTotal, deals: deals.length, presup: presup.length, monto, conv };
         }).sort((a, b) => {
           if (b.deals !== a.deals) return b.deals - a.deals;
           if (b.presup !== a.presup) return b.presup - a.presup;
@@ -3639,7 +3643,6 @@
         </div>
         <div style="font-size:7pt;color:#888;margin-top:2px">${v.vPrim}p · ${v.vSeg}s · ${v.partner}x · ${v.pres ? `<strong style="color:#2e7d32">🏢${v.pres}</strong> · ` : ''}<strong style="color:#3949ab">${v.done} ✓</strong> · ${fmtDur(v.dur)}</div>
       </td>
-      <td class="rtotal" style="text-align:right">${v.vTotal}</td>
       <td style="text-align:center;font-weight:700;color:#2e7d32">${v.pres > 0 ? v.pres : '—'}</td>
       <td>
         <div style="display:flex;flex-direction:column;gap:2px;min-width:70px;">
@@ -3648,11 +3651,13 @@
         </div>
       </td>
       <td><span style="color:#f57f17;font-weight:700">${FORECAST[v.id] ? '$' + (FORECAST[v.id] / 1000000).toFixed(2).replace('.', ',') + 'M' : '—'}</span></td>
-      <td><span style="${v.cancel > 0 ? 'color:#c62828;font-weight:700' : 'color:#ccc'}">${v.cancel > 0 ? '❌ ' + v.cancel : '—'}</span></td>
+      <td style="text-align:center"><span style="${v.reagend > 0 ? 'color:#0277bd;font-weight:700' : 'color:#ccc'}">${v.reagend > 0 ? '🔄 ' + v.reagend : '—'}</span></td>
+      <td style="text-align:center"><span style="${v.cancel > 0 ? 'color:#c62828;font-weight:700' : 'color:#ccc'}">${v.cancel > 0 ? '❌ ' + v.cancel : '—'}</span></td>
+      <td class="rtotal" style="text-align:right;font-weight:900;font-size:10.5pt;">${v.grandTotal}</td>
       <td class="rcnv">${v.conv}</td>
     </tr>
     <tr id="rankDet_${v.id}" style="display:none;background:#fafafc;">
-      <td colspan="9" style="padding:12px;border-bottom:1px solid #eee;">
+      <td colspan="10" style="padding:12px;border-bottom:1px solid #eee;">
         <div style="font-weight:700;margin-bottom:6px;color:var(--p);">Detalle — ${v.name} (${mLabel}):</div>
         <div style="max-height:200px;overflow-y:auto;font-size:8.5pt;">
           ${meetings.filter(m => getAllVendors(m).includes(v.id)).sort((a, b) => a.d.localeCompare(b.d)).map(m => {
@@ -3676,7 +3681,7 @@
         document.getElementById('rankingPeriod').textContent = `${mLabel} — ${meetings.length} reuniones`;
         document.getElementById('rtbody').innerHTML =
           comercial.map((v, i) => renderRow(v, i, false)).join('') +
-          (mgmt.some(v => v.total > 0) ? `<tr><td colspan="9" style="padding:4px 8px;background:#f0f0f0;font-size:7pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;border-top:2px solid #e0e0e0;">Management</td></tr>` + mgmt.filter(v => v.total > 0).map((v, i) => renderRow(v, i, true)).join('') : '');
+          (mgmt.some(v => v.total > 0) ? `<tr><td colspan="10" style="padding:4px 8px;background:#f0f0f0;font-size:7pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;border-top:2px solid #e0e0e0;">Management</td></tr>` + mgmt.filter(v => v.total > 0).map((v, i) => renderRow(v, i, true)).join('') : '');
       }
 
       // ═══════════════════════════════════════════════
@@ -4566,13 +4571,22 @@
         function applyTime(mtg, liveEv) {
           const st = new Date(liveEv.start);
           const en = new Date(liveEv.end);
+          const newDate = st.toISOString().slice(0, 10);
+          const newTime = st.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' });
+          const changed = mtg.d !== newDate || mtg.t !== newTime;
+          const newSt = changed && (!mtg.st || mtg.st === 'active') ? 'rescheduled' : mtg.st;
           return Object.assign({}, mtg, {
-            d: st.toISOString().slice(0, 10),
-            t: st.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' }),
+            d: newDate,
+            t: newTime,
             dur: Math.round((en - st) / 60000),
-            m: liveEv.meet || mtg.m
+            m: liveEv.meet || mtg.m,
+            st: newSt
           });
         }
+
+        // Ventana de sync: desde hace 90 días hasta hoy
+        const syncStart = (() => { const d = new Date(todayAR() + 'T12:00:00'); d.setDate(d.getDate() - 90); return d.toISOString().slice(0, 10); })();
+        const syncEnd = todayAR();
 
         // Step 1: update hardcoded STATIC_MEETINGS entries from live matches
         const updated = STATIC_MEETINGS.map(mtg => {
@@ -4589,7 +4603,12 @@
               if (liveEv.meet) usedMeet.add(liveEv.meet);
             }
           }
-          return liveEv ? applyTime(mtg, liveEv) : mtg;
+          if (liveEv) return applyTime(mtg, liveEv);
+          // No encontrado en Calendar: si tenía meet link y era pasado → cancelada
+          if (mtg.m && (!mtg.st || mtg.st === 'active') && mtg.d >= syncStart && mtg.d <= syncEnd) {
+            return Object.assign({}, mtg, { st: 'cancelled' });
+          }
+          return mtg;
         });
 
         // Step 2: solo agregar eventos realmente nuevos (no cubiertos por datos estáticos)
