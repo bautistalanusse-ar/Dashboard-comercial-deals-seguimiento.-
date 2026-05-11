@@ -875,7 +875,7 @@ let MEETINGS = [
   {d:'2026-05-08',t:'14:00',dur:30,co:'Reino Ceramicos',vs:['mateo'],tp:'seguimiento',s:'Nubceo | Reino Ceramicos (Cotizacion)',cnt:['abigail@reinoceramicos.com.ar'],m:'https://meet.google.com/isp-ckpm-xgh',ctx:'Seguimiento de la primera reunión del 09/04. Mateo presenta cotización.',nx:'Presentar cotización y avanzar a cierre.'},
   {d:'2026-05-11',t:'15:00',dur:30,co:'Fan de Pan (Cotización)',vs:['mateo'],tp:'seguimiento',s:'Nubceo | Fan de Pan (Cotización)',cnt:['ianbela2001@gmail.com'],m:'https://meet.google.com/nce-friz-dea',ctx:'Seguimiento de la primera reunión del 05/05. Mateo presenta cotización a Fan de Pan (cadena gastronómica).',nx:'Presentar cotización. Cerrar si hay acuerdo.'},
   {d:'2026-05-11',t:'15:00',dur:45,co:'Cerámica Norte (Sebastián Ferreira)',vs:['bautista'],tp:'primera',s:'Sebastián Ferreira and Bautista Lanusse',cnt:['sebastiancferreira@gmail.com'],m:'https://meet.google.com/ssa-bafh-ppj',ctx:'Demo agendada vía Calendly. Empresa: Cerámica Norte S.A. Tel: +54 379 482-8109.',nx:'Demo completa y calificación. Derivar a comercial.'},
-  {d:'2026-05-11',t:'16:00',dur:60,co:'OFFCORSS / Hermeco (Colombia)',vs:['pablo_illich'],tp:'primera',s:'Presentación NUBCEO - OFFCORSS C.I. HERMECO S.A. (Colombia)',cnt:['maria.canas@offcorss.com','diana.gomez@offcorss.com','andrestinoco100@gmail.com'],m:'https://meet.google.com/sem-ipqs-ruw',ctx:'Gran cuenta retail Colombia (Hermeco / OFFCORSS). Pablo Illich organiza. NextValue como invitado opcional.',nx:'Presentación completa. Calificar volumen transacciones Colombia.'},
+  {d:'2026-05-11',t:'16:00',dur:60,co:'OFFCORSS / Hermeco (Colombia)',vs:['pablo_illich'],tp:'primera',s:'NUBCEO - OFFCORSS C.I. HERMECO S.A. (Colombia)',cnt:['maria.canas@offcorss.com','diana.gomez@offcorss.com','andrestinoco100@gmail.com'],m:null,ctx:'Gran cuenta retail Colombia (Hermeco / OFFCORSS). Pablo Illich organiza. NextValue como invitado opcional.',nx:'Presentación completa. Calificar volumen transacciones Colombia.'},
   {d:'2026-05-12',t:'10:00',dur:45,co:'Hasar (Ivan Carini)',vs:['pablo_arce'],tp:'seguimiento',s:'Reunion con Pablo Arce (Ivan Carini)',cnt:['ivan.carini@hasar.com'],m:'https://meet.google.com/nxk-qhft-pyj',ctx:'Segunda reunión con Ivan Carini de Hasar (primer contacto 05/05). Pablo Arce organiza.',nx:'Avanzar propuesta y calificación técnica.'},
   {d:'2026-05-12',t:'12:00',dur:30,co:'Grupo del Plata',vs:['hernan'],tp:'seguimiento',s:'Nubceo x Grupo del Plata - Reunión técnica',cnt:['gbamba@gdpsalud.com.ar','ncanto@gdpsalud.com.ar'],m:'https://meet.google.com/mof-xajo-irw',ctx:'Reunión técnica con Grupo del Plata. Hernán organiza. Eduardo Andre y Silvana Mascitelli de Nubceo acompañan.',nx:'Avanzar propuesta técnica.'},
   {d:'2026-05-12',t:'12:00',dur:60,co:'Grupo Apunto (Presencial La Plata)',vs:['mateo'],tp:'primera',s:'Grupo Apunto Presencial - La Plata',cnt:[],m:'https://meet.google.com/udy-ipff-piy',ctx:'Reunión presencial. Dirección: 48 N° 726, entre 9 y 10, Piso 8, La Plata.',nx:'Demo presencial y calificación.'},
@@ -2553,6 +2553,13 @@ const SKIP_EMAILS = ['agenda.virtual@nubceo.com','producto@nubceo.com','clientes
 function applyLiveEvents(events) {
   if(!events || !events.length) return false;
 
+  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9 ]/gi,'').trim();
+
+  // Set de meet links que YA están en datos estáticos — nunca pisar estos
+  const staticMeetLinks = new Set(STATIC_MEETINGS.map(m => m.m).filter(Boolean));
+  // Set de (fecha+hora) de entradas estáticas — para detectar duplicados por tiempo
+  const staticDateTime  = new Set(STATIC_MEETINGS.map(m => m.d + 'T' + m.t));
+
   // Build lookup maps from live events (only those with at least one external guest)
   const liveByMeet  = {};
   const liveByTitle = {};
@@ -2569,7 +2576,7 @@ function applyLiveEvents(events) {
   const usedMeet  = new Set();
   const usedTitle = new Set();
 
-  // Helper: apply a live event's time data to a hardcoded entry
+  // Helper: apply a live event's time data to a hardcoded entry (vendor siempre del static)
   function applyTime(mtg, liveEv) {
     const st = new Date(liveEv.start);
     const en = new Date(liveEv.end);
@@ -2599,24 +2606,31 @@ function applyLiveEvents(events) {
     return liveEv ? applyTime(mtg, liveEv) : mtg;
   });
 
-  // Step 2: add brand-new live events not matched to any hardcoded entry
+  // Step 2: solo agregar eventos realmente nuevos (no cubiertos por datos estáticos)
   const newEvents = liveWithExt
     .filter(ev => !(ev.meet && usedMeet.has(ev.meet)) && !usedTitle.has((ev.title||'').toLowerCase().trim()))
     .map(ev => {
-      const st  = new Date(ev.start);
-      const en  = new Date(ev.end);
-      const guests = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
+      const st      = new Date(ev.start);
+      const en      = new Date(ev.end);
+      const dateStr = st.toISOString().slice(0,10);
+      const timeStr = st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'});
+
+      // Saltar si el meet link ya está en datos estáticos
+      if(ev.meet && staticMeetLinks.has(ev.meet)) return null;
+      // Saltar si hay match por título o fecha+hora con datos estáticos
+      const enriched = findStaticEnrichment(dateStr, ev.title || '');
+      if(enriched) return null;
+      if(staticDateTime.has(dateStr + 'T' + timeStr)) return null;
+
+      const guests     = ev.att ? ev.att.split(',').map(e=>e.trim()).filter(Boolean) : [];
       const nubceoAtts = guests.filter(g => g.endsWith('@nubceo.com') && !SKIP_EMAILS.includes(g));
       const mainVendor = nubceoAtts.length ? getVendorByEmail(nubceoAtts[0]) : 'bautista';
       const companions = nubceoAtts.slice(1).map(g=>getVendorByEmail(g)).filter(v=>v!=='otro');
       const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
-      const dateStr    = st.toISOString().slice(0,10);
-      const enriched   = findStaticEnrichment(dateStr, ev.title || '');
-      // Si hay match estático, el dato ya está en `updated` con el vendedor correcto → no duplicar
-      if(enriched) return null;
+
       const base = {
         d:   dateStr,
-        t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
+        t:   timeStr,
         dur: Math.round((en - st) / 60000),
         tp:  classifyMeetingLive(ev.title || ''),
         co:  ev.title || 'Sin título',
