@@ -2526,6 +2526,7 @@
                   </tr>
                 </thead>
                 <tbody id="rtbody"></tbody>
+                <tfoot id="rtfoot"></tfoot>
               </table>
             </div>
             <div class="rleg" style="margin-top:10px;">
@@ -3678,7 +3679,31 @@
     </tr>`;
         };
 
-        document.getElementById('rankingPeriod').textContent = `${mLabel} — ${meetings.length} reuniones`;
+        // Totales del equipo: reuniones únicas con al menos 1 comercial (sin doble contar)
+        const teamMtgs      = meetings.filter(m => getAllVendors(m).some(v => !MGMT.includes(v)));
+        const teamCancelled = cancelledMtgs.filter(m => getAllVendors(m).some(v => !MGMT.includes(v)));
+        const teamReagend   = reagendadosMtgs.filter(m => getAllVendors(m).some(v => !MGMT.includes(v)));
+        const teamPres      = teamMtgs.filter(m => isPresencial(m)).length;
+        const teamDeals     = DEALS.filter(d => d.d && d.d.startsWith(mode === 'semana' ? '' : ym)).length;
+        const teamGrand     = teamMtgs.length + teamCancelled.length;
+
+        const tfoot = document.getElementById('rtfoot');
+        if (tfoot) tfoot.innerHTML = `
+          <tr style="background:#0d1b4b;color:#fff;font-weight:700;font-size:8pt;">
+            <td colspan="2" style="padding:6px 10px;border-top:2px solid #283593;">TOTAL EQUIPO</td>
+            <td style="padding:6px 8px;font-size:7pt;color:rgba(255,255,255,.8);">
+              ${teamMtgs.filter(m=>m.tp==='primera').length}p · ${teamMtgs.filter(m=>m.tp==='seguimiento').length}s · ${teamMtgs.filter(m=>m.tp==='partner').length}x · ${teamMtgs.length} válidas
+            </td>
+            <td style="padding:6px 8px;text-align:center;color:#81c784;">${teamPres > 0 ? teamPres : '—'}</td>
+            <td style="padding:6px 8px;color:#a5d6a7;font-weight:700;">—</td>
+            <td style="padding:6px 8px;color:rgba(255,255,255,.6);">—</td>
+            <td style="padding:6px 8px;text-align:center;color:#90caf9;">${teamReagend.length > 0 ? '🔄 ' + teamReagend.length : '—'}</td>
+            <td style="padding:6px 8px;text-align:center;color:#ef9a9a;">${teamCancelled.length > 0 ? '❌ ' + teamCancelled.length : '—'}</td>
+            <td style="padding:6px 8px;text-align:right;font-size:11pt;font-weight:900;">${teamGrand}</td>
+            <td style="padding:6px 8px;color:rgba(255,255,255,.6);">—</td>
+          </tr>`;
+
+        document.getElementById('rankingPeriod').textContent = `${mLabel} — ${teamMtgs.length} reuniones equipo`;
         document.getElementById('rtbody').innerHTML =
           comercial.map((v, i) => renderRow(v, i, false)).join('') +
           (mgmt.some(v => v.total > 0) ? `<tr><td colspan="10" style="padding:4px 8px;background:#f0f0f0;font-size:7pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;border-top:2px solid #e0e0e0;">Management</td></tr>` + mgmt.filter(v => v.total > 0).map((v, i) => renderRow(v, i, true)).join('') : '');
