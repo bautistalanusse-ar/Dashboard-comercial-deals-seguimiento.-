@@ -2647,6 +2647,10 @@ function applyLiveEvents(events) {
     }).filter(Boolean);
 
   MEETINGS = [...updated, ...newEvents];
+  // Overrides forzados: reuniones reasignadas manualmente
+  MEETINGS.forEach(m => {
+    if(m.co && m.co.includes('OFFCORSS')) { m.vs = ['pablo_illich']; delete m.v; }
+  });
   return true;
 }
 
@@ -2673,7 +2677,7 @@ function syncCalendar(forceRefresh) {
   // Usar caché si es reciente y no forzamos refresh
   if(!forceRefresh) {
     try {
-      const cached = localStorage.getItem('nubceo_cal_cache_v2');
+      const cached = localStorage.getItem('nubceo_cal_cache_v3');
       if(cached) {
         const { ts, events } = JSON.parse(cached);
         if(Date.now() - ts < CACHE_TTL_MS && events && events.length) {
@@ -2693,7 +2697,7 @@ function syncCalendar(forceRefresh) {
     .then(data => {
       const events = data.events || [];
       if(!events.length) throw new Error('Sin eventos');
-      localStorage.setItem('nubceo_cal_cache_v2', JSON.stringify({ ts: Date.now(), events }));
+      localStorage.setItem('nubceo_cal_cache_v3', JSON.stringify({ ts: Date.now(), events }));
       applyLiveEvents(events);
       renderAfterSync('✅');
     })
