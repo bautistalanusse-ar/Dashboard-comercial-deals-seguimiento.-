@@ -2612,6 +2612,8 @@ function applyLiveEvents(events) {
       const extGuests  = guests.filter(g => !g.endsWith('@nubceo.com'));
       const dateStr    = st.toISOString().slice(0,10);
       const enriched   = findStaticEnrichment(dateStr, ev.title || '');
+      // Si hay match estático, el dato ya está en `updated` con el vendedor correcto → no duplicar
+      if(enriched) return null;
       const base = {
         d:   dateStr,
         t:   st.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}),
@@ -2620,14 +2622,14 @@ function applyLiveEvents(events) {
         co:  ev.title || 'Sin título',
         s:   ev.title || 'Sin título',
         cnt: extGuests,
-        ctx: enriched ? enriched.ctx : (ev.desc || ''),
-        nx:  enriched ? enriched.nx  : 'Actualizar CRM',
-        m:   ev.meet || (enriched ? enriched.m : null)
+        ctx: ev.desc || '',
+        nx:  'Actualizar CRM',
+        m:   ev.meet || null
       };
       if(companions.length) base.vs = [mainVendor, ...companions];
       else base.v = mainVendor;
       return base;
-    });
+    }).filter(Boolean);
 
   MEETINGS = [...updated, ...newEvents];
   return true;
