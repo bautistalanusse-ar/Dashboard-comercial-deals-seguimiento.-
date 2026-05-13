@@ -19,10 +19,9 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const SHEET_ID       = 'TU_SHEET_ID_AQUI'; // ← pegar ID del Google Sheet
-const AGENDA_VIRTUAL = 'agenda.virtual@nubceo.com'; // email del grupo (para filtrar attendees)
-const MY_CALENDAR    = 'primary'; // leer desde el calendario de quien ejecuta el script
+const AGENDA_VIRTUAL = 'agenda.virtual@nubceo.com';
+const MY_CALENDAR    = 'primary';
 
-// Mapa email → id de vendedor (igual que en el dashboard)
 const VENDOR_EMAILS = {
   'hernan.perez@nubceo.com':       'hernan',
   'mateo.lissarrague@nubceo.com':  'mateo',
@@ -38,7 +37,6 @@ const VENDOR_EMAILS = {
   'gc@nubceo.com':                 'gonzalo',
 };
 
-// Emails de Nubceo que NO son externos (ignorar para detectar clientes)
 const SKIP_EMAILS = [
   'agenda.virtual@nubceo.com',
   'producto@nubceo.com',
@@ -59,12 +57,11 @@ const SKIP_EMAILS = [
 
 function syncMeetings() {
   const now       = new Date();
-  const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);       // Mes anterior
-  const endDate   = new Date(now.getFullYear(), now.getMonth() + 2, 1);       // Inicio mes siguiente+1
+  const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endDate   = new Date(now.getFullYear(), now.getMonth() + 2, 1);
 
   Logger.log('Sincronizando desde ' + startDate.toDateString() + ' hasta ' + endDate.toDateString());
 
-  // Usar Calendar API avanzado para obtener conferenceData (link de Meet)
   let pageToken = null;
   const allEvents = [];
 
@@ -75,6 +72,7 @@ function syncMeetings() {
       singleEvents:  true,
       orderBy:       'startTime',
       maxResults:    2500,
+      showDeleted:   true, // incluir canceladas
     };
     if (pageToken) opts.pageToken = pageToken;
 
@@ -83,52 +81,100 @@ function syncMeetings() {
     pageToken = resp.nextPageToken || null;
   } while (pageToken);
 
-  Logger.log('Eventos encontrados: ' + allEvents.length);
+  Logger.log('Eventos encontrados (incl. cancelados): ' + allEvents.length);
 
-  const meetings        = [];
-  const companyHistory  = {}; // vendorId → Set<companyKey> para detectar primera/seguimiento
+  // Helpers
+  function getAttendees(event) { return event.attendees || []; }
 
-  for (const event of allEvents) {
-    // Saltar eventos de día completo o cancelados como instancia
-    if (!event.start || !event.start.dateTime) continue;
-    if (event.status === 'cancelled') continue;
+  function isCommercial(event) {
+    const attendees = getAttendees(event);
+    return attendees.some(a => (a.email || '').toLowerCase() === AGENDA_VIRTUAL);
+  }
 
-    const attendees = event.attendees || [];
-
-    // Solo procesar eventos donde agenda.virtual fue invitada (= reunión comercial)
-    const hasAgendaVirtual = attendees.some(a =>
-      (a.email || '').toLowerCase() === AGENDA_VIRTUAL
-    );
-    if (!hasAgendaVirtual) continue;
-
-    // Detectar externos (fuera de @nubceo.com y no en lista de skip)
-    const externalAttendees = attendees.filter(a => {
+  function getExternals(event) {
+    return getAttendees(event).filter(a => {
       const email = (a.email || '').toLowerCase();
       return !email.endsWith('@nubceo.com') && !SKIP_EMAILS.includes(email);
     });
+  }
 
-    if (externalAttendees.length === 0) continue; // Reunión interna → saltar
-
-    // Detectar vendedores en la reunión (solo attendees, no organizer — Bautista/Gonzalo crean reuniones ajenas)
-    const vendorIds = [];
-    const allEmails = attendees.map(a => (a.email || '').toLowerCase());
-
-    for (const email of allEmails) {
+  function getVendors(event) {
+    const ids = [];
+    // Solo attendees — NO organizer (Bautista/Gonzalo crean reuniones ajenas)
+    const emails = getAttendees(event).map(a => (a.email || '').toLowerCase());
+    for (const email of emails) {
       const vid = VENDOR_EMAILS[email];
-      if (vid && !vendorIds.includes(vid)) vendorIds.push(vid);
+      if (vid && !ids.includes(vid)) ids.push(vid);
     }
+    return ids;
+  }
 
-    if (vendorIds.length === 0) continue; // No se puede atribuir
+  function getCompanyKey(event) {
+    const ext = getExternals(event);
+    if (ext.length > 0) return ext[0].email.split('@')[1] || event.summary || '';
+    return event.summary || '';
+  }
 
-    // Parsear fecha y hora en zona Argentina
-    const TZ       = 'America/Argentina/Buenos_Aires';
-    const startDT  = new Date(event.start.dateTime);
-    const endDT    = new Date(event.end.dateTime);
-    const dateStr  = Utilities.formatDate(startDT, TZ, 'yyyy-MM-dd');
-    const timeStr  = Utilities.formatDate(startDT, TZ, 'HH:mm');
+  const TZ = 'America/Argentina/Buenos_Aires';
+
+  // Separar canceladas y activas (ambas comerciales con fecha válida)
+  const cancelled = [];
+  const active    = [];
+
+  for (const event of allEvents) {
+    if (!event.start || !event.start.dateTime) continue;
+    if (!isCommercial(event)) continue;
+
+    const externals = getExternals(event);
+    if (externals.length === 0) continue;
+
+    const vendors = getVendors(event);
+    if (vendors.length === 0) continue;
+
+    if (event.status === 'cancelled') {
+      cancelled.push(event);
+    } else {
+      active.push(event);
+    }
+  }
+
+  // Mapa: companyKey → fecha de cancelación (para detectar reagendadas)
+  // vendorId+companyKey → dateStr de la reunión cancelada
+  const cancelledMap = {}; // `${vid}|${companyKey}` → dateStr
+
+  for (const event of cancelled) {
+    const vendors    = getVendors(event);
+    const companyKey = getCompanyKey(event);
+    const startDT    = new Date(event.start.dateTime);
+    const dateStr    = Utilities.formatDate(startDT, TZ, 'yyyy-MM-dd');
+    for (const vid of vendors) {
+      const key = vid + '|' + companyKey;
+      // Guardar la fecha más reciente de cancelación
+      if (!cancelledMap[key] || cancelledMap[key] < dateStr) {
+        cancelledMap[key] = dateStr;
+      }
+    }
+  }
+
+  const meetings       = [];
+  const companyHistory = {}; // vendorId → Set<companyKey> para primera/seguimiento
+
+  // Procesar activas en orden cronológico
+  active.sort((a, b) => a.start.dateTime.localeCompare(b.start.dateTime));
+
+  for (const event of active) {
+    const attendees  = getAttendees(event);
+    const externals  = getExternals(event);
+    const vendors    = getVendors(event);
+    const companyKey = getCompanyKey(event);
+
+    const startDT = new Date(event.start.dateTime);
+    const endDT   = new Date(event.end.dateTime);
+    const dateStr = Utilities.formatDate(startDT, TZ, 'yyyy-MM-dd');
+    const timeStr = Utilities.formatDate(startDT, TZ, 'HH:mm');
     const duration = Math.round((endDT - startDT) / 60000);
 
-    // Extraer código de Meet desde conferenceData
+    // Meet link
     let meetCode = null;
     if (event.conferenceData && event.conferenceData.entryPoints) {
       for (const ep of event.conferenceData.entryPoints) {
@@ -139,16 +185,25 @@ function syncMeetings() {
       }
     }
 
-    // Clasificar primera vs seguimiento por dominio del cliente
-    const companyKey = externalAttendees[0].email.split('@')[1] || event.summary;
+    // Estado: reagendada si esta empresa tuvo una cancelación previa con este vendedor
+    let st = '';
+    for (const vid of vendors) {
+      const cancelKey = vid + '|' + companyKey;
+      if (cancelledMap[cancelKey] && cancelledMap[cancelKey] < dateStr) {
+        st = 'reagendada';
+        break;
+      }
+    }
+
+    // primera vs seguimiento (ignorando reagendadas — son continuación del mismo cliente)
     let tipo = 'primera';
-    for (const vid of vendorIds) {
+    for (const vid of vendors) {
       if (companyHistory[vid] && companyHistory[vid].has(companyKey)) {
         tipo = 'seguimiento';
         break;
       }
     }
-    for (const vid of vendorIds) {
+    for (const vid of vendors) {
       if (!companyHistory[vid]) companyHistory[vid] = new Set();
       companyHistory[vid].add(companyKey);
     }
@@ -157,23 +212,65 @@ function syncMeetings() {
       dateStr,
       timeStr,
       duration,
-      event.summary || 'Sin título',          // co
-      JSON.stringify(vendorIds),               // vs
-      tipo,                                    // tp
-      event.summary || '',                     // s
-      JSON.stringify(externalAttendees.map(a => a.email)), // cnt
-      meetCode || '',                          // m
-      '',                                      // ctx (el dashboard enriquece desde static)
-      '',                                      // st (cancelled/rescheduled)
+      event.summary || 'Sin título',
+      JSON.stringify(vendors),
+      tipo,
+      event.summary || '',
+      JSON.stringify(externals.map(a => a.email)),
+      meetCode || '',
+      '',   // ctx
+      st,   // cancelled / reagendada / ''
     ]);
   }
 
-  // Ordenar por fecha y hora
+  // Agregar canceladas al final (para que el dashboard las muestre tachadas)
+  for (const event of cancelled) {
+    const externals  = getExternals(event);
+    const vendors    = getVendors(event);
+    const companyKey = getCompanyKey(event);
+
+    const startDT = new Date(event.start.dateTime);
+    const endDT   = event.end && event.end.dateTime ? new Date(event.end.dateTime) : startDT;
+    const dateStr = Utilities.formatDate(startDT, TZ, 'yyyy-MM-dd');
+    const timeStr = Utilities.formatDate(startDT, TZ, 'HH:mm');
+    const duration = Math.round((endDT - startDT) / 60000) || 60;
+
+    // Solo incluir canceladas que NO fueron reagendadas (para no duplicar)
+    let wasRescheduled = false;
+    for (const vid of vendors) {
+      const cancelKey = vid + '|' + companyKey;
+      if (cancelledMap[cancelKey]) {
+        // Ver si hay una activa posterior
+        const hasActive = meetings.some(m => {
+          const mvs = JSON.parse(m[4] || '[]');
+          return mvs.includes(vid) && m[0] > dateStr &&
+            (m[3] || '').toLowerCase().includes(companyKey.split('.')[0]);
+        });
+        if (hasActive) { wasRescheduled = true; break; }
+      }
+    }
+
+    meetings.push([
+      dateStr,
+      timeStr,
+      duration,
+      event.summary || 'Sin título',
+      JSON.stringify(vendors),
+      'primera',
+      event.summary || '',
+      JSON.stringify(externals.map(a => a.email)),
+      '',
+      '',
+      wasRescheduled ? 'reagendada' : 'cancelled',
+    ]);
+  }
+
+  // Ordenar todo por fecha y hora
   meetings.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
 
   // Escribir en el Sheet
-  const ss      = SpreadsheetApp.openById(SHEET_ID);
-  let   sheet   = ss.getSheetByName('meetings');
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  let   sheet = ss.getSheetByName('meetings');
   if (!sheet) sheet = ss.insertSheet('meetings');
 
   sheet.clearContents();
@@ -183,13 +280,12 @@ function syncMeetings() {
     sheet.getRange(2, 1, meetings.length, headers.length).setValues(meetings);
   }
 
-  // Guardar timestamp
   let meta = ss.getSheetByName('meta');
   if (!meta) meta = ss.insertSheet('meta');
   meta.getRange('A1').setValue(new Date().toISOString());
   meta.getRange('B1').setValue(meetings.length);
 
-  Logger.log('✓ Sync completado: ' + meetings.length + ' reuniones guardadas');
+  Logger.log('✓ Sync completado: ' + meetings.length + ' reuniones (' + cancelled.length + ' canceladas)');
 }
 
 // ─── WEB APP — Sirve el JSON al dashboard ────────────────────────────────────
@@ -215,8 +311,8 @@ function doGet(e) {
     try { m.cnt = JSON.parse(m.cnt); } catch(e2) { m.cnt = []; }
 
     m.dur = parseInt(m.dur) || 60;
-    if (!m.m)  delete m.m;
-    if (!m.st) delete m.st;
+    if (!m.m)   delete m.m;
+    if (!m.st)  delete m.st;
     if (!m.ctx) delete m.ctx;
 
     return m;
@@ -234,10 +330,8 @@ function _json(data) {
 // ─── CONFIGURACIÓN — Ejecutar una sola vez ───────────────────────────────────
 
 function setupTrigger() {
-  // Borrar triggers existentes
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
 
-  // Trigger horario
   ScriptApp.newTrigger('syncMeetings')
     .timeBased()
     .everyHours(1)
