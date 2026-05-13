@@ -98,13 +98,14 @@ function syncMeetings() {
     }
 
     if (orgIsDirector) {
-      // Director creo la reunion: director primero, luego vendors sumados
-      // La reunion aparece bajo AMBOS (director + vendor)
-      const result = [organizerVid];
-      for (const vid of allIds) {
-        if (!result.includes(vid)) result.push(vid);
+      const nonDirectors = allIds.filter(v => !DIRECTOR_IDS.includes(v));
+      if (nonDirectors.length > 0) {
+        // Director creo + hay vendor real: aparece en ambos (director primero)
+        return [organizerVid, ...nonDirectors];
+      } else {
+        // Solo directores en la reunion: solo el organizador
+        return [organizerVid];
       }
-      return result;
     } else {
       // Vendor creo la reunion: bautista/gonzalo son soporte, no se les atribuye
       const nonDirectors = allIds.filter(v => !DIRECTOR_IDS.includes(v));
