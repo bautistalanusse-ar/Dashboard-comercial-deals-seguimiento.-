@@ -4884,8 +4884,7 @@
           .catch(err => {
             clearTimeout(tOut);
             console.warn('Make error:', err.name === 'AbortError' ? 'timeout' : err.message);
-            if (status) status.textContent = '📋 Datos locales';
-            if (btn) { btn.disabled = false; btn.classList.remove('syncing'); }
+            renderAfterSync('📋 Datos locales');
           });
       }
 
