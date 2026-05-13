@@ -324,7 +324,7 @@ function _json(data) {
 
 function setupTrigger() {
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('syncMeetings').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('syncMeetings').timeBased().everyMinutes(15).create();
   Logger.log('Trigger horario creado.');
   syncMeetings();
   Logger.log('Listo.');
