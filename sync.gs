@@ -284,9 +284,24 @@ function doGet(e) {
   const data    = sheet.getDataRange().getValues();
   const headers = data[0];
 
+  const TZ2 = 'America/Argentina/Buenos_Aires';
   const meetings = data.slice(1).map(row => {
     const m = {};
     headers.forEach((h, i) => { m[h] = row[i]; });
+
+    // Sheets convierte fechas a Date y tiempos a número decimal — normalizar
+    if (m.d instanceof Date) {
+      m.d = Utilities.formatDate(m.d, TZ2, 'yyyy-MM-dd');
+    } else {
+      m.d = String(m.d || '').slice(0, 10);
+    }
+    if (typeof m.t === 'number') {
+      const mins = Math.round(m.t * 24 * 60);
+      m.t = String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
+    } else {
+      m.t = String(m.t || '00:00').slice(0, 5);
+    }
+
     try { m.vs  = JSON.parse(m.vs);  } catch(e2) { m.vs  = []; }
     try { m.cnt = JSON.parse(m.cnt); } catch(e2) { m.cnt = []; }
     m.dur = parseInt(m.dur) || 60;
