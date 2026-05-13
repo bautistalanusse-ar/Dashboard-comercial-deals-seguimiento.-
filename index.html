@@ -4790,6 +4790,22 @@
           if (sm) return { ...lm, ctx: sm.ctx || '', nx: sm.nx || '', st: lm.st || sm.st };
           return lm;
         });
+
+        // Agregar entradas estáticas que NO vienen en el sync en vivo
+        // (presenciales sin invitados externos, canceladas manualmente, etc.)
+        const liveKeys = new Set();
+        MEETINGS.forEach(m => {
+          if (m.m) liveKeys.add('meet:' + m.m);
+          liveKeys.add('dt:' + m.d + '|' + m.t + '|' + (m.vs || []).sort().join(','));
+        });
+        STATIC_MEETINGS.forEach(sm => {
+          const smCode = sm.m ? sm.m.replace('https://meet.google.com/', '') : null;
+          if (smCode && liveKeys.has('meet:' + smCode)) return;
+          const dtKey = 'dt:' + sm.d + '|' + sm.t + '|' + (sm.vs || []).sort().join(',');
+          if (liveKeys.has(dtKey)) return;
+          MEETINGS.push(sm);
+        });
+
         return true;
       }
 
