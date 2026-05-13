@@ -109,10 +109,9 @@ function syncMeetings() {
 
     if (externalAttendees.length === 0) continue; // Reunión interna → saltar
 
-    // Detectar vendedores en la reunión
+    // Detectar vendedores en la reunión (solo attendees, no organizer — Bautista/Gonzalo crean reuniones ajenas)
     const vendorIds = [];
     const allEmails = attendees.map(a => (a.email || '').toLowerCase());
-    if (event.organizer) allEmails.push((event.organizer.email || '').toLowerCase());
 
     for (const email of allEmails) {
       const vid = VENDOR_EMAILS[email];
