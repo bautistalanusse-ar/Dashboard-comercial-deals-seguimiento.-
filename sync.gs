@@ -19,7 +19,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 const SHEET_ID       = 'TU_SHEET_ID_AQUI'; // ← pegar ID del Google Sheet
-const AGENDA_VIRTUAL = 'agenda.virtual@nubceo.com';
+const AGENDA_VIRTUAL = 'agenda.virtual@nubceo.com'; // email del grupo (para filtrar attendees)
+const MY_CALENDAR    = 'primary'; // leer desde el calendario de quien ejecuta el script
 
 // Mapa email → id de vendedor (igual que en el dashboard)
 const VENDOR_EMAILS = {
@@ -77,7 +78,7 @@ function syncMeetings() {
     };
     if (pageToken) opts.pageToken = pageToken;
 
-    const resp = Calendar.Events.list(AGENDA_VIRTUAL, opts);
+    const resp = Calendar.Events.list(MY_CALENDAR, opts);
     (resp.items || []).forEach(e => allEvents.push(e));
     pageToken = resp.nextPageToken || null;
   } while (pageToken);
@@ -93,6 +94,12 @@ function syncMeetings() {
     if (event.status === 'cancelled') continue;
 
     const attendees = event.attendees || [];
+
+    // Solo procesar eventos donde agenda.virtual fue invitada (= reunión comercial)
+    const hasAgendaVirtual = attendees.some(a =>
+      (a.email || '').toLowerCase() === AGENDA_VIRTUAL
+    );
+    if (!hasAgendaVirtual) continue;
 
     // Detectar externos (fuera de @nubceo.com y no en lista de skip)
     const externalAttendees = attendees.filter(a => {
