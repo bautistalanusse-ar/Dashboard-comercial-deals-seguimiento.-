@@ -4611,7 +4611,9 @@
       }
 
       // --- MAKE.COM WEBHOOK — proxy público sin OAuth ni login ---
-      const MAKE_WEBHOOK_URL = 'https://hook.us2.make.com/i8sll981gud2cgnv84f6u63kuufkeoie';
+      const MAKE_WEBHOOK_URL   = 'https://hook.us2.make.com/i8sll981gud2cgnv84f6u63kuufkeoie';
+      // ← Pegar URL del Apps Script Web App después de deployar sync.gs
+      const APPS_SCRIPT_URL  = 'TU_URL_AQUI';
 
       function classifyMeetingLive(title) {
         const t = title.toLowerCase();
@@ -4761,6 +4763,34 @@
         return true;
       }
 
+      // ─── SYNC COMPLETO DESDE APPS SCRIPT ────────────────────────────────────
+      // Reemplaza MEETINGS con datos en vivo y enriquece ctx/nx desde static
+      function applyFullSync(liveMeetings) {
+        if (!liveMeetings || !liveMeetings.length) return false;
+        MEETINGS = liveMeetings.map(lm => {
+          // Buscar match en static por código Meet (primario) o fecha+vendedor
+          let sm = null;
+          if (lm.m) {
+            sm = STATIC_MEETINGS.find(s => {
+              const sc = s.m ? s.m.replace('https://meet.google.com/', '') : null;
+              return sc === lm.m;
+            });
+          }
+          if (!sm) {
+            const lmVs = lm.vs || [];
+            sm = STATIC_MEETINGS.find(s =>
+              s.d === lm.d &&
+              getAllVendors(s).some(v => lmVs.includes(v)) &&
+              (s.co || '').toLowerCase().split(/[\s/–|-]/)[0].length > 2 &&
+              (lm.co || '').toLowerCase().includes((s.co || '').toLowerCase().split(/[\s/–|-]/)[0])
+            );
+          }
+          if (sm) return { ...lm, ctx: sm.ctx || '', nx: sm.nx || '', st: lm.st || sm.st };
+          return lm;
+        });
+        return true;
+      }
+
       function renderAfterSync(label) {
         const d = document.getElementById('dpDia').value;
         updatePeriodBar(d);
@@ -4775,51 +4805,91 @@
         if (btn) { btn.disabled = false; btn.classList.remove('syncing'); }
       }
 
+      const GS_CACHE_KEY = 'nubceo_gs_v1';
+      const GS_CACHE_TTL = 30 * 60 * 1000; // 30 minutos
+
       function syncCalendar(forceRefresh) {
-        const btn = document.getElementById('btnUpdate');
+        const btn    = document.getElementById('btnUpdate');
         const status = document.getElementById('userName');
         if (btn) { btn.disabled = true; btn.classList.add('syncing'); }
         if (status) status.textContent = '🔄 Sincronizando...';
 
-        // Usar caché si es reciente y no forzamos refresh
-        if (!forceRefresh) {
-          try {
-            const cached = localStorage.getItem('nubceo_cal_cache_v3');
-            if (cached) {
-              const { ts, events } = JSON.parse(cached);
-              if (Date.now() - ts < CACHE_TTL_MS && events && events.length) {
-                applyLiveEvents(events);
-                renderAfterSync('📋');
-                return;
-              }
-            }
-          } catch (e) { }
-        }
+        // Si Apps Script está configurado → usarlo (fuente completa)
+        const gsConfigured = APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_AQUI';
 
-        // Llamar a Make con timeout de 12s para no bloquear la UI
+        if (gsConfigured) {
+          // Verificar caché del Apps Script
+          if (!forceRefresh) {
+            try {
+              const cached = localStorage.getItem(GS_CACHE_KEY);
+              if (cached) {
+                const { ts, meetings } = JSON.parse(cached);
+                if (Date.now() - ts < GS_CACHE_TTL && meetings && meetings.length) {
+                  applyFullSync(meetings);
+                  renderAfterSync('📋 Caché');
+                  return;
+                }
+              }
+            } catch(e) {}
+          }
+          // Fetch desde Apps Script Web App
+          const ctrl = new AbortController();
+          const tOut = setTimeout(() => ctrl.abort(), 15000);
+          fetch(APPS_SCRIPT_URL, { signal: ctrl.signal })
+            .then(r => { clearTimeout(tOut); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(data => {
+              const meetings = data.meetings || [];
+              if (!meetings.length) throw new Error('Sin datos');
+              localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts: Date.now(), meetings }));
+              applyFullSync(meetings);
+              renderAfterSync('🗓️ ' + meetings.length + ' reuniones');
+            })
+            .catch(err => {
+              clearTimeout(tOut);
+              console.warn('Apps Script error:', err.message, '→ fallback Make');
+              _syncMake(btn, status);
+            });
+        } else {
+          // Sin Apps Script → usar Make (solo próximos eventos)
+          if (!forceRefresh) {
+            try {
+              const cached = localStorage.getItem('nubceo_cal_cache_v3');
+              if (cached) {
+                const { ts, events } = JSON.parse(cached);
+                if (Date.now() - ts < CACHE_TTL_MS && events && events.length) {
+                  applyLiveEvents(events);
+                  renderAfterSync('📋');
+                  return;
+                }
+              }
+            } catch(e) {}
+          }
+          _syncMake(btn, status);
+        }
+      }
+
+      function _syncMake(btn, status) {
         const ctrl = new AbortController();
         const tOut = setTimeout(() => ctrl.abort(), 12000);
         fetch(MAKE_WEBHOOK_URL, { signal: ctrl.signal })
-          .then(res => { clearTimeout(tOut); if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+          .then(r => { clearTimeout(tOut); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
           .then(data => {
             const events = data.events || [];
             if (!events.length) throw new Error('Sin eventos');
             localStorage.setItem('nubceo_cal_cache_v3', JSON.stringify({ ts: Date.now(), events }));
             applyLiveEvents(events);
-            renderAfterSync('✅');
+            renderAfterSync('✅ Make');
           })
           .catch(err => {
             clearTimeout(tOut);
-            const msg = err.name === 'AbortError' ? 'timeout Make' : err.message;
-            console.warn('Sync error (datos locales):', msg);
+            console.warn('Make error:', err.name === 'AbortError' ? 'timeout' : err.message);
             if (status) status.textContent = '📋 Datos locales';
             if (btn) { btn.disabled = false; btn.classList.remove('syncing'); }
           });
       }
 
-      // Al cargar: usa caché si existe, llama a Make si expiró
-      window.addEventListener('load', () => setTimeout(() => syncCalendar(false), 1000));
-      // Botón manual = siempre fuerza refresh real
+      // Al cargar: sync automático
+      window.addEventListener('load', () => setTimeout(() => syncCalendar(false), 800));
       document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('btnUpdate');
         if (btn) btn.onclick = () => syncCalendar(true);
