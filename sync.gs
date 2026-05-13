@@ -295,7 +295,9 @@ function doGet(e) {
     } else {
       m.d = String(m.d || '').slice(0, 10);
     }
-    if (typeof m.t === 'number') {
+    if (m.t instanceof Date) {
+      m.t = Utilities.formatDate(m.t, TZ2, 'HH:mm');
+    } else if (typeof m.t === 'number') {
       const mins = Math.round(m.t * 24 * 60);
       m.t = String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
     } else {
