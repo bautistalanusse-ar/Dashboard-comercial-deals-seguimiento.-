@@ -272,6 +272,11 @@ function syncMeetings() {
 }
 
 function doGet(e) {
+  // Si viene ?sync=1 ejecutar syncMeetings primero (botón manual del dashboard)
+  if (e && e.parameter && e.parameter.sync === '1') {
+    syncMeetings();
+  }
+
   const ss       = SpreadsheetApp.openById(SHEET_ID);
   const sheet    = ss.getSheetByName('meetings');
   const meta     = ss.getSheetByName('meta');
@@ -324,7 +329,7 @@ function _json(data) {
 
 function setupTrigger() {
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('syncMeetings').timeBased().everyMinutes(15).create();
+  ScriptApp.newTrigger('syncMeetings').timeBased().everyHours(1).create();
   Logger.log('Trigger horario creado.');
   syncMeetings();
   Logger.log('Listo.');

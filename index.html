@@ -4831,7 +4831,7 @@
         const btn    = document.getElementById('btnUpdate');
         const status = document.getElementById('userName');
         if (btn) { btn.disabled = true; btn.classList.add('syncing'); }
-        if (status) status.textContent = '🔄 Sincronizando...';
+        if (status) status.textContent = forceRefresh ? '🔄 Actualizando Calendar...' : '🔄 Sincronizando...';
 
         // Si Apps Script está configurado → usarlo (fuente completa)
         const gsConfigured = APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_AQUI';
@@ -4851,10 +4851,11 @@
               }
             } catch(e) {}
           }
-          // Fetch desde Apps Script Web App
+          // Fetch desde Apps Script Web App (con ?sync=1 si es force refresh)
           const ctrl = new AbortController();
-          const tOut = setTimeout(() => ctrl.abort(), 20000);
-          fetch(APPS_SCRIPT_URL, { signal: ctrl.signal, redirect: 'follow' })
+          const tOut = setTimeout(() => ctrl.abort(), 45000);
+          const fetchURL = forceRefresh ? APPS_SCRIPT_URL + '?sync=1' : APPS_SCRIPT_URL;
+          fetch(fetchURL, { signal: ctrl.signal, redirect: 'follow' })
             .then(r => {
               clearTimeout(tOut);
               const ct = r.headers.get('content-type') || '';
